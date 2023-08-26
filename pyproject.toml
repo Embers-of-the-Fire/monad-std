@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "monad-std"
+version = "0.0.0"
+description = ""
+authors = ["Embers-of-the-Fire <stellarishs@163.com>"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+
+[tool.poetry.group.dev.dependencies]
+mkdocs = "^1.5.2"
+mkdocstrings = {extras = ["python"], version = "^0.22.0"}
+mkdocs-material = "^9.2.3"
+pillow = "^10.0.0"
+cairosvg = "^2.7.1"
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "tuna"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
