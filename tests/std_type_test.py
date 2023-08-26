@@ -50,7 +50,7 @@ class TestStdSet(unittest.TestCase):
     def test_index(self):
         x = MSet([1, 'd'])
         p1 = x.pop()
-        self.assertTupleEqual(p1 == Option.of_some(1) or p1 == Option.of_some('d'))
+        self.assertTrue(p1 == Option.of_some(1) or p1 == Option.of_some('d'))
         x.pop()
         self.assertEqual(x.pop(), Option.of_none())
 
