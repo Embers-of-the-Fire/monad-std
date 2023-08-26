@@ -25,6 +25,11 @@ nav:
     - "Api Document/option.md"
     - "Api Document/result.md"
     - "Api Document/Result-Impl.md"
+    - STD Types:
+        - "Api Document/STD Types/pylist.md"
+        - "Api Document/STD Types/pytuple.md"
+        - "Api Document/STD Types/pydict.md"
+        - "Api Document/STD Types/pyset.md"
 theme:
   name: material
   language: 'en'
