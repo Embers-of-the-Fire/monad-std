@@ -4,7 +4,9 @@
 
 <a href="https://github.com/Embers-of-the-Fire/monad-std/actions"><img alt="GitHub Workflow Status (with event)" src="https://img.shields.io/github/actions/workflow/status/Embers-of-the-Fire/monad-std/test-python-package.yml?branch=main&logo=github" /></a>
 <img alt="python version" src="https://img.shields.io/badge/python-%E2%89%A53.8-blue?logo=python" />
-<a href="https://app.codecov.io/gh/Embers-of-the-Fire/monad-std"><img alt="Codecov" src="https://img.shields.io/codecov/c/github/Embers-of-the-Fire/monad-std?logo=codecov" /></a>
+<a href="https://codecov.io/gh/Embers-of-the-Fire/monad-std" >
+<img src="https://codecov.io/gh/Embers-of-the-Fire/monad-std/graph/badge.svg?token=FIXN2JM4QG"/>
+</a>
 <a href="https://pypi.org/project/monad-std/"><img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/monad-std?logo=pypi" /></a>
 
 </div>
@@ -43,10 +45,10 @@ Any issue and pull request is welcomed, and you can directly make a pr for new f
 
 Until now, this library provides the following features:
 
-- `monad_std.Option`: An optional value.
-- `monad_std.Result`: A structure containing a success value or an error.
+-   `monad_std.Option`: An optional value.
+-   `monad_std.Result`: A structure containing a success value or an error.
 
 And the following are being developed:
 
-- `monad_std.Either`: A structure containing two type of values, but not that specific like `monad_std.Result`
-- A better entry point for those utilities.
+-   `monad_std.Either`: A structure containing two type of values, but not that specific like `monad_std.Result`
+-   A better entry point for those utilities.

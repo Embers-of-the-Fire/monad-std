@@ -4,7 +4,7 @@
 
 [![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/Embers-of-the-Fire/monad-std/test-python-package.yml?branch=main&logo=github)](https://github.com/Embers-of-the-Fire/monad-std/actions)
 ![python version](https://img.shields.io/badge/python-%E2%89%A53.8-blue?logo=python)
-[![Codecov](https://img.shields.io/codecov/c/github/Embers-of-the-Fire/monad-std?logo=codecov)](https://app.codecov.io/gh/Embers-of-the-Fire/monad-std)
+[![codecov](https://codecov.io/gh/Embers-of-the-Fire/monad-std/graph/badge.svg?token=FIXN2JM4QG)](https://codecov.io/gh/Embers-of-the-Fire/monad-std)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/monad-std?logo=pypi)](https://pypi.org/project/monad-std/)
 
 </div>
