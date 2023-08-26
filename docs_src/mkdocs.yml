@@ -3,6 +3,7 @@ site_author: Embers-of-the-Fire
 site_description: Api documentation for monad_std
 copyright: Copyright &copy; 2023 Embers-of-the-Fire
 markdown_extensions:
+  - md_in_html
   - pymdownx.highlight:
       linenums: true
       anchor_linenums: true
@@ -16,8 +17,7 @@ markdown_extensions:
 extra_javascript:
   - init.js
 nav:
-  - Intro:
-    - Intro: index.md
+  - Intro: index.md
   - Api:
     - "Api Document/option.md"
     - "Api Document/result.md"
