@@ -27,10 +27,14 @@ jobs:
       run: |
         cd docs_src
         poetry run mkdocs build
+    - name: Init git
+      run: |
+        git config --global user.email stellarishs@163.com
+        git config --global user.name Embers-of-the-Fire
     - name: Copy documentation
       run: |
         [ -d docs ] || mkdir docs
-        cp -rf ./docs_src/site ../docs-cache
+        cp -rf ./docs_src/site/ ../docs-cache
         ls -la | grep  "^[^t].*" | awk '{print $9}'| sed -n '3,$ p' | sudo xargs rm -rf
         cp -rf ../docs-cache/* .
         git init
@@ -44,3 +48,7 @@ jobs:
         github_token: ${{ secrets.GH_TOKEN }}
         branch: gh-pages
         force: true
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
