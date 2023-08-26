@@ -26,7 +26,7 @@ class Option(Generic[KT]):
         if self.__value is None:
             return "Option::None"
         else:
-            return f"Option::{self.__value}"
+            return f"Option::Some({self.__value})"
 
     def __eq__(self, other):
         if isinstance(other, Option):
