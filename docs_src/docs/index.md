@@ -1,21 +1,19 @@
 # Monad STD
 
-<div style="text-align: center;">
+<div style="text-align: center;" markdown>
 
-<a href="https://github.com/Embers-of-the-Fire/monad-std/actions"><img alt="GitHub Workflow Status (with event)" src="https://img.shields.io/github/actions/workflow/status/Embers-of-the-Fire/monad-std/test-python-package.yml?branch=main&logo=github" /></a>
-<img alt="python version" src="https://img.shields.io/badge/python-%E2%89%A53.8-blue?logo=python" />
-<a href="https://codecov.io/gh/Embers-of-the-Fire/monad-std" >
-<img src="https://codecov.io/gh/Embers-of-the-Fire/monad-std/graph/badge.svg?token=FIXN2JM4QG"/>
-</a>
-<a href="https://pypi.org/project/monad-std/"><img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/monad-std?logo=pypi" /></a>
+[![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/Embers-of-the-Fire/monad-std/test-python-package.yml?branch=main&logo=github)](https://github.com/Embers-of-the-Fire/monad-std/actions)
+![python version](https://img.shields.io/badge/python-%E2%89%A53.8-blue?logo=python)
+[![codecov](https://codecov.io/gh/Embers-of-the-Fire/monad-std/graph/badge.svg?token=FIXN2JM4QG)](https://codecov.io/gh/Embers-of-the-Fire/monad-std)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/monad-std?logo=pypi)](https://pypi.org/project/monad-std/)
 
 </div>
 
 `monad_std` is a library that provides some useful Rust-styled utilities for using monads in Python.
 
-<div style="text-align: center;">
+<div style="text-align: center;" markdown>
 
-<a href="https://embers-of-the-fire.github.io/monad-std/">Documentation</a> | <a href="https://pypi.org/project/monad-std/">PyPI Page</a>
+[Documentation](https://embers-of-the-fire.github.io/monad-std/) | [PyPI Page](https://pypi.org/project/monad-std/)
 
 </div>
 

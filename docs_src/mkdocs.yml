@@ -1,7 +1,10 @@
 site_name: Monad STD Document
 site_author: Embers-of-the-Fire
 site_description: Api documentation for monad_std
+repo_url: https://github.com/Embers-of-the-Fire/monad-std/
+repo_name: Embers-of-the-Fire/monad_std
 copyright: Copyright &copy; 2023 Embers-of-the-Fire
+edit_uri: edit/main/docs_src/
 markdown_extensions:
   - md_in_html
   - pymdownx.highlight:
@@ -66,3 +69,7 @@ plugins:
             show_root_heading: false
             show_source: false
             heading_level: 2
+  # - git-committers:
+  #     repository: Embers-of-the-Fire/monad_std
+  #     branch: main
+  # - git-authors
