@@ -22,14 +22,16 @@ extra_javascript:
 nav:
   - Intro: index.md
   - Api:
-    - "Api Document/option.md"
-    - "Api Document/result.md"
-    - "Api Document/Result-Impl.md"
-    - STD Types:
-        - "Api Document/STD Types/pylist.md"
-        - "Api Document/STD Types/pytuple.md"
-        - "Api Document/STD Types/pydict.md"
-        - "Api Document/STD Types/pyset.md"
+      - "Api Document/option.md"
+      - "Api Document/result.md"
+      - STD Types:
+          - "Api Document/STD Types/pylist.md"
+          - "Api Document/STD Types/pytuple.md"
+          - "Api Document/STD Types/pydict.md"
+          - "Api Document/STD Types/pyset.md"
+      - "Api Document/Result-Impl.md"
+      - "Api Document/error.md"
+  - Change Log: CHANGELOG.md
 theme:
   name: material
   language: 'en'
@@ -71,9 +73,9 @@ plugins:
         python:
           paths: ['..']
           options:
-            show_root_heading: false
+            show_root_heading: true
             show_source: false
-            heading_level: 2
+            heading_level: 1
   # - git-committers:
   #     repository: Embers-of-the-Fire/monad_std
   #     branch: main
