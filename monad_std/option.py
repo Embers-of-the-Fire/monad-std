@@ -1,4 +1,5 @@
 from typing import Generic, TypeVar, Optional, Callable, List, Tuple
+from abc import ABCMeta, abstractmethod
 
 from .error import UnwrapException
 
@@ -9,71 +10,45 @@ E = TypeVar('E')
 R = TypeVar('R')
 
 
-class Option(Generic[KT]):
+class Option(Generic[KT], metaclass=ABCMeta):
     """`Option` monad for python."""
-    __value: Optional[KT]
 
-    def __init__(self, value: Optional[KT]):
-        """Initialize a `Option`.
-
-        Directly using this constructor is highly discouraged.
-        Please use [`Option.of_some`][monad_std.option.Option.of_some]
-        or [`Option.from_nullable`][monad_std.option.Option.from_nullable] instead.
-        """
-        self.__value = value
-
+    @abstractmethod
     def __bool__(self):
         """Returns `False` only if contained value is `None`."""
-        return self.__value is not None
+        ...
 
+    @abstractmethod
     def __str__(self):
-        if self.__value is None:
-            return "None"
-        else:
-            return str(self.__value)
+        ...
 
+    @abstractmethod
     def __repr__(self):
-        if self.__value is None:
-            return "Option::None"
-        else:
-            return f"Option::Some({self.__value})"
+        ...
 
+    @abstractmethod
     def __eq__(self, other):
-        if isinstance(other, Option):
-            if self.__value is None and other.__value is None:
-                return True
-            elif self.__value == other.__value:
-                return True
-            else:
-                return False
-        elif other is None:
-            return self.__value is None
-        else:
-            return False
+        ...
 
+    @abstractmethod
+    def __hash__(self):
+        """`hash(Option)` has the same result as its contained value."""
+        ...
+
+    @abstractmethod
     def __and__(self, other):
-        if isinstance(other, Option):
-            return self.bool_and(other)
-        elif other is None:
-            return self.bool_and(Option.of_none())
-        else:
-            raise TypeError("expect an Option or a None")
+        """Alias [`bool_and`][monad_std.option.Option.bool_and]."""
+        ...
 
+    @abstractmethod
     def __or__(self, other):
-        if isinstance(other, Option):
-            return self.bool_or(other)
-        elif other is None:
-            return self.bool_or(Option.of_none())
-        else:
-            raise TypeError("expect an Option or a None")
+        """Alias [`bool_or`][monad_std.option.Option.bool_or]."""
+        ...
 
+    @abstractmethod
     def __xor__(self, other):
-        if isinstance(other, Option):
-            return self.bool_xor(other)
-        elif other is None:
-            return self.bool_xor(Option.of_none())
-        else:
-            raise TypeError("expect an Option or a None")
+        """Alias [`bool_xor`][monad_std.option.Option.bool_xor]."""
+        ...
 
     @staticmethod
     def from_nullable(value: Optional[KT]) -> "Option[KT]":
@@ -82,7 +57,10 @@ class Option(Generic[KT]):
         This works the same way as [`Option.__init__`][monad_std.option.Option.__init__].
         We suggest use this as a more elegant and clear constructor.
         """
-        return Option(value)
+        if value is None:
+            return OpNone()
+        else:
+            return OpSome(value)
 
     @staticmethod
     def of_some(value: KT) -> "Option[KT]":
@@ -94,7 +72,7 @@ class Option(Generic[KT]):
         Returns:
             `Option::Some(KT)`
         """
-        return Option(value)
+        return OpSome(value)
 
     @staticmethod
     def of_none() -> "Option[KT]":
@@ -103,8 +81,9 @@ class Option(Generic[KT]):
         Returns:
             `Option::None`
         """
-        return Option(None)
+        return OpNone()
 
+    @abstractmethod
     def is_some(self) -> bool:
         """Returns `True` if the option is a `Some` value.
 
@@ -119,8 +98,9 @@ class Option(Generic[KT]):
             assert not x.is_some()
             ```
         """
-        return self.__value is not None
+        ...
 
+    @abstractmethod
     def is_none(self) -> bool:
         """Returns `True` if the option is a `None` value.
 
@@ -135,8 +115,9 @@ class Option(Generic[KT]):
             assert x.is_none()
             ```
         """
-        return self.__value is None
+        ...
 
+    @abstractmethod
     def is_some_and(self, func: Callable[[KT], bool]) -> bool:
         """Returns true if the option is a `Some` and the value inside it matches a predicate.
 
@@ -156,8 +137,9 @@ class Option(Generic[KT]):
             assert not x.is_some_and(lambda v: v > 1)
             ```
         """
-        return self.__value is not None and func(self.__value)
+        ...
 
+    @abstractmethod
     def expect(self, msg: str) -> KT:
         """Returns the contained `Some` value.
 
@@ -196,11 +178,9 @@ class Option(Generic[KT]):
                 assert str(e) == 'hey, this is an `Option::None` object'
             ```
         """
-        if self.__value is not None:
-            return self.__value
-        else:
-            raise UnwrapException("Option", msg)
+        ...
 
+    @abstractmethod
     def unwrap(self) -> KT:
         """Returns the contained `Some` value.
 
@@ -221,11 +201,9 @@ class Option(Generic[KT]):
                 assert str(e) == 'OptionError: call `Option.unwrap` on an `Option::None` object'
             ```
         """
-        if self.__value is not None:
-            return self.__value
-        else:
-            raise UnwrapException("Option", "call `Option.unwrap` on an `Option::None` object")
+        ...
 
+    @abstractmethod
     def unwrap_or(self, default: KT) -> KT:
         """Returns the contained `Some` value or a provided default.
 
@@ -245,11 +223,9 @@ class Option(Generic[KT]):
             assert Option.of_none().unwrap_or("bike") == "bike"
             ```
         """
-        if self.__value is not None:
-            return self.__value
-        else:
-            return default
+        ...
 
+    @abstractmethod
     def unwrap_or_else(self, func: Callable[[], KT]) -> KT:
         """Returns the contained `Some` value or computes it from a callable object.
 
@@ -263,15 +239,14 @@ class Option(Generic[KT]):
             assert Option.of_none().unwrap_or_else(lambda: 2 * k) == 20
             ```
         """
-        if self.__value is not None:
-            return self.__value
-        else:
-            return func()
+        ...
 
+    @abstractmethod
     def unwrap_unchecked(self) -> Optional[KT]:
         """Returns the contained `Some` value, without checking that the value is not `None`."""
-        return self.__value
+        ...
 
+    @abstractmethod
     def inspect(self, func: Callable[[KT], None]) -> "Option[KT]":
         """Calls the provided closure with the contained value (if `Some`), and return the option itself.
 
@@ -287,10 +262,9 @@ class Option(Generic[KT]):
             assert x == [2]
             ```
         """
-        if self.__value is not None:
-            func(self.__value)
-        return self
+        ...
 
+    @abstractmethod
     def map(self, func: Callable[[KT], U]) -> "Option[U]":
         """Maps an `Option<KT>` to `Option<U>` by applying a function
         to a contained value (if `Some`) or returns `None` (if `None`).
@@ -310,11 +284,9 @@ class Option(Generic[KT]):
             assert Option.of_none().map(lambda s: len(s)) == Option.of_none()
             ```
         """
-        if self.__value is not None:
-            return Option.of_some(func(self.__value))
-        else:
-            return Option.of_none()
+        ...
 
+    @abstractmethod
     def map_or(self, default: U, func: Callable[[KT], U]) -> U:
         """Returns the provided default result (if none), or applies a function to the contained value (if any).
 
@@ -331,11 +303,9 @@ class Option(Generic[KT]):
             assert Option.of_none().map_or(42, lambda s: len(s)) == 42
             ```
         """
-        if self.__value is not None:
-            return func(self.__value)
-        else:
-            return default
+        ...
 
+    @abstractmethod
     def map_or_else(self, default: Callable[[], U], func: Callable[[KT], U]) -> U:
         """Computes a default function result (if none),
         or applies a different function to the contained value (if any).
@@ -351,11 +321,9 @@ class Option(Generic[KT]):
             assert Option.of_none().map_or_else(lambda: 2 * k, lambda s: len(s)) == 42
             ```
         """
-        if self.__value is not None:
-            return func(self.__value)
-        else:
-            return default()
+        ...
 
+    @abstractmethod
     def ok_or(self, err: E) -> "Result[KT, E]":
         """Transforms the `Option<KT>` into a `Result<KT, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err)`.
 
@@ -372,11 +340,9 @@ class Option(Generic[KT]):
             assert Option.of_none().ok_or(0) == Result.of_err(0)
             ```
         """
-        if self.__value is not None:
-            return Result.of_ok(self.__value)
-        else:
-            return Result.of_err(err)
+        ...
 
+    @abstractmethod
     def ok_or_else(self, err: Callable[[], E]) -> "Result[KT, E]":
         """Transforms the `Option<KT>` into a `Result<KT, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err())`.
 
@@ -390,11 +356,9 @@ class Option(Generic[KT]):
             assert Option.of_none().ok_or_else(lambda: k * 2) == Result.of_err(42)
             ```
         """
-        if self.__value is not None:
-            return Result.of_ok(self.__value)
-        else:
-            return Result.of_err(err())
+        ...
 
+    @abstractmethod
     def to_array(self) -> List[KT]:
         """Returns an array of the possible contained value.
 
@@ -404,11 +368,9 @@ class Option(Generic[KT]):
             assert Option.of_none().to_array() == []
             ```
         """
-        v = []
-        if self.__value is not None:
-            v.append(self.__value)
-        return v
+        ...
 
+    @abstractmethod
     def bool_and(self, optb: "Option[U]") -> "Option[U]":
         """Returns None if the option is `None`, otherwise returns `optb`. Alias `&(__and__)`.
 
@@ -429,13 +391,9 @@ class Option(Generic[KT]):
             assert Option.of_none().bool_and(Option.of_none()) == Option.of_none()
             ```
         """
-        if self.__value is None:
-            return Option.of_none()
-        elif optb.__value is not None:
-            return Option.of_some(optb.__value)
-        else:
-            return Option.of_none()
+        ...
 
+    @abstractmethod
     def and_then(self, func: Callable[[KT], "Option[U]"]) -> "Option[U]":
         """Returns `None` if the option is `None`,
         otherwise calls `func` with the wrapped value and returns the result. Alias `flatmap`.
@@ -462,15 +420,14 @@ class Option(Generic[KT]):
             assert get_from(arr2d, 2).and_then(lambda row: get_from(row, 0)) == Option.of_none()
             ```
         """
-        if self.__value is None:
-            return Option.of_none()
-        else:
-            return func(self.__value)
+        ...
 
+    @abstractmethod
     def flatmap(self, func: Callable[[KT], "Option[U]"]) -> "Option[U]":
         """Alias of [`and_then`][monad_std.option.Option.and_then]."""
         return self.and_then(func)
 
+    @abstractmethod
     def bool_or(self, optb: "Option[KT]") -> "Option[KT]":
         """Returns the option if it contains a value, otherwise returns `optb`. Alias `||(__or__)`.
 
@@ -491,14 +448,9 @@ class Option(Generic[KT]):
             assert Option.of_none().bool_or(Option.of_none()) == Option.of_none()
             ```
         """
-        if self.__value is None:
-            if optb.__value is None:
-                return Option.of_none()
-            else:
-                return Option.of_some(optb.__value)
-        else:
-            return Option.of_some(self.__value)
+        ...
 
+    @abstractmethod
     def or_else(self, func: Callable[[], "Option[KT]"]) -> "Option[KT]":
         """Returns the option if it contains a value, otherwise calls `func` and returns the result.
 
@@ -512,11 +464,9 @@ class Option(Generic[KT]):
             assert Option.of_none().or_else(lambda: Option.of_none()) == Option.of_none()
             ```
         """
-        if self.__value is None:
-            return func()
-        else:
-            return Option.of_some(self.__value)
+        ...
 
+    @abstractmethod
     def bool_xor(self, optb: "Option[KT]") -> "Option[KT]":
         """Returns `Some` if exactly one of `self`, `optb` is `Some`, otherwise returns `None`. Alias `^(__xor__)`.
 
@@ -531,13 +481,9 @@ class Option(Generic[KT]):
             assert Option.of_none().bool_xor(Option.of_none()) == Option.of_none()
             ```
         """
-        if self.__value is None and optb.__value is not None:
-            return Option.of_some(optb.__value)
-        elif self.__value is not None and optb.__value is None:
-            return Option.of_some(self.__value)
-        else:
-            return Option.of_none()
+        ...
 
+    @abstractmethod
     def filter(self, func: Callable[[KT], bool]) -> "Option[KT]":
         """Filter the option.
 
@@ -560,11 +506,9 @@ class Option(Generic[KT]):
             assert Option.of_some(4).filter(lambda n: n % 2 == 0) == Option.of_some(4)
             ```
         """
-        if self.__value is not None and func(self.__value):
-            return Option.of_some(self.__value)
-        else:
-            return Option.of_none()
+        ...
 
+    @abstractmethod
     def zip(self, other: "Option[U]") -> "Option[Tuple[KT, U]]":
         """Zips `self` with another `Option`.
 
@@ -577,11 +521,9 @@ class Option(Generic[KT]):
             assert Option.of_some(1).zip(Option.of_none()) == Option.of_none()
             ```
         """
-        if self.__value is not None and other.__value is not None:
-            return Option.of_some((self.__value, other.__value))
-        else:
-            return Option.of_none()
+        ...
 
+    @abstractmethod
     def zip_with(self, other: "Option[U]", func: Callable[["Option[KT]", "Option[U]"], "Option[R]"]) -> "Option[R]":
         """Zips `self` and another `Option` with a callable object.
 
@@ -597,10 +539,17 @@ class Option(Generic[KT]):
             assert Option.of_some(2).zip_with(Option.of_none(), lambda x: make_point(*x)) == Option.of_none()
             ```
         """
-        if self.__value is not None and other.__value is not None:
-            return func(self.__value, other.__value)
-        else:
-            return Option.of_none()
+        ...
+
+    @abstractmethod
+    def clone(self) -> "Option[KT]":
+        """Clone self."""
+        ...
+
+    @staticmethod
+    def clone_from(value: "Option[KT]") -> "Option[KT]":
+        """Clone an `Option`."""
+        return value.clone()
 
     @staticmethod
     def unzip(opt: "Option[Tuple[T, U]]") -> Tuple["Option[T]", "Option[U]"]:
@@ -617,10 +566,11 @@ class Option(Generic[KT]):
             assert Option.unzip(Option.of_none()) == (Option.of_none(), Option.of_none())
             ```
         """
-        if opt.__value is not None:
-            return Option.of_some(opt.__value[0]), Option.of_some(opt.__value[1])
+        if opt.is_some():
+            uwp = opt.unwrap()
+            return Option.of_some(uwp[0]), Option.of_some(uwp[1])
         else:
-            return Option.of_none(), Option.of_none()
+            return OpNone(), OpNone()
 
     @staticmethod
     def transpose(opt: "Option[Result[T, E]]") -> "Result[Option[T], E]":
@@ -639,12 +589,12 @@ class Option(Generic[KT]):
             assert x == Option.transpose(y)
             ```
         """
-        if opt.__value is None:
-            return Result.of_ok(Option.of_none())
-        elif opt.__value.is_ok():
-            return Result.of_ok(Option.of_some(opt.__value.unwrap()))
+        if opt.is_none():
+            return Result.of_ok(OpNone())
+        elif opt.unwrap().is_ok():
+            return Result.of_ok(Option.of_some(opt.unwrap().unwrap()))
         else:
-            return Result.of_err(opt.__value.unwrap_err())
+            return Result.of_err(opt.unwrap().unwrap_err())
 
     @staticmethod
     def flatten(opt: "Option[Option[T]]") -> "Option[T]":
@@ -667,10 +617,254 @@ class Option(Generic[KT]):
                 == Option.of_some(6))
             ```
         """
-        if opt.__value is not None and opt.__value.__value is not None:
-            return Option.of_some(opt.__value.__value)
+        if opt.is_some() and opt.unwrap().is_some():
+            return Option.of_some(opt.unwrap().unwrap())
         else:
-            return Option.of_none()
+            return OpNone()
+
+
+class OpSome(Generic[KT], Option[KT]):
+    __value: KT
+
+    def __init__(self, __value: KT):
+        self.__value = __value
+
+    def __bool__(self):
+        return True
+
+    def __str__(self):
+        return str(self.__value)
+
+    def __repr__(self):
+        return f'Option::Some({self.__value})'
+
+    def __eq__(self, other):
+        if isinstance(other, OpSome):
+            return self.__value == other.__value
+        else:
+            return False
+
+    def __hash__(self):
+        return hash(self.__value)
+
+    def __and__(self, other):
+        if isinstance(other, Option):
+            return Option.clone(other)
+        else:
+            raise TypeError("expect another Option")
+
+    def __or__(self, other):
+        if isinstance(other, Option):
+            return self.clone()
+        else:
+            raise TypeError("expect another Option")
+
+    def __xor__(self, other):
+        if isinstance(other, Option):
+            if other.is_some():
+                return OpNone()
+            else:
+                return self.clone()
+        else:
+            raise TypeError("expect another Option")
+
+    def clone(self):
+        return OpSome(self.__value)
+
+    def is_some(self) -> bool:
+        return True
+
+    def is_none(self) -> bool:
+        return False
+
+    def is_some_and(self, func: Callable[[KT], bool]) -> bool:
+        return func(self.__value)
+
+    def expect(self, msg: str) -> KT:
+        return self.__value
+
+    def unwrap(self) -> KT:
+        return self.__value
+
+    def unwrap_or(self, default: KT) -> KT:
+        return self.__value
+
+    def unwrap_or_else(self, func: Callable[[], KT]) -> KT:
+        return self.__value
+
+    def unwrap_unchecked(self) -> Optional[KT]:
+        return self.__value
+
+    def inspect(self, func: Callable[[KT], None]) -> Option[KT]:
+        func(self.__value)
+        return self
+
+    def map(self, func: Callable[[KT], U]) -> Option[U]:
+        return Option.of_some(func(self.__value))
+
+    def map_or(self, default: U, func: Callable[[KT], U]) -> U:
+        return func(self.__value)
+
+    def map_or_else(self, default: Callable[[], U], func: Callable[[KT], U]) -> U:
+        return func(self.__value)
+
+    def ok_or(self, err: E) -> "Result[KT, E]":
+        return Result.of_ok(self.__value)
+
+    def ok_or_else(self, err: Callable[[], E]) -> "Result[KT, E]":
+        return Result.of_ok(self.__value)
+
+    def to_array(self) -> List[KT]:
+        return [self.__value]
+
+    def bool_and(self, optb: Option[U]) -> Option[U]:
+        return optb.clone()
+
+    def and_then(self, func: Callable[[KT], Option[U]]) -> Option[U]:
+        return func(self.__value)
+
+    def flatmap(self, func: Callable[[KT], Option[U]]) -> Option[U]:
+        return func(self.__value)
+
+    def bool_or(self, optb: Option[KT]) -> Option[KT]:
+        return self.clone()
+
+    def or_else(self, func: Callable[[], Option[KT]]) -> Option[KT]:
+        return self.clone()
+
+    def bool_xor(self, optb: Option[KT]) -> Option[KT]:
+        if optb.is_some():
+            return OpNone()
+        else:
+            return self.clone()
+
+    def filter(self, func: Callable[[KT], bool]) -> "Option[KT]":
+        if func(self.__value):
+            return self.clone()
+        else:
+            return OpNone()
+
+    def zip(self, other: Option[U]) -> Option[Tuple[KT, U]]:
+        if other.is_some():
+            return OpSome((self.__value, other.unwrap()))
+        else:
+            return OpNone()
+
+    def zip_with(self, other: Option[U], func: Callable[[Option[KT], Option[U]], Option[R]]) -> Option[R]:
+        if other.is_some():
+            return func(self.__value, other.unwrap())
+        else:
+            return OpNone()
+
+
+class OpNone(Generic[KT], Option[KT]):
+    def __bool__(self):
+        return False
+
+    def __str__(self):
+        return 'None'
+
+    def __repr__(self):
+        return 'Option::None'
+
+    def __eq__(self, other):
+        return isinstance(other, OpNone)
+
+    def __hash__(self):
+        return hash(None)
+
+    def __and__(self, other):
+        if isinstance(other, Option):
+            return self
+        else:
+            raise TypeError("expect another Option")
+
+    def __or__(self, other):
+        if isinstance(other, Option):
+            return other.clone()
+        else:
+            raise TypeError("expect another Option")
+
+    def __xor__(self, other):
+        if isinstance(other, Option):
+            return other.clone()
+        else:
+            raise TypeError("expect another Option")
+
+    def clone(self):
+        return self
+
+    def is_some(self) -> bool:
+        return False
+
+    def is_none(self) -> bool:
+        return True
+
+    def is_some_and(self, func: Callable[[KT], bool]) -> bool:
+        return False
+
+    def expect(self, msg: str) -> KT:
+        raise UnwrapException("Option", msg)
+
+    def unwrap(self) -> KT:
+        raise UnwrapException("Option", "call `Option.unwrap` on an `Option::None` object")
+
+    def unwrap_or(self, default: KT) -> KT:
+        return default
+
+    def unwrap_or_else(self, func: Callable[[], KT]) -> KT:
+        return func()
+
+    def unwrap_unchecked(self) -> Optional[KT]:
+        return None
+
+    def inspect(self, func: Callable[[KT], None]) -> "Option[KT]":
+        return self
+
+    def map(self, func: Callable[[KT], U]) -> "Option[U]":
+        return self
+
+    def map_or(self, default: U, func: Callable[[KT], U]) -> U:
+        return default
+
+    def map_or_else(self, default: Callable[[], U], func: Callable[[KT], U]) -> U:
+        return default()
+
+    def ok_or(self, err: E) -> "Result[KT, E]":
+        return Result.of_err(err)
+
+    def ok_or_else(self, err: Callable[[], E]) -> "Result[KT, E]":
+        return Result.of_err(err())
+
+    def to_array(self) -> List[KT]:
+        return []
+
+    def bool_and(self, optb: "Option[U]") -> "Option[U]":
+        return self
+
+    def and_then(self, func: Callable[[KT], "Option[U]"]) -> "Option[U]":
+        return self
+
+    def flatmap(self, func: Callable[[KT], "Option[U]"]) -> "Option[U]":
+        return self
+
+    def bool_or(self, optb: "Option[KT]") -> "Option[KT]":
+        return optb.clone()
+
+    def or_else(self, func: Callable[[], "Option[KT]"]) -> "Option[KT]":
+        return func()
+
+    def bool_xor(self, optb: "Option[KT]") -> "Option[KT]":
+        return optb.clone()
+
+    def filter(self, func: Callable[[KT], bool]) -> "Option[KT]":
+        return self
+
+    def zip(self, other: "Option[U]") -> "Option[Tuple[KT, U]]":
+        return self
+
+    def zip_with(self, other: "Option[U]", func: Callable[["Option[KT]", "Option[U]"], "Option[R]"]) -> "Option[R]":
+        return self
 
 
 from .result import Result
