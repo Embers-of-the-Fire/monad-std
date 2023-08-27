@@ -52,11 +52,7 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
     @staticmethod
     def from_nullable(value: Optional[KT]) -> "Option[KT]":
-        """Construct an `Option` from a nullable value.
-
-        This works the same way as [`Option.__init__`][monad_std.option.Option.__init__].
-        We suggest use this as a more elegant and clear constructor.
-        """
+        """Construct an `Option` from a nullable value."""
         if value is None:
             return OpNone()
         else:

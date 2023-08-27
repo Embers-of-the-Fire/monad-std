@@ -1,5 +1,11 @@
 # Change Log
 
+## V0.2.0
+
+**FIX**
+
+- `monad_std.Option`: Split into `OpSome` and `OpNone`.
+
 ## V0.1.0
 
 **ADD**
