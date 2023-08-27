@@ -53,13 +53,13 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
             return Result.of_err(e)
 
     @staticmethod
-    def catch_from(func: Callable, *args, **kwargs) -> "Result":
+    def catch_from(func: Callable, *args: tuple, **kwargs: dict) -> "Result":
         """Catch a thrown exception from a function call.
 
         Args:
             func: The function to call
-            args: The arguments passing to `func`.
-            kwargs: The keyword arguments passing to `func`.
+            *args: The arguments passing to `func`.
+            **kwargs: The keyword arguments passing to `func`.
 
         Returns:
             A `Result` instance of either the result of the function or the exception.

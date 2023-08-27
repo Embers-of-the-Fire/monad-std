@@ -16,6 +16,10 @@ class Option(Generic[KT]):
     def __init__(self, value: Optional[KT]):
         self.__value = value
 
+    def __bool__(self):
+        """Returns `False` only if contained value is `None`."""
+        return self.__value is not None
+
     def __str__(self):
         if self.__value is None:
             return "None"
