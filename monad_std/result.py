@@ -32,8 +32,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
             func: A function to catch the thrown exception.
 
         Returns:
-            A `Result` instance of either the result of the function or the exception.
-            You can cast the exception manually.
+            A `Result` of either the result of the function or the exception. You can cast the exception manually.
 
         Examples:
             ```python
@@ -62,8 +61,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
             **kwargs: The keyword arguments passing to `func`.
 
         Returns:
-            A `Result` instance of either the result of the function or the exception.
-            You can cast the exception and result manually.
+            A `Result` of either the result of the function or the exception. You can cast them manually.
 
         Examples:
             ```python
