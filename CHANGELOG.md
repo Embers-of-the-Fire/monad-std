@@ -16,6 +16,12 @@
     - `MDict`:
         - Rewrite `dict.popitem`, `dict.pop`: Now they'll return an `Option`.
         - Add `MDict.get`: Get an `Option` of the keyed value.
+- `monad_std.Option`:
+  - Add `from_nullable` as constructor.
+  - Add `__bool__` magic method.
+- `monad_std.Result`:
+  - Add `catch` and `catch_from` as constructor.
+  - Add `__bool__` magic method.
 
 **FIX**
 

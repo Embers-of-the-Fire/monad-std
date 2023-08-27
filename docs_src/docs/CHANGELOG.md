@@ -16,6 +16,13 @@
     - [`MDict`](Api Document/STD Types/pydict.md):
         - Rewrite `dict.popitem`, `dict.pop`: Now they'll return an `Option`.
         - Add `MDict.get`: Get an `Option` of the keyed value.
+- [`monad_std.Option`](Api Document/option.md):
+    - Add [`from_nullable`](Api Document/option.md#monad_std.option.Option.from_nullable) as constructor.
+    - Add `__bool__` magic method.
+- [`monad_std.Result`](Api Document/result.md):
+    - Add [`catch`](Api Document/result.md#monad_std.result.Result.catch)
+      and [`catch_from`](Api Document/result.md#monad_std.result.Result.catch_from) as constructor.
+    - Add `__bool__` magic method.
 
 **FIX**
 
