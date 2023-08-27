@@ -1,3 +1,9 @@
+<div style="text-align: center; display: flex; flex-direction: row; justify-content: center; align-items: center;"><div style="width: 150px; height: 150px;">
+
+![Logo](logo.svg)
+
+</div></div>
+
 # Monad STD
 
 <div style="text-align: center;" markdown>
@@ -43,10 +49,10 @@ Any issue and pull request is welcomed, and you can directly make a pr for new f
 
 Until now, this library provides the following features:
 
--   `monad_std.Option`: An optional value.
--   `monad_std.Result`: A structure containing a success value or an error.
+- `monad_std.Option`: An optional value.
+- `monad_std.Result`: A structure containing a success value or an error.
 
 And the following are being developed:
 
--   `monad_std.Either`: A structure containing two type of values, but not that specific like `monad_std.Result`
--   A better entry point for those utilities.
+- `monad_std.Either`: A structure containing two type of values, but not that specific like `monad_std.Result`
+- A better entry point for those utilities.

@@ -1,3 +1,9 @@
+<div style="text-align: center; display: flex; flex-direction: row; justify-content: center; align-items: center;"><div style="width: 150px; height: 150px;">
+
+![Logo](logo.svg)
+
+</div></div>
+
 # Monad STD
 
 <div style="text-align: center;">
