@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Callable, List
+from typing import Generic, TypeVar, Callable, List, Any
 from abc import ABCMeta, abstractmethod
 
 from .error import UnwrapException
@@ -52,7 +52,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
             return Result.of_err(e)
 
     @staticmethod
-    def catch_from(func: Callable, *args: tuple, **kwargs: dict) -> "Result":
+    def catch_from(func: Callable, *args: Any, **kwargs: Any) -> "Result":
         """Catch a thrown exception from a function call.
 
         Args:

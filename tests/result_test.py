@@ -41,11 +41,23 @@ class ResultTest(unittest.TestCase):
             else:
                 raise ValueError()
 
-        self.assertEqual(monad_std.result.Result.catch(lambda: maybe_error(2)), monad_std.result.Result.of_ok(3))
-        self.assertIsInstance(monad_std.result.Result.catch(lambda: maybe_error(3)).unwrap_err(), ValueError)
+        self.assertEqual(
+            monad_std.result.Result.catch(lambda: maybe_error(2)),
+            monad_std.result.Result.of_ok(3),
+        )
+        self.assertIsInstance(
+            monad_std.result.Result.catch(lambda: maybe_error(3)).unwrap_err(),
+            ValueError,
+        )
 
-        self.assertEqual(monad_std.result.Result.catch_from(maybe_error, v=2), monad_std.result.Result.of_ok(3))
-        self.assertIsInstance(monad_std.result.Result.catch_from(maybe_error, 3).unwrap_err(), ValueError)
+        self.assertEqual(
+            monad_std.result.Result.catch_from(maybe_error, v=2),
+            monad_std.result.Result.of_ok(3),
+        )
+        self.assertIsInstance(
+            monad_std.result.Result.catch_from(maybe_error, 3).unwrap_err(),
+            ValueError,
+        )
 
     def test_into_option(self):
         self.assertEqual(
@@ -98,10 +110,12 @@ class ResultTest(unittest.TestCase):
         )
 
         self.assertEqual(
-            monad_std.result.Result.of_ok(2).map_err(lambda x: str(x)), monad_std.result.Result.of_ok(2)
+            monad_std.result.Result.of_ok(2).map_err(lambda x: str(x)),
+            monad_std.result.Result.of_ok(2),
         )
         self.assertEqual(
-            monad_std.result.Result.of_err(-1).map_err(lambda x: str(x)), monad_std.result.Result.of_err("-1")
+            monad_std.result.Result.of_err(-1).map_err(lambda x: str(x)),
+            monad_std.result.Result.of_err("-1"),
         )
 
     def test_inspect(self):
