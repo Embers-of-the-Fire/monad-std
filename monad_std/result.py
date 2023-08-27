@@ -13,15 +13,77 @@ F = TypeVar('F')
 
 class Result(Generic[KT, KE], metaclass=ABCMeta):
     """An ancestor class of any `Result` type, inherited by `Ok` and `Err` subclasses."""
+
     @staticmethod
     def of_ok(value: KT) -> "Result[KT, KE]":
+        """Create an `Ok` value."""
         return Ok(value)
 
     @staticmethod
     def of_err(value: KE) -> "Result[KT, KE]":
+        """Create an `Err` value."""
         return Err(value)
 
+    @staticmethod
+    def catch(func: Callable[[], T]) -> "Result[T, Exception]":
+        """Catch a thrown exception from the function.
+
+        Args:
+            func: A function to catch the thrown exception.
+
+        Returns:
+            A `Result` instance of either the result of the function or the exception.
+            You can cast the exception manually.
+
+        Examples:
+            ```python
+            def maybe_error(v: int) -> int:
+                if v % 2 == 0:
+                    return v + 1
+                else:
+                    raise ValueError()
+
+            assert Result.catch(lambda: maybe_error(2)) == Result.of_ok(3)
+            assert isinstance(Result.catch(lambda: maybe_error(3)).unwrap_err(), ValueError)
+            ```
+        """
+        try:
+            return Result.of_ok(func())
+        except Exception as e:
+            return Result.of_err(e)
+
+    @staticmethod
+    def catch_from(func: Callable, *args, **kwargs) -> "Result":
+        """Catch a thrown exception from a function call.
+
+        Args:
+            func: The function to call
+            args: The arguments passing to `func`.
+            kwargs: The keyword arguments passing to `func`.
+
+        Returns:
+            A `Result` instance of either the result of the function or the exception.
+            You can cast the exception and result manually.
+
+        Examples:
+            ```python
+            def maybe_error(v: int) -> int:
+                if v % 2 == 0:
+                    return v + 1
+                else:
+                    raise ValueError()
+
+            assert Result.catch_from(maybe_error, v=2) == Result.of_ok(3)
+            assert isinstance(Result.catch_from(maybe_error, 3).unwrap_err(), ValueError)
+            ```
+        """
+        try:
+            return Result.of_ok(func(*args, **kwargs))
+        except Exception as e:
+            return Result.of_err(e)
+
     def __bool__(self):
+        """Returns `True` if the result is `Ok`."""
         return self.is_ok()
 
     @abstractmethod
