@@ -1,3 +1,7 @@
+<div style="text-align: center; display: flex; flex-direction: row; justify-content: center; align-items: center;">
+<img alt="Logo" height="150" src="logo.svg" width="150"/>
+</div>
+
 # Monad STD
 
 <div style="text-align: center;">
@@ -45,6 +49,7 @@ Until now, this library provides the following features:
 
 - `monad_std.Option`: An optional value.
 - `monad_std.Result`: A structure containing a success value or an error.
+- `monad_std.std_types`: Wrapped api around std types.
 
 And the following are being developed:
 

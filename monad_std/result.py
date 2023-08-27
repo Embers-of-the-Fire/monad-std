@@ -13,15 +13,75 @@ F = TypeVar('F')
 
 class Result(Generic[KT, KE], metaclass=ABCMeta):
     """An ancestor class of any `Result` type, inherited by `Ok` and `Err` subclasses."""
+
     @staticmethod
     def of_ok(value: KT) -> "Result[KT, KE]":
+        """Create an `Ok` value."""
         return Ok(value)
 
     @staticmethod
     def of_err(value: KE) -> "Result[KT, KE]":
+        """Create an `Err` value."""
         return Err(value)
 
+    @staticmethod
+    def catch(func: Callable[[], T]) -> "Result[T, Exception]":
+        """Catch a thrown exception from the function.
+
+        Args:
+            func: A function to catch the thrown exception.
+
+        Returns:
+            A `Result` of either the result of the function or the exception. You can cast the exception manually.
+
+        Examples:
+            ```python
+            def maybe_error(v: int) -> int:
+                if v % 2 == 0:
+                    return v + 1
+                else:
+                    raise ValueError()
+
+            assert Result.catch(lambda: maybe_error(2)) == Result.of_ok(3)
+            assert isinstance(Result.catch(lambda: maybe_error(3)).unwrap_err(), ValueError)
+            ```
+        """
+        try:
+            return Result.of_ok(func())
+        except Exception as e:
+            return Result.of_err(e)
+
+    @staticmethod
+    def catch_from(func: Callable, *args: tuple, **kwargs: dict) -> "Result":
+        """Catch a thrown exception from a function call.
+
+        Args:
+            func: The function to call
+            *args: The arguments passing to `func`.
+            **kwargs: The keyword arguments passing to `func`.
+
+        Returns:
+            A `Result` of either the result of the function or the exception. You can cast them manually.
+
+        Examples:
+            ```python
+            def maybe_error(v: int) -> int:
+                if v % 2 == 0:
+                    return v + 1
+                else:
+                    raise ValueError()
+
+            assert Result.catch_from(maybe_error, v=2) == Result.of_ok(3)
+            assert isinstance(Result.catch_from(maybe_error, 3).unwrap_err(), ValueError)
+            ```
+        """
+        try:
+            return Result.of_ok(func(*args, **kwargs))
+        except Exception as e:
+            return Result.of_err(e)
+
     def __bool__(self):
+        """Returns `True` if the result is `Ok`."""
         return self.is_ok()
 
     @abstractmethod
@@ -35,6 +95,18 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
     @abstractmethod
     def __eq__(self, other):
         ...
+
+    def __and__(self, other):
+        if isinstance(other, Result):
+            return self.bool_and(other)
+        else:
+            raise TypeError("expect a Result type")
+
+    def __or__(self, other):
+        if isinstance(other, Result):
+            return self.bool_or(other)
+        else:
+            raise TypeError("expect a Result type")
 
     def __instancecheck__(self, instance):
         return isinstance(instance, (Ok, Err))
@@ -369,7 +441,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
 
     @abstractmethod
     def bool_and(self, res: "Result[U, KE]") -> "Result[U, KE]":
-        """Returns `res` if the result is `Ok`, otherwise returns the `Err` value of `self`.
+        """Returns `res` if the result is `Ok`, otherwise returns the `Err` value of `self`. Alias `&(__and__)`.
 
         `and` is a keyword of Python, so we use `bool_and` instead.
 
@@ -410,7 +482,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
 
     @abstractmethod
     def bool_or(self, res: "Result[KT, F]") -> "Result[KT, F]":
-        """Returns `res` if the result is `Err`, otherwise returns the `Ok` value of `self`.
+        """Returns `res` if the result is `Err`, otherwise returns the `Ok` value of `self`. Alias `||(__or__)`.
 
         `or` is a keyword of Python, so we use `bool_or` instead.
 

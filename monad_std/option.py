@@ -14,7 +14,17 @@ class Option(Generic[KT]):
     __value: Optional[KT]
 
     def __init__(self, value: Optional[KT]):
+        """Initialize a `Option`.
+
+        Directly using this constructor is highly discouraged.
+        Please use [`Option.of_some`][monad_std.option.Option.of_some]
+        or [`Option.from_nullable`][monad_std.option.Option.from_nullable] instead.
+        """
         self.__value = value
+
+    def __bool__(self):
+        """Returns `False` only if contained value is `None`."""
+        return self.__value is not None
 
     def __str__(self):
         if self.__value is None:
@@ -26,7 +36,7 @@ class Option(Generic[KT]):
         if self.__value is None:
             return "Option::None"
         else:
-            return f"Option::{self.__value}"
+            return f"Option::Some({self.__value})"
 
     def __eq__(self, other):
         if isinstance(other, Option):
@@ -42,13 +52,37 @@ class Option(Generic[KT]):
             return False
 
     def __and__(self, other):
-        return self.bool_and(other)
+        if isinstance(other, Option):
+            return self.bool_and(other)
+        elif other is None:
+            return self.bool_and(Option.of_none())
+        else:
+            raise TypeError("expect an Option or a None")
 
     def __or__(self, other):
-        return self.bool_or(other)
+        if isinstance(other, Option):
+            return self.bool_or(other)
+        elif other is None:
+            return self.bool_or(Option.of_none())
+        else:
+            raise TypeError("expect an Option or a None")
 
     def __xor__(self, other):
-        return self.bool_xor(other)
+        if isinstance(other, Option):
+            return self.bool_xor(other)
+        elif other is None:
+            return self.bool_xor(Option.of_none())
+        else:
+            raise TypeError("expect an Option or a None")
+
+    @staticmethod
+    def from_nullable(value: Optional[KT]) -> "Option[KT]":
+        """Construct an `Option` from a nullable value.
+
+        This works the same way as [`Option.__init__`][monad_std.option.Option.__init__].
+        We suggest use this as a more elegant and clear constructor.
+        """
+        return Option(value)
 
     @staticmethod
     def of_some(value: KT) -> "Option[KT]":

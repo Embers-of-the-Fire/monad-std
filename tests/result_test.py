@@ -34,6 +34,19 @@ class ResultTest(unittest.TestCase):
             )
         )
 
+    def test_catch(self):
+        def maybe_error(v: int) -> int:
+            if v % 2 == 0:
+                return v + 1
+            else:
+                raise ValueError()
+
+        self.assertEqual(monad_std.result.Result.catch(lambda: maybe_error(2)), monad_std.result.Result.of_ok(3))
+        self.assertIsInstance(monad_std.result.Result.catch(lambda: maybe_error(3)).unwrap_err(), ValueError)
+
+        self.assertEqual(monad_std.result.Result.catch_from(maybe_error, v=2), monad_std.result.Result.of_ok(3))
+        self.assertIsInstance(monad_std.result.Result.catch_from(maybe_error, 3).unwrap_err(), ValueError)
+
     def test_into_option(self):
         self.assertEqual(
             monad_std.result.Result.of_ok(2).ok(),
