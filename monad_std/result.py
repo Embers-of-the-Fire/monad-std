@@ -98,6 +98,18 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
     def __eq__(self, other):
         ...
 
+    def __and__(self, other):
+        if isinstance(other, Result):
+            return self.bool_and(other)
+        else:
+            raise TypeError("expect a Result type")
+
+    def __or__(self, other):
+        if isinstance(other, Result):
+            return self.bool_or(other)
+        else:
+            raise TypeError("expect a Result type")
+
     def __instancecheck__(self, instance):
         return isinstance(instance, (Ok, Err))
 
@@ -431,7 +443,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
 
     @abstractmethod
     def bool_and(self, res: "Result[U, KE]") -> "Result[U, KE]":
-        """Returns `res` if the result is `Ok`, otherwise returns the `Err` value of `self`.
+        """Returns `res` if the result is `Ok`, otherwise returns the `Err` value of `self`. Alias `&(__and__)`.
 
         `and` is a keyword of Python, so we use `bool_and` instead.
 
@@ -472,7 +484,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
 
     @abstractmethod
     def bool_or(self, res: "Result[KT, F]") -> "Result[KT, F]":
-        """Returns `res` if the result is `Err`, otherwise returns the `Ok` value of `self`.
+        """Returns `res` if the result is `Err`, otherwise returns the `Ok` value of `self`. Alias `||(__or__)`.
 
         `or` is a keyword of Python, so we use `bool_or` instead.
 
