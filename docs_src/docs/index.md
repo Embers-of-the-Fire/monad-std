@@ -1,8 +1,6 @@
-<div style="text-align: center; display: flex; flex-direction: row; justify-content: center; align-items: center;" markdown><div style="width: 150px; height: 150px;">
-
-![Logo](logo.svg)
-
-</div></div>
+<div style="text-align: center; display: flex; flex-direction: row; justify-content: center; align-items: center;">
+<img alt="Logo" height="150" src="logo.svg" width="150"/>
+</div>
 
 # Monad STD
 
