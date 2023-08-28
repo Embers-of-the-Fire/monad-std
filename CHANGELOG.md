@@ -2,6 +2,13 @@
 
 ## V0.2.0
 
+**ADD**
+
+- `monad_std.Option`:
+    - `__add__/+`: Add alias for `bool_and`.
+- `monad_std.Result`:
+    - `__add__/+`: Add alias for `bool_and`.
+
 **FIX**
 
 - `monad_std.Option`: Split into `OpSome` and `OpNone`.

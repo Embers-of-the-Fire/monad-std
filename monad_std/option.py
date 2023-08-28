@@ -35,6 +35,10 @@ class Option(Generic[KT], metaclass=ABCMeta):
         """`hash(Option)` has the same result as its contained value."""
         ...
 
+    def __add__(self, other):
+        """Alias [`bool_and`][monad_std.option.Option.bool_and]."""
+        return self.__and__(other)
+
     @abstractmethod
     def __and__(self, other):
         """Alias [`bool_and`][monad_std.option.Option.bool_and]."""
@@ -368,7 +372,7 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
     @abstractmethod
     def bool_and(self, optb: "Option[U]") -> "Option[U]":
-        """Returns None if the option is `None`, otherwise returns `optb`. Alias `&(__and__)`.
+        """Returns None if the option is `None`, otherwise returns `optb`. Alias `&(__and__)` and `+(__add__)`.
 
         `and` is a keyword in Python, so here we use `bool_and` instead.
 

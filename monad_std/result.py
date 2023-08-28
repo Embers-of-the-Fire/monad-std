@@ -96,6 +96,12 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
     def __eq__(self, other):
         ...
 
+    def __add__(self, other):
+        if isinstance(other, Result):
+            return self.bool_and(other)
+        else:
+            raise TypeError("expect a Result type")
+
     def __and__(self, other):
         if isinstance(other, Result):
             return self.bool_and(other)
@@ -441,7 +447,8 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
 
     @abstractmethod
     def bool_and(self, res: "Result[U, KE]") -> "Result[U, KE]":
-        """Returns `res` if the result is `Ok`, otherwise returns the `Err` value of `self`. Alias `&(__and__)`.
+        """Returns `res` if the result is `Ok`, otherwise returns the `Err` value of `self`.
+        Alias `&(__and__)` and `+(__add__)`.
 
         `and` is a keyword of Python, so we use `bool_and` instead.
 
