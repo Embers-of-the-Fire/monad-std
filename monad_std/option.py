@@ -35,7 +35,7 @@ class Option(Generic[KT], metaclass=ABCMeta):
         """`hash(Option)` has the same result as its contained value."""
         ...
 
-    def __add__(self, other: "Option[Any]"):
+    def __add__(self, other: "Option[Any]") -> "Option[Any]":
         """Alias `self.__value.__add__`.
 
         Returns:
@@ -48,6 +48,20 @@ class Option(Generic[KT], metaclass=ABCMeta):
                 return Option.of_none()
         else:
             raise TypeError("expect another Option")
+
+    def __mul__(self, other: "Option[Any]") -> "Option[Any]":
+        """Alias `self.__value.__mul__`.
+
+        Returns:
+            If both value are `Ok`, this will return `Ok(self * other)`. Otherwise, return the first `Err`.
+        """
+        if isinstance(other, Option):
+            if self.is_some() and other.is_some():
+                return Option.of_some(self.unwrap() * other.unwrap())
+            else:
+                return Option.of_none()
+        else:
+            raise TypeError("expect a Result type")
 
     @abstractmethod
     def __and__(self, other):

@@ -102,9 +102,23 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         Returns:
             If both value are `Ok`, this will return `Ok(self + other)`. Otherwise, return the first `Err`.
         """
-        if isinstance(other, Option):
+        if isinstance(other, Result):
             if self.is_ok():
                 return other.map(lambda x: x + self.unwrap())
+            else:
+                return Result.of_err(self.unwrap_err())
+        else:
+            raise TypeError("expect a Result type")
+
+    def __mul__(self, other):
+        """Alias `self.__value.__mul__`.
+
+        Returns:
+            If both value are `Ok`, this will return `Ok(self * other)`. Otherwise, return the first `Err`.
+        """
+        if isinstance(other, Result):
+            if self.is_ok():
+                return other.map(lambda x: x * self.unwrap())
             else:
                 return Result.of_err(self.unwrap_err())
         else:
