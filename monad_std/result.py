@@ -96,7 +96,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
     def __eq__(self, other):
         ...
 
-    def __add__(self, other):
+    def __add__(self, other) -> "Result[Any, Any]":
         """Alias `self.__value.__add__`.
 
         Returns:
@@ -110,7 +110,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         else:
             raise TypeError("expect a Result type")
 
-    def __mul__(self, other):
+    def __mul__(self, other) -> "Result[Any, Any]":
         """Alias `self.__value.__mul__`.
 
         Returns:
