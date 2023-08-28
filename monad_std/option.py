@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Optional, Callable, List, Tuple, Any
+from typing import Generic, TypeVar, Optional, Callable, List, Tuple, Any, Iterator
 from abc import ABCMeta, abstractmethod
 
 from .error import UnwrapException
@@ -62,6 +62,13 @@ class Option(Generic[KT], metaclass=ABCMeta):
                 return Option.of_none()
         else:
             raise TypeError("expect a Result type")
+
+    def __iter__(self) -> Iterator[KT]:
+        return iter(self.to_array())
+
+    def to_iter(self) -> Iterator[KT]:
+        """Alias `iter(self.to_array())`."""
+        return iter(self.to_array())
 
     @abstractmethod
     def __and__(self, other):

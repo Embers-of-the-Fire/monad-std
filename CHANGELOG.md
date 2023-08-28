@@ -6,8 +6,10 @@
 
 - `monad_std.Option`:
     - `__add__/+ __mul__/*`: Call on the contained value.
+    - `__iter__/to_iter`: Adapt from `to_array` method.
 - `monad_std.Result`:
     - `__add__/+ __mul__/*`: Call on the contained value.
+    - `__iter__/to_iter`: Adapt from `to_array` method.
 
 **FIX**
 

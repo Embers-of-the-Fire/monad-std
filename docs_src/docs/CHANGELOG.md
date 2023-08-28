@@ -6,8 +6,10 @@
 
 - [`monad_std.Option`](Api Document/option.md):
     - `__add__/+ __mul__/*`: Call on the contained value.
+    - `__iter__/to_iter`: Adapt from `to_array` method.
 - [`monad_std.Result`](Api Document/result.md):
     - `__add__/+ __mul__/*`: Call on the contained value.
+    - `__iter__/to_iter`: Adapt from `to_array` method.
 
 **FIX**
 

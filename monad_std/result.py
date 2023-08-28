@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Callable, List, Any
+from typing import Generic, TypeVar, Callable, List, Any, Iterator
 from abc import ABCMeta, abstractmethod
 
 from .error import UnwrapException
@@ -123,6 +123,13 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
                 return Result.of_err(self.unwrap_err())
         else:
             raise TypeError("expect a Result type")
+
+    def __iter__(self) -> Iterator[KT]:
+        return iter(self.to_array())
+
+    def to_iter(self) -> Iterator[KT]:
+        """Alias `iter(self.to_array())`."""
+        return iter(self.to_array())
 
     def __and__(self, other):
         if isinstance(other, Result):
