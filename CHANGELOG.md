@@ -5,9 +5,9 @@
 **ADD**
 
 - `monad_std.Option`:
-    - `+/__add__`: These will now call on the contained value.
+    - `__add__/+`: Add alias for `bool_and`.
 - `monad_std.Result`:
-    - `+/__add__`: These will now call on the contained value.
+    - `__add__/+`: Add alias for `bool_and`.
 
 **FIX**
 

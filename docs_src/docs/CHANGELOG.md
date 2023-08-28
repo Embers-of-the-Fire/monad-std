@@ -5,9 +5,9 @@
 **ADD**
 
 - [`monad_std.Option`](Api Document/option.md):
-    - `+/__add__`: These will now call on the contained value.
+    - [`__add__/+`](Api Document/option.md#monad_std.option.Option.__add__): Add alias for `bool_and`.
 - [`monad_std.Result`](Api Document/result.md):
-    - `+/__add__`: These will now call on the contained value.
+    - [`__add__/+`](Api Document/result.md#monad_std.result.Result.__add__): Add alias for `bool_and`.
 
 **FIX**
 
