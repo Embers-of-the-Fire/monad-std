@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Optional, Callable, List, Tuple
+from typing import Generic, TypeVar, Optional, Callable, List, Tuple, Any
 from abc import ABCMeta, abstractmethod
 
 from .error import UnwrapException
@@ -34,6 +34,20 @@ class Option(Generic[KT], metaclass=ABCMeta):
     def __hash__(self):
         """`hash(Option)` has the same result as its contained value."""
         ...
+
+    def __add__(self, other: "Option[Any]"):
+        """Alias `self.__value.__add__`.
+
+        Returns:
+            If both value are `Some`, this will return `Some(self + other)`. Otherwise, return `None`.
+        """
+        if isinstance(other, Option):
+            if self.is_some() and other.is_some():
+                return Option.of_some(self.unwrap().__add__(other.unwrap()))
+            else:
+                return Option.of_none()
+        else:
+            raise TypeError("expect another Option")
 
     @abstractmethod
     def __and__(self, other):

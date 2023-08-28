@@ -96,6 +96,20 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
     def __eq__(self, other):
         ...
 
+    def __add__(self, other):
+        """Alias `self.__value.__add__`.
+
+        Returns:
+            If both value are `Ok`, this will return `Ok(self + other)`. Otherwise, return the first `Err`.
+        """
+        if isinstance(other, Option):
+            if self.is_ok():
+                return other.map(lambda x: x + self.unwrap())
+            else:
+                return Result.of_err(self.unwrap_err())
+        else:
+            raise TypeError("expect a Result type")
+
     def __and__(self, other):
         if isinstance(other, Result):
             return self.bool_and(other)

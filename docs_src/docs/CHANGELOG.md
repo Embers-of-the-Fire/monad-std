@@ -2,6 +2,13 @@
 
 ## V0.2.0
 
+**ADD**
+
+- [`monad_std.Option`](Api Document/option.md):
+    - `+/__add__`: These will now call on the contained value.
+- [`monad_std.Result`](Api Document/result.md):
+    - `+/__add__`: These will now call on the contained value.
+
 **FIX**
 
 - [`monad_std.Option`](Api Document/option.md):
