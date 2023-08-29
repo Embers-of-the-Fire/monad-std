@@ -29,11 +29,11 @@ class _IterChain(IterMeta[T], Generic[T]):
         self.__it2 = another
 
     def __clear_it2(self) -> Option[T]:
-        self.__it2 = Option.of_none()
-        return Option.of_none()
+        self.__it2 = Option.none()
+        return Option.none()
 
     def __clear_it1(self) -> Option[T]:
-        self.__it1 = Option.of_none()
+        self.__it1 = Option.none()
         return self.__it2.and_then(lambda x: x.next()).or_else(lambda: self.__clear_it2())
 
     def next(self) -> Option[T]:
@@ -59,9 +59,9 @@ class _IterArrayChunk(IterMeta[List[T]], Generic[T]):
                 break
         else:
             # short-circuit here if we don't meet any Option::None
-            return Option.of_some(arr)
-        self.__unused = Option.of_some(arr)
-        return Option.of_none()
+            return Option.some(arr)
+        self.__unused = Option.some(arr)
+        return Option.none()
 
     def get_unused(self) -> Option[List[T]]:
         return self.__unused
@@ -80,7 +80,7 @@ class _IterFilterMap(IterMeta[U], Generic[T, U]):
             if (z := self.__func(x.unwrap())).is_some():
                 return z
         else:
-            return Option.of_none()
+            return Option.none()
 
 
 class _IterFlatten(IterMeta[T], Generic[T]):
@@ -89,22 +89,22 @@ class _IterFlatten(IterMeta[T], Generic[T]):
 
     def __init__(self, it: IterMeta[Union[T, IterMeta[T], Iterable[T], Iterator[T]]]):
         self.__it = it
-        self.__current_it = Option.of_none()
+        self.__current_it = Option.none()
 
     def __it_next(self) -> Option[T]:
         if (nxt := self.__it.next()).is_some():
             nxt = nxt.unwrap()
             if isinstance(nxt, IterMeta):
-                self.__current_it = Option.of_some(nxt)
+                self.__current_it = Option.some(nxt)
                 return self.next()
             elif isinstance(nxt, (collections.abc.Iterator, collections.abc.Iterable)):
-                self.__current_it = Option.of_some(IterMeta.iter(nxt))
+                self.__current_it = Option.some(IterMeta.iter(nxt))
                 return self.next()
             else:
-                self.__current_it = Option.of_none()
-                return Option.of_some(nxt)
+                self.__current_it = Option.none()
+                return Option.some(nxt)
         else:
-            return Option.of_none()
+            return Option.none()
 
     def next(self) -> Option[T]:
         if self.__current_it.is_some():
@@ -112,7 +112,7 @@ class _IterFlatten(IterMeta[T], Generic[T]):
             if x.is_some():
                 return x
             else:
-                self.__current_it = Option.of_none()
+                self.__current_it = Option.none()
         return self.__it_next()
 
 
@@ -124,23 +124,23 @@ class _IterFlatMap(IterMeta[U], Generic[T, U]):
     def __init__(self, __it: IterMeta[T], __func: Callable[[T], Union[U, IterMeta[U], Iterable[U], Iterator[U]]]):
         self.__it = __it
         self.__func = __func
-        self.__current_it = Option.of_none()
+        self.__current_it = Option.none()
 
     def __it_next(self) -> Option[T]:
         if (nxt := self.__it.next()).is_some():
             nxtw = self.__func(nxt.unwrap())
             # noinspection DuplicatedCode
             if isinstance(nxt, IterMeta):
-                self.__current_it = Option.of_some(nxt)
+                self.__current_it = Option.some(nxt)
                 return self.next()
             elif isinstance(nxt, (collections.abc.Iterator, collections.abc.Iterable)):
-                self.__current_it = Option.of_some(IterMeta.iter(nxtw))
+                self.__current_it = Option.some(IterMeta.iter(nxtw))
                 return self.next()
             else:
-                self.__current_it = Option.of_none()
-                return Option.of_some(nxt)
+                self.__current_it = Option.none()
+                return Option.some(nxt)
         else:
-            return Option.of_none()
+            return Option.none()
 
     def next(self) -> Option[T]:
         if self.__current_it.is_some():
@@ -148,7 +148,7 @@ class _IterFlatMap(IterMeta[U], Generic[T, U]):
             if x.is_some():
                 return x
             else:
-                self.__current_it = Option.of_none()
+                self.__current_it = Option.none()
         return self.__it_next()
 
 
@@ -156,11 +156,11 @@ class _IterFuse(IterMeta[T], Generic[T]):
     __it: Option[IterMeta[T]]
 
     def __init__(self, it: IterMeta[T]):
-        self.__it = Option.of_some(it)
+        self.__it = Option.some(it)
 
     def __finish(self) -> Option[T]:
-        self.__it = Option.of_none()
-        return Option.of_none()
+        self.__it = Option.none()
+        return Option.none()
 
     def next(self) -> Option[T]:
         return self.__it.and_then(lambda x: x.next()).or_else(lambda: self.__finish())
@@ -184,11 +184,11 @@ class _IterPeekable(IterMeta[T], Generic[T]):
 
     def __init__(self, it: IterMeta[T]):
         self.__it = it
-        self.__peek = Option.of_none()
+        self.__peek = Option.none()
 
     def next(self) -> Option[T]:
         pk = self.__peek
-        self.__peek = Option.of_none()
+        self.__peek = Option.none()
         return pk.or_else(lambda: self.__it.next())
 
     def __peek_next(self) -> Option[T]:
@@ -213,7 +213,7 @@ class _IterIntersperse(IterMeta[T], Generic[T]):
     def next(self) -> Option[T]:
         if self.__need_sep and self.__it.peek().is_some():
             self.__need_sep = False
-            return Option.of_some(self.__sep)
+            return Option.some(self.__sep)
         else:
             self.__need_sep = True
             return self.__it.next()
@@ -232,7 +232,7 @@ class _IterIntersperseWith(IterMeta[T], Generic[T]):
     def next(self) -> Option[T]:
         if self.__need_sep and self.__it.peek().is_some():
             self.__need_sep = False
-            return Option.of_some(self.__sep())
+            return Option.some(self.__sep())
         else:
             self.__need_sep = True
             return self.__it.next()

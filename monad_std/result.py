@@ -210,8 +210,8 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Result.of_ok(2).ok() == Option.of_some(2)
-            assert Result.of_err('err').ok() == Option.of_none()
+            assert Result.of_ok(2).ok() == Option.some(2)
+            assert Result.of_err('err').ok() == Option.none()
             ```
         """
         ...
@@ -224,8 +224,8 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Result.of_err('err').err() == Option.of_some('err')
-            assert Result.of_ok(0).err() == Option.of_none()
+            assert Result.of_err('err').err() == Option.some('err')
+            assert Result.of_ok(0).err() == Option.none()
             ```
         """
         ...
@@ -572,13 +572,13 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
 
         Examples:
             ```python
-            x = Result.of_ok(Option.of_some(5))
-            y = Option.of_some(Result.of_ok(5))
+            x = Result.of_ok(Option.some(5))
+            y = Option.some(Result.of_ok(5))
             assert Result.transpose(x) == y
             ```
         """
         if res.is_err():
-            return Option.of_some(Result.of_err(res.unwrap_err()))
+            return Option.some(Result.of_err(res.unwrap_err()))
         else:
             return res.unwrap().map(Result.of_ok)
 
@@ -636,10 +636,10 @@ class Ok(Generic[KT, KE], Result[KT, KE]):
         return False
 
     def ok(self) -> "Option[KT]":
-        return Option.of_some(self.__value)
+        return Option.some(self.__value)
 
     def err(self) -> "Option[KE]":
-        return Option.of_none()
+        return Option.none()
 
     def map(self, func: Callable[[KT], U]) -> Result[U, KE]:
         return Result.of_ok(func(self.__value))
@@ -728,10 +728,10 @@ class Err(Generic[KT, KE], Result[KT, KE]):
         return func(self.__value)
 
     def ok(self) -> "Option[KT]":
-        return Option.of_none()
+        return Option.none()
 
     def err(self) -> "Option[KE]":
-        return Option.of_some(self.__value)
+        return Option.some(self.__value)
 
     def map(self, func: Callable[[KT], U]) -> Result[U, KE]:
         return Result.of_err(self.__value)

@@ -26,8 +26,8 @@ class MList(Generic[KT], List[KT]):
         Examples:
             ```python
             x = MList([1, 2, 3, 4, 5])
-            assert x.index(2) == Option.of_some(1)
-            assert x.index(0) == Option.of_none()
+            assert x.index(2) == Option.some(1)
+            assert x.index(0) == Option.none()
             ```
         """
     def get(self, index: SupportsIndex) -> Option[KT]:
@@ -39,8 +39,8 @@ class MList(Generic[KT], List[KT]):
         Examples:
             ```python
             x = MList([1, 2, 3, 4, 5])
-            assert x.get(2) == Option.of_some(3)
-            assert x.get(10) == Option.of_none()
+            assert x.get(2) == Option.some(3)
+            assert x.get(10) == Option.none()
             ```
         """
     def pop(self, __index: SupportsIndex = ...) -> Option[KT]:
@@ -60,9 +60,9 @@ class MList(Generic[KT], List[KT]):
         Examples:
             ```python
             x = MList([1, 2, 3, 4, 5])
-            assert x.pop() == Option.of_some(5)
-            assert x.pop(1) == Option.of_some(2)
+            assert x.pop() == Option.some(5)
+            assert x.pop(1) == Option.some(2)
             x = MList()
-            assert x.pop() == Option.of_none()
+            assert x.pop() == Option.none()
             ```
         """

@@ -46,20 +46,20 @@ class ResultTest(unittest.TestCase):
     def test_into_option(self):
         self.assertEqual(
             monad_std.result.Result.of_ok(2).ok(),
-            monad_std.option.Option.of_some(2),
+            monad_std.option.Option.some(2),
         )
         self.assertEqual(
             monad_std.result.Result.of_err("err").ok(),
-            monad_std.option.Option.of_none(),
+            monad_std.option.Option.none(),
         )
 
         self.assertEqual(
             monad_std.result.Result.of_err("err").err(),
-            monad_std.option.Option.of_some("err"),
+            monad_std.option.Option.some("err"),
         )
         self.assertEqual(
             monad_std.result.Result.of_ok(0).err(),
-            monad_std.option.Option.of_none(),
+            monad_std.option.Option.none(),
         )
 
     def test_mapping(self):
@@ -229,8 +229,8 @@ class ResultTest(unittest.TestCase):
         )
 
     def test_transpose(self):
-        x = monad_std.result.Result.of_ok(monad_std.option.Option.of_some(5))
-        y = monad_std.option.Option.of_some(monad_std.result.Result.of_ok(5))
+        x = monad_std.result.Result.of_ok(monad_std.option.Option.some(5))
+        y = monad_std.option.Option.some(monad_std.result.Result.of_ok(5))
         self.assertEqual(monad_std.result.Result.transpose(x), y)
 
     def test_flatten(self):

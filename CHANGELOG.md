@@ -26,6 +26,14 @@
             - `exist`, `find`, `find_map`, `position`
             - `product`, `sum`
             - `reduce`
+- `monad_std.Result`:
+    - Exposed `Ok` and `Err` constructor.
+
+**Breaking Change**
+
+- `monad_std.Option`:
+    - `of_some` -> `some`
+    - `of_none` -> `none`
 
 ## V0.1.1
 

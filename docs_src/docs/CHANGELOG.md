@@ -28,6 +28,14 @@
               [`find_map`][monad_std.iter.iter.IterMeta.find_map], [`position`][monad_std.iter.iter.IterMeta.position]
             - [`product`][monad_std.iter.iter.IterMeta.product], [`sum`][monad_std.iter.iter.IterMeta.sum]
             - [`reduce`][monad_std.iter.iter.IterMeta.reduce]
+- [`monad_std.Result`](Api Document/result.md):
+    - Exposed [`Ok`][monad_std.result.Ok] and [`Err`][monad_std.result.Err] constructor.
+
+**Breaking Change**
+
+- [`monad_std.Option`](Api Document/option.md):
+    - `of_some` -> [`some`][monad_std.result.Option.some]
+    - `of_none` -> [`none`][monad_std.result.Option.none]
 
 ## V0.1.1
 

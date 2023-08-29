@@ -32,7 +32,7 @@ class _IterFilter(IterMeta[T], Generic[T]):
             if self.__func(x.unwrap()):
                 return x
         else:
-            return Option.of_none()
+            return Option.none()
 
 
 class _IterEnumerate(IterMeta[Tuple[int, T]], Generic[T]):

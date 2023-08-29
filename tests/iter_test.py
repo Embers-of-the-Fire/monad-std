@@ -21,10 +21,10 @@ class ResultTest(unittest.TestCase):
     def test_iter_enumerator(self):
         a = ["a", "b", "c"]
         it = IterMeta.iter(a).enumerate()
-        self.assertEqual(it.next(), Option.of_some((0, "a")))
-        self.assertEqual(it.next(), Option.of_some((1, "b")))
-        self.assertEqual(it.next(), Option.of_some((2, "c")))
-        self.assertEqual(it.next(), Option.of_none())
+        self.assertEqual(it.next(), Option.some((0, "a")))
+        self.assertEqual(it.next(), Option.some((1, "b")))
+        self.assertEqual(it.next(), Option.some((2, "c")))
+        self.assertEqual(it.next(), Option.none())
 
     def test_iter_filter(self):
         a = [-1, 0, 1, 2]
@@ -52,7 +52,7 @@ class ResultTest(unittest.TestCase):
         ftd = IterMeta.iter(words).map(iter).flatten().collect_string()
         self.assertEqual(ftd, "alphabetagamma")
 
-        a = [Option.of_some(123), Result.of_ok(321), Option.of_none(), Option.of_some(233), Result.of_err("err")]
+        a = [Option.some(123), Result.of_ok(321), Option.none(), Option.some(233), Result.of_err("err")]
         ftd = IterMeta.iter(a).flatten().collect_list()
         self.assertListEqual(ftd, [123, 321, 233])
 
@@ -71,19 +71,19 @@ class ResultTest(unittest.TestCase):
                 val = self.__state
                 self.__state += 1
                 if val % 2 == 0:
-                    return Option.of_some(val)
+                    return Option.some(val)
                 else:
-                    return Option.of_none()
+                    return Option.none()
 
         it1 = NullableIterator(0)
-        self.assertEqual(it1.next(), Option.of_some(0))
-        self.assertEqual(it1.next(), Option.of_none())
-        self.assertEqual(it1.next(), Option.of_some(2))
-        self.assertEqual(it1.next(), Option.of_none())
+        self.assertEqual(it1.next(), Option.some(0))
+        self.assertEqual(it1.next(), Option.none())
+        self.assertEqual(it1.next(), Option.some(2))
+        self.assertEqual(it1.next(), Option.none())
         it2 = it1.fuse()
-        self.assertEqual(it2.next(), Option.of_some(4))
-        self.assertEqual(it2.next(), Option.of_none())
-        self.assertEqual(it2.next(), Option.of_none())
+        self.assertEqual(it2.next(), Option.some(4))
+        self.assertEqual(it2.next(), Option.none())
+        self.assertEqual(it2.next(), Option.none())
 
     def test_iter_inspect(self):
         a = [1, 4, 2, 3]
@@ -96,12 +96,12 @@ class ResultTest(unittest.TestCase):
 
     def test_iter_intersperse(self):
         it = IterMeta.iter([0, 1, 2]).intersperse(100)
-        self.assertEqual(it.next(), Option.of_some(0))
-        self.assertEqual(it.next(), Option.of_some(100))
-        self.assertEqual(it.next(), Option.of_some(1))
-        self.assertEqual(it.next(), Option.of_some(100))
-        self.assertEqual(it.next(), Option.of_some(2))
-        self.assertEqual(it.next(), Option.of_none())
+        self.assertEqual(it.next(), Option.some(0))
+        self.assertEqual(it.next(), Option.some(100))
+        self.assertEqual(it.next(), Option.some(1))
+        self.assertEqual(it.next(), Option.some(100))
+        self.assertEqual(it.next(), Option.some(2))
+        self.assertEqual(it.next(), Option.none())
 
         hello = IterMeta.iter(["Hello", "World", "!"]).intersperse(' ').collect_string()
         self.assertEqual(hello, "Hello World !")
@@ -127,22 +127,22 @@ class ResultTest(unittest.TestCase):
         )
         a = [1, 2, 3]
         it = IterMeta.iter(a).map(lambda x: x * 2)
-        self.assertEqual(it.next(), Option.of_some(2))
-        self.assertEqual(it.next(), Option.of_some(4))
-        self.assertEqual(it.next(), Option.of_some(6))
-        self.assertEqual(it.next(), Option.of_none())
+        self.assertEqual(it.next(), Option.some(2))
+        self.assertEqual(it.next(), Option.some(4))
+        self.assertEqual(it.next(), Option.some(6))
+        self.assertEqual(it.next(), Option.none())
 
     def test_iter_peek(self):
         xs = [1, 2, 3]
         it = IterMeta.iter(xs).peekable()
-        self.assertEqual(it.peek(), Option.of_some(1))
-        self.assertEqual(it.next(), Option.of_some(1))
-        self.assertEqual(it.peek(), Option.of_some(2))
-        self.assertEqual(it.peek(), Option.of_some(2))
-        self.assertEqual(it.next(), Option.of_some(2))
-        self.assertEqual(it.next(), Option.of_some(3))
-        self.assertEqual(it.peek(), Option.of_none())
-        self.assertEqual(it.next(), Option.of_none())
+        self.assertEqual(it.peek(), Option.some(1))
+        self.assertEqual(it.next(), Option.some(1))
+        self.assertEqual(it.peek(), Option.some(2))
+        self.assertEqual(it.peek(), Option.some(2))
+        self.assertEqual(it.next(), Option.some(2))
+        self.assertEqual(it.next(), Option.some(3))
+        self.assertEqual(it.peek(), Option.none())
+        self.assertEqual(it.next(), Option.none())
 
     def test_iter_fold(self):
         a = [1, 2, 3]
@@ -155,49 +155,49 @@ class ResultTest(unittest.TestCase):
 
     def test_iter_index(self):
         a = [1, 2, 3]
-        self.assertEqual(IterMeta.iter(a).find(lambda x: x == 2), Option.of_some(2))
-        self.assertEqual(IterMeta.iter(a).find(lambda x: x == 5), Option.of_none())
+        self.assertEqual(IterMeta.iter(a).find(lambda x: x == 2), Option.some(2))
+        self.assertEqual(IterMeta.iter(a).find(lambda x: x == 5), Option.none())
 
         a = ["lol", "wow", "2", "5"]
         res = IterMeta.iter(a).find_map(lambda x: Result.catch_from(int, x).ok())
-        self.assertEqual(res, Option.of_some(2))
+        self.assertEqual(res, Option.some(2))
 
         a = [1, 2, 3]
 
         self.assertTrue(IterMeta.iter(a).exist(2))
         self.assertFalse(IterMeta.iter(a).exist(5))
 
-        self.assertEqual(IterMeta.iter(a).position(lambda x: x == 2), Option.of_some(1))
-        self.assertEqual(IterMeta.iter(a).position(lambda x: x == 5), Option.of_none())
+        self.assertEqual(IterMeta.iter(a).position(lambda x: x == 2), Option.some(1))
+        self.assertEqual(IterMeta.iter(a).position(lambda x: x == 5), Option.none())
 
-        self.assertEqual(IterMeta.iter(a).index(2), Option.of_some(1))
-        self.assertEqual(IterMeta.iter(a).index(5), Option.of_none())
+        self.assertEqual(IterMeta.iter(a).index(2), Option.some(1))
+        self.assertEqual(IterMeta.iter(a).index(5), Option.none())
 
     def test_iter_reduce(self):
         reduced = IterMeta.iter(range(10)).reduce(lambda acc, e: acc + e)
-        self.assertEqual(reduced, Option.of_some(45))
+        self.assertEqual(reduced, Option.some(45))
         self.assertEqual(reduced.unwrap(), IterMeta.iter(range(10)).fold(0, lambda acc, e: acc + e))
 
         a = [1, 2, 3]
-        self.assertEqual(IterMeta.iter(a).sum(), Option.of_some(6))
+        self.assertEqual(IterMeta.iter(a).sum(), Option.some(6))
 
-        self.assertEqual(IterMeta.iter(range(1, 6)).product(), Option.of_some(120))
-        self.assertEqual(IterMeta.iter(range(1, 1)).product(), Option.of_none())
+        self.assertEqual(IterMeta.iter(range(1, 6)).product(), Option.some(120))
+        self.assertEqual(IterMeta.iter(range(1, 1)).product(), Option.none())
 
     def test_iter_zip(self):
         a1 = [1, 3, 5]
         a2 = [2, 4, 6]
         it = IterMeta.iter(a1).zip(IterMeta.iter(a2))
-        self.assertEqual(it.next(), Option.of_some((1, 2)))
-        self.assertEqual(it.next(), Option.of_some((3, 4)))
-        self.assertEqual(it.next(), Option.of_some((5, 6)))
-        self.assertEqual(it.next(), Option.of_none())
+        self.assertEqual(it.next(), Option.some((1, 2)))
+        self.assertEqual(it.next(), Option.some((3, 4)))
+        self.assertEqual(it.next(), Option.some((5, 6)))
+        self.assertEqual(it.next(), Option.none())
 
     def test_iter_chain(self):
         element = 1
         it = IterMeta.once(element)
-        self.assertEqual(it.next(), Option.of_some(1))
-        self.assertEqual(it.next(), Option.of_none())
+        self.assertEqual(it.next(), Option.some(1))
+        self.assertEqual(it.next(), Option.none())
 
         a1 = [1, 3, 5]
         a2 = [2, 4, 6]
@@ -215,9 +215,9 @@ class ResultTest(unittest.TestCase):
 
     def test_iter_chunk(self):
         a = IterMeta.iter("loerm").array_chunk(2)
-        self.assertEqual(a.next(), Option.of_some(["l", "o"]))
-        self.assertEqual(a.next(), Option.of_some(["e", "r"]))
-        self.assertEqual(a.next(), Option.of_none())
+        self.assertEqual(a.next(), Option.some(["l", "o"]))
+        self.assertEqual(a.next(), Option.some(["e", "r"]))
+        self.assertEqual(a.next(), Option.none())
         self.assertListEqual(a.get_unused().unwrap(), ["m"])
 
 

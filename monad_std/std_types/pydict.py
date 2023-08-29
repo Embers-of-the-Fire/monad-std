@@ -10,18 +10,18 @@ V = TypeVar('V')
 class MDict(Generic[K, V], Dict[K, V]):
     def get(self, key: K) -> Option[V]:
         try:
-            return Option.of_some(super().__getitem__(key))
+            return Option.some(super().__getitem__(key))
         except KeyError:
-            return Option.of_none()
+            return Option.none()
 
     def popitem(self) -> Option[MTuple]:
         try:
-            return Option.of_some(MTuple(super().popitem()))
+            return Option.some(MTuple(super().popitem()))
         except KeyError:
-            return Option.of_none()
+            return Option.none()
 
     def pop(self, key: K) -> Option[V]:
         try:
-            return Option.of_some(super().pop(key))
+            return Option.some(super().pop(key))
         except KeyError:
-            return Option.of_none()
+            return Option.none()

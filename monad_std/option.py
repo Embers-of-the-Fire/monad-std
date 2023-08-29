@@ -43,9 +43,9 @@ class Option(Generic[KT], metaclass=ABCMeta):
         """
         if isinstance(other, Option):
             if self.is_some() and other.is_some():
-                return Option.of_some(self.unwrap().__add__(other.unwrap()))
+                return Option.some(self.unwrap().__add__(other.unwrap()))
             else:
-                return Option.of_none()
+                return Option.none()
         else:
             raise TypeError("expect another Option")
 
@@ -57,9 +57,9 @@ class Option(Generic[KT], metaclass=ABCMeta):
         """
         if isinstance(other, Option):
             if self.is_some() and other.is_some():
-                return Option.of_some(self.unwrap() * other.unwrap())
+                return Option.some(self.unwrap() * other.unwrap())
             else:
-                return Option.of_none()
+                return Option.none()
         else:
             raise TypeError("expect a Result type")
 
@@ -94,7 +94,7 @@ class Option(Generic[KT], metaclass=ABCMeta):
             return OpSome(value)
 
     @staticmethod
-    def of_some(value: KT) -> "Option[KT]":
+    def some(value: KT) -> "Option[KT]":
         """ Create a value of `Some(KT)`.
 
         Args:
@@ -106,7 +106,7 @@ class Option(Generic[KT], metaclass=ABCMeta):
         return OpSome(value)
 
     @staticmethod
-    def of_none() -> "Option[KT]":
+    def none() -> "Option[KT]":
         """ Create a value of `None`.
 
         Returns:
@@ -123,9 +123,9 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            x: Option[int] = Option.of_some(2)
+            x: Option[int] = Option.some(2)
             assert x.is_some()
-            x: Option[int] = Option.of_none()
+            x: Option[int] = Option.none()
             assert not x.is_some()
             ```
         """
@@ -140,9 +140,9 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            x: Option[int] = Option.of_some(2)
+            x: Option[int] = Option.some(2)
             assert not x.is_none()
-            x: Option[int] = Option.of_none()
+            x: Option[int] = Option.none()
             assert x.is_none()
             ```
         """
@@ -160,11 +160,11 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            x: Option[int] = Option.of_some(2)
+            x: Option[int] = Option.some(2)
             assert x.is_some_and(lambda v: v > 1)
-            x: Option[int] = Option.of_some(0)
+            x: Option[int] = Option.some(0)
             assert not x.is_some_and(lambda v: v > 1)
-            x: Option[int] = Option.of_none()
+            x: Option[int] = Option.none()
             assert not x.is_some_and(lambda v: v > 1)
             ```
         """
@@ -200,9 +200,9 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            x: Option[str] = Option.of_some('value')
+            x: Option[str] = Option.some('value')
             assert x.expect('hey, this is an `Option::None` object') == 'value'
-            x: Option[str] = Option.of_none()
+            x: Option[str] = Option.none()
             try:
                 x.expect('hey, this is an `Option::None` object')
             except UnwrapException as e:
@@ -223,9 +223,9 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            x: Option[str] = Option.of_some("air")
+            x: Option[str] = Option.some("air")
             assert x.unwrap() == "air"
-            x: Option[str] = Option.of_none()
+            x: Option[str] = Option.none()
             try:
                 x.unwrap()
             except UnwrapException as e:
@@ -250,8 +250,8 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.of_some("car").unwrap_or("bike") == "car"
-            assert Option.of_none().unwrap_or("bike") == "bike"
+            assert Option.some("car").unwrap_or("bike") == "car"
+            assert Option.none().unwrap_or("bike") == "bike"
             ```
         """
         ...
@@ -266,8 +266,8 @@ class Option(Generic[KT], metaclass=ABCMeta):
         Examples:
             ```python
             k = 10
-            assert Option.of_some(4).unwrap_or_else(lambda: 2 * k) == 4
-            assert Option.of_none().unwrap_or_else(lambda: 2 * k) == 20
+            assert Option.some(4).unwrap_or_else(lambda: 2 * k) == 4
+            assert Option.none().unwrap_or_else(lambda: 2 * k) == 20
             ```
         """
         ...
@@ -287,9 +287,9 @@ class Option(Generic[KT], metaclass=ABCMeta):
         Examples:
             ```python
             x = []
-            Option.of_some(2).inspect(lambda s: x.append(s))
+            Option.some(2).inspect(lambda s: x.append(s))
             assert x == [2]
-            Option.of_none().inspect(lambda s: x.append(s))
+            Option.none().inspect(lambda s: x.append(s))
             assert x == [2]
             ```
         """
@@ -308,11 +308,11 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            maybe_some_string = Option.of_some("Hello, World!")
+            maybe_some_string = Option.some("Hello, World!")
             # `Option::map` will create a new option object
             maybe_some_len = maybe_some_string.map(lambda s: len(s))
-            assert maybe_some_len == Option.of_some(13)
-            assert Option.of_none().map(lambda s: len(s)) == Option.of_none()
+            assert maybe_some_len == Option.some(13)
+            assert Option.none().map(lambda s: len(s)) == Option.none()
             ```
         """
         ...
@@ -330,8 +330,8 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.of_some('foo').map_or(42, lambda s: len(s)) == 3
-            assert Option.of_none().map_or(42, lambda s: len(s)) == 42
+            assert Option.some('foo').map_or(42, lambda s: len(s)) == 3
+            assert Option.none().map_or(42, lambda s: len(s)) == 42
             ```
         """
         ...
@@ -348,8 +348,8 @@ class Option(Generic[KT], metaclass=ABCMeta):
         Examples:
             ```python
             k = 21
-            assert Option.of_some('bar').map_or_else(lambda: 2 * k, lambda s: len(s)) == 3
-            assert Option.of_none().map_or_else(lambda: 2 * k, lambda s: len(s)) == 42
+            assert Option.some('bar').map_or_else(lambda: 2 * k, lambda s: len(s)) == 3
+            assert Option.none().map_or_else(lambda: 2 * k, lambda s: len(s)) == 42
             ```
         """
         ...
@@ -367,8 +367,8 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.of_some('foo').ok_or(0) == Result.of_ok('foo')
-            assert Option.of_none().ok_or(0) == Result.of_err(0)
+            assert Option.some('foo').ok_or(0) == Result.of_ok('foo')
+            assert Option.none().ok_or(0) == Result.of_err(0)
             ```
         """
         ...
@@ -383,8 +383,8 @@ class Option(Generic[KT], metaclass=ABCMeta):
         Examples:
             ```python
             k = 21
-            assert Option.of_some('foo').ok_or_else(lambda: k * 2) == Result.of_ok('foo')
-            assert Option.of_none().ok_or_else(lambda: k * 2) == Result.of_err(42)
+            assert Option.some('foo').ok_or_else(lambda: k * 2) == Result.of_ok('foo')
+            assert Option.none().ok_or_else(lambda: k * 2) == Result.of_err(42)
             ```
         """
         ...
@@ -395,8 +395,8 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.of_some(1).to_array() == [1]
-            assert Option.of_none().to_array() == []
+            assert Option.some(1).to_array() == [1]
+            assert Option.none().to_array() == []
             ```
         """
         ...
@@ -416,10 +416,10 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.of_some(2).bool_and(Option.of_none()) == Option.of_none()
-            assert Option.of_none().bool_and(Option.of_some('foo')) == Option.of_none()
-            assert Option.of_some(2).bool_and(Option.of_some('bar')) == Option.of_some('bar')
-            assert Option.of_none().bool_and(Option.of_none()) == Option.of_none()
+            assert Option.some(2).bool_and(Option.none()) == Option.none()
+            assert Option.none().bool_and(Option.some('foo')) == Option.none()
+            assert Option.some(2).bool_and(Option.some('bar')) == Option.some('bar')
+            assert Option.none().bool_and(Option.none()) == Option.none()
             ```
         """
         ...
@@ -434,21 +434,21 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.of_some(2).and_then(lambda x: Option.of_some(str(x))) == Option.of_some('2')
-            assert Option.of_some(10).and_then(lambda _: Option.of_none()) == Option.of_none()
-            assert Option.of_none().and_then(lambda x: Option.of_some(str(x))) == Option.of_none()
+            assert Option.some(2).and_then(lambda x: Option.some(str(x))) == Option.some('2')
+            assert Option.some(10).and_then(lambda _: Option.none()) == Option.none()
+            assert Option.none().and_then(lambda x: Option.some(str(x))) == Option.none()
             ```
             Often used to chain fallible operations that may return `None`.
             ```python
             def get_from(l, i):
                 try:
-                    return Option.of_some(l[i])
+                    return Option.some(l[i])
                 except IndexError:
-                    return Option.of_none()
+                    return Option.none()
 
             arr2d = [["A0", "A1"], ["B0", "B1"]]
-            assert get_from(arr2d, 0).and_then(lambda row: get_from(row, 1)) == Option.of_some('A1')
-            assert get_from(arr2d, 2).and_then(lambda row: get_from(row, 0)) == Option.of_none()
+            assert get_from(arr2d, 0).and_then(lambda row: get_from(row, 1)) == Option.some('A1')
+            assert get_from(arr2d, 2).and_then(lambda row: get_from(row, 0)) == Option.none()
             ```
         """
         ...
@@ -473,10 +473,10 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.of_some(2).bool_or(Option.of_none()) == Option.of_some(2)
-            assert Option.of_none().bool_or(Option.of_some(100)) == Option.of_some(100)
-            assert Option.of_some(2).bool_or(Option.of_some(100)) == Option.of_some(2)
-            assert Option.of_none().bool_or(Option.of_none()) == Option.of_none()
+            assert Option.some(2).bool_or(Option.none()) == Option.some(2)
+            assert Option.none().bool_or(Option.some(100)) == Option.some(100)
+            assert Option.some(2).bool_or(Option.some(100)) == Option.some(2)
+            assert Option.none().bool_or(Option.none()) == Option.none()
             ```
         """
         ...
@@ -490,9 +490,9 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.of_some('foo').or_else(lambda: Option.of_some('bar')) == Option.of_some('foo')
-            assert Option.of_none().or_else(lambda: Option.of_some('bar')) == Option.of_some('bar')
-            assert Option.of_none().or_else(lambda: Option.of_none()) == Option.of_none()
+            assert Option.some('foo').or_else(lambda: Option.some('bar')) == Option.some('foo')
+            assert Option.none().or_else(lambda: Option.some('bar')) == Option.some('bar')
+            assert Option.none().or_else(lambda: Option.none()) == Option.none()
             ```
         """
         ...
@@ -506,10 +506,10 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.of_some(2).bool_xor(Option.of_none()) == Option.of_some(2)
-            assert Option.of_none().bool_xor(Option.of_some(2)) == Option.of_some(2)
-            assert Option.of_some(2).bool_xor(Option.of_some(2)) == Option.of_none()
-            assert Option.of_none().bool_xor(Option.of_none()) == Option.of_none()
+            assert Option.some(2).bool_xor(Option.none()) == Option.some(2)
+            assert Option.none().bool_xor(Option.some(2)) == Option.some(2)
+            assert Option.some(2).bool_xor(Option.some(2)) == Option.none()
+            assert Option.none().bool_xor(Option.none()) == Option.none()
             ```
         """
         ...
@@ -532,9 +532,9 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.of_none().filter(lambda n: n % 2 == 0) == Option.of_none()
-            assert Option.of_some(3).filter(lambda n: n % 2 == 0) == Option.of_none()
-            assert Option.of_some(4).filter(lambda n: n % 2 == 0) == Option.of_some(4)
+            assert Option.none().filter(lambda n: n % 2 == 0) == Option.none()
+            assert Option.some(3).filter(lambda n: n % 2 == 0) == Option.none()
+            assert Option.some(4).filter(lambda n: n % 2 == 0) == Option.some(4)
             ```
         """
         ...
@@ -548,8 +548,8 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.of_some(1).zip(Option.of_some('hi')) == Option.of_some((1, 'hi'))
-            assert Option.of_some(1).zip(Option.of_none()) == Option.of_none()
+            assert Option.some(1).zip(Option.some('hi')) == Option.some((1, 'hi'))
+            assert Option.some(1).zip(Option.none()) == Option.none()
             ```
         """
         ...
@@ -563,11 +563,11 @@ class Option(Generic[KT], metaclass=ABCMeta):
         Examples:
             ```python
             def make_point(x, y):
-                return Option.of_some({"x": x, "y": y})
+                return Option.some({"x": x, "y": y})
 
-            assert Option.of_some(2)
-                .zip_with(Option.of_some(4), lambda x: make_point(*x)) == Option.of_some({ "x": 2, "y": 4})
-            assert Option.of_some(2).zip_with(Option.of_none(), lambda x: make_point(*x)) == Option.of_none()
+            assert Option.some(2)
+                .zip_with(Option.some(4), lambda x: make_point(*x)) == Option.some({ "x": 2, "y": 4})
+            assert Option.some(2).zip_with(Option.none(), lambda x: make_point(*x)) == Option.none()
             ```
         """
         ...
@@ -593,13 +593,13 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.unzip(Option.of_some((1, 'hi'))) == (Option.of_some(1), Option.of_some('hi'))
-            assert Option.unzip(Option.of_none()) == (Option.of_none(), Option.of_none())
+            assert Option.unzip(Option.some((1, 'hi'))) == (Option.some(1), Option.some('hi'))
+            assert Option.unzip(Option.none()) == (Option.none(), Option.none())
             ```
         """
         if opt.is_some():
             uwp = opt.unwrap()
-            return Option.of_some(uwp[0]), Option.of_some(uwp[1])
+            return Option.some(uwp[0]), Option.some(uwp[1])
         else:
             return OpNone(), OpNone()
 
@@ -615,15 +615,15 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            x = Result.of_ok(Option.of_some(5))
-            y = Option.of_some(Result.of_ok(5))
+            x = Result.of_ok(Option.some(5))
+            y = Option.some(Result.of_ok(5))
             assert x == Option.transpose(y)
             ```
         """
         if opt.is_none():
             return Result.of_ok(OpNone())
         elif opt.unwrap().is_ok():
-            return Result.of_ok(Option.of_some(opt.unwrap().unwrap()))
+            return Result.of_ok(Option.some(opt.unwrap().unwrap()))
         else:
             return Result.of_err(opt.unwrap().unwrap_err())
 
@@ -636,20 +636,20 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.flatten(Option.of_some(Option.of_some(6))) == Option.of_some(6)
-            assert Option.flatten(Option.of_some(Option.of_none())) == Option.of_none()
-            assert Option.flatten(Option.of_none()) == Option.of_none()
+            assert Option.flatten(Option.some(Option.some(6))) == Option.some(6)
+            assert Option.flatten(Option.some(Option.none())) == Option.none()
+            assert Option.flatten(Option.none()) == Option.none()
             ```
             Flattening only removes one level of nesting at a time:
             ```python
-            assert (Option.flatten(Option.of_some(Option.of_some(Option.of_some(6))))
-                == Option.of_some(Option.of_some(6)))
-            assert (Option.flatten(Option.flatten(Option.of_some(Option.of_some(Option.of_some(6)))))
-                == Option.of_some(6))
+            assert (Option.flatten(Option.some(Option.some(Option.some(6))))
+                == Option.some(Option.some(6)))
+            assert (Option.flatten(Option.flatten(Option.some(Option.some(Option.some(6)))))
+                == Option.some(6))
             ```
         """
         if opt.is_some() and opt.unwrap().is_some():
-            return Option.of_some(opt.unwrap().unwrap())
+            return Option.some(opt.unwrap().unwrap())
         else:
             return OpNone()
 
@@ -731,7 +731,7 @@ class OpSome(Generic[KT], Option[KT]):
         return self
 
     def map(self, func: Callable[[KT], U]) -> Option[U]:
-        return Option.of_some(func(self.__value))
+        return Option.some(func(self.__value))
 
     def map_or(self, default: U, func: Callable[[KT], U]) -> U:
         return func(self.__value)

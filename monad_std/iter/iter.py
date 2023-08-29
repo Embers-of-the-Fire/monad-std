@@ -35,8 +35,8 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             ```python
             element = 1
             it = IterMeta.once(element)
-            assert it.next() == Option.of_some(1)
-            assert it.next() == Option.of_none()
+            assert it.next() == Option.some(1)
+            assert it.next() == Option.none()
             ```
         """
         return _IterIterable([v])
@@ -64,9 +64,9 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         Examples:
             ```python
             a = IterMeta.iter("loerm").array_chunk(2)
-            assert a.next() == Option.of_some(['l', 'o'])
-            assert a.next() == Option.of_some(['e', 'r'])
-            assert a.next() == Option.of_none()
+            assert a.next() == Option.some(['l', 'o'])
+            assert a.next() == Option.some(['e', 'r'])
+            assert a.next() == Option.none()
             assert a.get_unused().unwrap() == ['m']
             ```
         """
@@ -96,7 +96,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             assert it1.chain(it2).collect_list() == [1, 3, 5, 2, 4 , 6]
             ```
         """
-        return _IterChain(Option.of_some(self), Option.of_some(other))
+        return _IterChain(Option.some(self), Option.some(other))
 
     def enumerate(self) -> "_IterEnumerate[T]":
         """Creates an iterator which gives the current iteration count as well as the next value.
@@ -114,10 +114,10 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             ```python
             a = ['a', 'b', 'c']
             it = IterMeta.iter(a).enumerate()
-            assert it.next() == Option.of_some((0, 'a'))
-            assert it.next() == Option.of_some((1, 'b'))
-            assert it.next() == Option.of_some((2, 'c'))
-            assert it.next() == Option.of_none()
+            assert it.next() == Option.some((0, 'a'))
+            assert it.next() == Option.some((1, 'b'))
+            assert it.next() == Option.some((2, 'c'))
+            assert it.next() == Option.none()
             ```
         """
         return _IterEnumerate(self)
@@ -147,7 +147,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return _IterFilter(self, func)
 
-    def filter_map(self, func: Callable[[T], Option[U]] = lambda x: Option.of_some(x)) -> "_IterFilterMap[T, U]":
+    def filter_map(self, func: Callable[[T], Option[U]] = lambda x: Option.some(x)) -> "_IterFilterMap[T, U]":
         """Creates an iterator that both [`filter`][monad_std.iter.iter.IterMeta.filter]s
         and [`map`][monad_std.iter.iter.IterMeta.map]s.
 
@@ -232,7 +232,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             ```
             Flattening works on any `Iterable` or `Iterator` type, including `Option` and `Result`:
             ```python
-            a = [Option.of_some(123), Result.of_ok(321), Option.of_none(), Option.of_some(233), Result.of_err('err')]
+            a = [Option.some(123), Result.of_ok(321), Option.none(), Option.some(233), Result.of_err('err')]
             ftd = IterMeta.iter(a).flatten().collect_list()
             assert ftd == [123, 321, 233]
             ```
@@ -259,26 +259,26 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
                     val = self.__state
                     self.__state += 1
                     if val % 2 == 0:
-                        return Option.of_some(val)
+                        return Option.some(val)
                     else:
-                        return Option.of_none()
+                        return Option.none()
 
 
             # we can see our iterator going back and forth
             it1 = NullableIterator(0)
-            assert it1.next() == Option.of_some(0)
-            assert it1.next() == Option.of_none()
-            assert it1.next() == Option.of_some(2)
-            assert it1.next() == Option.of_none()
+            assert it1.next() == Option.some(0)
+            assert it1.next() == Option.none()
+            assert it1.next() == Option.some(2)
+            assert it1.next() == Option.none()
 
             # however, once we fuse it...
             it2 = it1.fuse()
-            assert it2.next() == Option.of_some(4)
-            assert it2.next() == Option.of_none()
+            assert it2.next() == Option.some(4)
+            assert it2.next() == Option.none()
 
             # it will always return `None` after the first time.
-            assert it2.next() == Option.of_none()
-            assert it2.next() == Option.of_none()
+            assert it2.next() == Option.none()
+            assert it2.next() == Option.none()
             ```
         """
         return _IterFuse(self)
@@ -338,12 +338,12 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         Examples:
             ```python
             it = IterMeta.iter([0, 1, 2]).intersperse(100)
-            assert it.next() == Option.of_some(0)       # The first element from `a`.
-            assert it.next() == Option.of_some(100)     # The separator.
-            assert it.next() == Option.of_some(1)       # The next element from `a`.
-            assert it.next() == Option.of_some(100)     # The separator.
-            assert it.next() == Option.of_some(2)       # The last element from `a`.
-            assert it.next() == Option.of_none()        # The iterator is finished.
+            assert it.next() == Option.some(0)       # The first element from `a`.
+            assert it.next() == Option.some(100)     # The separator.
+            assert it.next() == Option.some(1)       # The next element from `a`.
+            assert it.next() == Option.some(100)     # The separator.
+            assert it.next() == Option.some(2)       # The last element from `a`.
+            assert it.next() == Option.none()        # The iterator is finished.
             ```
             `intersperse` can be very useful to join an iterator’s items using a common element:
             ```python
@@ -408,10 +408,10 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             ```python
             a = [1, 2, 3]
             it = IterMeta.iter(a).map(lambda x: x * 2)
-            assert it.next() == Option.of_some(2)
-            assert it.next() == Option.of_some(4)
-            assert it.next() == Option.of_some(6)
-            assert it.next() == Option.of_none()
+            assert it.next() == Option.some(2)
+            assert it.next() == Option.some(4)
+            assert it.next() == Option.some(6)
+            assert it.next() == Option.none()
             ```
             If you’re doing some sort of side effect, prefer for to `map()`:
             ```python
@@ -444,19 +444,19 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             it = IterMeta.iter(xs).peekable()
 
             # `peek()` lets us see into the future
-            assert it.peek() == Option.of_some(1)
-            assert it.next() == Option.of_some(1)
+            assert it.peek() == Option.some(1)
+            assert it.next() == Option.some(1)
 
             # we can `peek()` multiple times, the iterator won't advance
-            assert it.peek() == Option.of_some(2)
-            assert it.peek() == Option.of_some(2)
-            assert it.next() == Option.of_some(2)
+            assert it.peek() == Option.some(2)
+            assert it.peek() == Option.some(2)
+            assert it.next() == Option.some(2)
 
-            assert it.next() == Option.of_some(3)
+            assert it.next() == Option.some(3)
 
             # after the iterator is finished, so is `peek()`
-            assert it.peek() == Option.of_none()
-            assert it.next() == Option.of_none()
+            assert it.peek() == Option.none()
+            assert it.next() == Option.none()
             ```
         """
         return _IterPeekable(self)
@@ -484,10 +484,10 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             a1 = [1, 3, 5]
             a2 = [2, 4, 6]
             it = IterMeta.iter(a1).zip(IterMeta.iter(a2))
-            assert it.next() == Option.of_some((1, 2))
-            assert it.next() == Option.of_some((3, 4))
-            assert it.next() == Option.of_some((5, 6))
-            assert it.next() == Option.of_none()
+            assert it.next() == Option.some((1, 2))
+            assert it.next() == Option.some((3, 4))
+            assert it.next() == Option.some((5, 6))
+            assert it.next() == Option.none()
             ```
         """
         return _IterZip(self, other)
@@ -534,15 +534,15 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         Examples:
             ```python
             a = [1, 2, 3]
-            assert IterMeta.iter(a).find(lambda x: x == 2) == Option.of_some(2)
-            assert IterMeta.iter(a).find(lambda x: x == 5) == Option.of_none()
+            assert IterMeta.iter(a).find(lambda x: x == 2) == Option.some(2)
+            assert IterMeta.iter(a).find(lambda x: x == 5) == Option.none()
             ```
         """
         while (x := self.next()).is_some():
             uwp = x.unwrap()
             if predicate(uwp):
-                return Option.of_some(uwp)
-        return Option.of_none()
+                return Option.some(uwp)
+        return Option.none()
 
     def find_map(self, func: Callable[[T], Option[U]]) -> Option[U]:
         """Applies function to the elements of iterator and returns the first non-none result.
@@ -553,14 +553,14 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             ```python
             a = ["lol", "wow", "2", "5"]
             res = IterMeta.iter(a).find_map(lambda x: Result.catch_from(int, x).ok())
-            assert res == Option.of_some(2)
+            assert res == Option.some(2)
             ```
         """
         while (x := self.next()).is_some():
             v = func(x.unwrap())
             if v.is_some():
                 return v
-        return Option.of_none()
+        return Option.none()
 
     def fold(self, init: U, func: Callable[[U, T], U]) -> U:
         """Folds every element into an accumulator by applying an operation, returning the final result.
@@ -674,17 +674,17 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         Examples:
             ```python
             a = [1, 2, 3]
-            assert IterMeta.iter(a).position(lambda x: x == 2) == Option.of_some(1)
-            assert IterMeta.iter(a).position(lambda x: x == 5) == Option.of_none()
+            assert IterMeta.iter(a).position(lambda x: x == 2) == Option.some(1)
+            assert IterMeta.iter(a).position(lambda x: x == 5) == Option.none()
             ```
         """
         idx = 0
         while (x := self.next()).is_some():
             if func(x.unwrap()):
-                return Option.of_some(idx)
+                return Option.some(idx)
             else:
                 idx += 1
-        return Option.of_none()
+        return Option.none()
 
     def product(self) -> Option[T]:
         """Iterates over the entire iterator, multiplying all the elements
@@ -696,8 +696,8 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert IterMeta.iter(range(1, 6)).product() == Option.of_some(120)
-            assert IterMeta.iter(range(1, 1)).product() == Option.of_none()
+            assert IterMeta.iter(range(1, 6)).product() == Option.some(120)
+            assert IterMeta.iter(range(1, 1)).product() == Option.none()
             ```
         """
         return self.reduce(lambda x, y: x * y)
@@ -717,7 +717,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         Examples:
             ```python
             reduced = IterMeta.iter(range(10)).reduce(lambda acc, e: acc + e)
-            assert reduced == Option.of_some(45)
+            assert reduced == Option.some(45)
             assert reduced.unwrap() == IterMeta.iter(range(10)).fold(0, lambda acc, e: acc + e)
             ```
         """
@@ -735,7 +735,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         Examples:
             ```python
             a = [1, 2, 3]
-            assert IterMeta.iter(a).sum() == Option.of_some(6)
+            assert IterMeta.iter(a).sum() == Option.some(6)
             ```
         """
         return self.reduce(lambda x, y: x + y)

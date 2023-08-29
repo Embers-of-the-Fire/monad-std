@@ -16,8 +16,8 @@ class MSet(Generic[K], Set[K]):
             ```python
             x = MSet([1, 'd'])
             p1 = x.pop()
-            assert p1 == Option.of_some(1) or p1 == Option.of_some('d')
+            assert p1 == Option.some(1) or p1 == Option.some('d')
             x.pop()
-            assert x.pop() == Option.of_none()
+            assert x.pop() == Option.none()
             ```
         """
