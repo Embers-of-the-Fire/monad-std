@@ -50,6 +50,7 @@ Until now, this library provides the following features:
 - `monad_std.Option`: An optional value.
 - `monad_std.Result`: A structure containing a success value or an error.
 - `monad_std.std_types`: Wrapped api around std types.
+- `monad_std.iter`: Iterator interface with functors and monads support.
 
 And the following are being developed:
 

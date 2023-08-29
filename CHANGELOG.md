@@ -1,5 +1,32 @@
 # Change Log
 
+## V0.2.0
+
+**ADD**
+
+- `monad_std.iter.IterMeta`: Iterator tools.
+    - Api List:
+        - Iter builder
+            - `iter`
+            - `once`
+        - Iter sub tool: 
+            - `enumerate`
+            - `filter`, `filter_map`
+            - `flat_map`, `flatten`
+            - `fuse`
+            - `inspect`
+            - `intersperse`, `intersperse_with`
+            - `map`
+            - `peekable`
+            - `zip`
+        - Iter collector
+            - `count`
+            - `fold`
+            - `for_each`
+            - `exist`, `find`, `find_map`, `position`
+            - `product`, `sum`
+            - `reduce`
+
 ## V0.1.1
 
 **ADD**

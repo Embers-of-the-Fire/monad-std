@@ -1,5 +1,34 @@
 # Change Log
 
+## V0.2.0
+
+**ADD**
+
+- [`monad_std.iter.IterMeta`][monad_std.iter.iter.IterMeta]: Iterator tools.
+    - Api List:
+        - Iter builder
+            - [`iter`][monad_std.iter.iter.IterMeta.iter]
+            - [`once`][monad_std.iter.iter.IterMeta.once]
+        - Iter sub tool: 
+            - [`enumerate`][monad_std.iter.iter.IterMeta.enumerate]
+            - [`filter`][monad_std.iter.iter.IterMeta.filter], [`filter_map`][monad_std.iter.iter.IterMeta.filter_map]
+            - [`flat_map`][monad_std.iter.iter.IterMeta.flat_map], [`flatten`][monad_std.iter.iter.IterMeta.flatten]
+            - [`fuse`][monad_std.iter.iter.IterMeta.fuse]
+            - [`inspect`][monad_std.iter.iter.IterMeta.inspect]
+            - [`intersperse`][monad_std.iter.iter.IterMeta.intersperse],
+              [`intersperse_with`][monad_std.iter.iter.IterMeta.intersperse_with]
+            - [`map`][monad_std.iter.iter.IterMeta.map]
+            - [`peekable`][monad_std.iter.iter.IterMeta.peekable]
+            - [`zip`][monad_std.iter.iter.IterMeta.zip]
+        - Iter collector
+            - [`count`][monad_std.iter.iter.IterMeta.count]
+            - [`fold`][monad_std.iter.iter.IterMeta.fold]
+            - [`for_each`][monad_std.iter.iter.IterMeta.for_each]
+            - [`exist`][monad_std.iter.iter.IterMeta.exist], [`find`][monad_std.iter.iter.IterMeta.find],
+              [`find_map`][monad_std.iter.iter.IterMeta.find_map], [`position`][monad_std.iter.iter.IterMeta.position]
+            - [`product`][monad_std.iter.iter.IterMeta.product], [`sum`][monad_std.iter.iter.IterMeta.sum]
+            - [`reduce`][monad_std.iter.iter.IterMeta.reduce]
+
 ## V0.1.1
 
 **ADD**
