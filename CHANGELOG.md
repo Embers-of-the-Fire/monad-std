@@ -6,9 +6,12 @@
 
 - `monad_std.iter.IterMeta`: Iterator tools.
     - Api List:
-        - Iter builder
+        - Iter builder:
             - `iter`
             - `once`
+        - Iter pusher:
+            - `advance_by`
+            - `nth`
         - Iter sub tool: 
             - `enumerate`
             - `filter`, `filter_map`
@@ -19,11 +22,14 @@
             - `map`
             - `peekable`
             - `zip`
-        - Iter collector
+        - Iter checker:
+            - `all`, `any`
+            - `exist` 
+        - Iter collector:
             - `count`
             - `fold`
             - `for_each`
-            - `exist`, `find`, `find_map`, `position`
+            - `find`, `find_map`, `position`
             - `product`, `sum`
             - `reduce`
 - `monad_std.Result`:

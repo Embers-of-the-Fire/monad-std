@@ -46,6 +46,78 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """Return the next element."""
         ...
 
+    def advance_by(self, n: int = 0) -> Result[None, int]:
+        """Advances the iterator by `n` elements.
+
+        This method will eagerly skip n elements by calling next up to n times until None is encountered.
+
+        `advance_by(n)` will return `Ok(None)` if the iterator successfully advances by n elements, or an
+        `Err(none-zero-int)` with value `k` if `None` is encountered, where `k` is remaining number of steps that
+        could not be advanced because the iterator ran out. If self is empty and `n` is non-zero,
+        then this returns `Err(n)`. Otherwise, `k` is always less than `n`.
+
+        Calling `advance_by(0)` can do meaningful work, for example [`flatten`][monad_std.iter.iter.IterMeta.flatten]
+        can advance its outer iterator until it finds an inner iterator that is not empty.
+
+        Args:
+            n: the number of elements to advance. Must be positive or zero.
+
+        Returns:
+            The result int will be between `0`(not include) and `n`(only when iterator is empty).
+
+        Examples:
+            ```python
+            a = [1, 2, 3, 4]
+            it = IterMeta.iter(a)
+            assert it.advance_by(2) == Result.of_ok(None)
+            assert it.next() == Option.some(3)
+            assert it.advance_by(0) == Result.of_ok(None)
+            assert it.advance_by(100) == Result.of_err(99)
+            ```
+        """
+        for i in range(n):
+            if self.next().is_none():
+                return Result.of_err(n - i)
+        return Result.of_ok(None)
+
+    def nth(self, n: int) -> Option[T]:
+        """Returns the `n`th element of the iterator.
+
+        Like most indexing operations, the count starts from zero, so `nth(0)` returns the first value, `nth(1)` the
+        second, and so on.
+
+        Note that all preceding elements, as well as the returned element, will be consumed from the iterator. That
+        means that the preceding elements will be discarded, and also that calling `nth(0)` multiple times on the
+        same iterator will return different elements.
+
+        `nth()` will return `None` if n is greater than or equal to the length of the iterator.
+
+        Args:
+            n: The target index of the element.
+
+        Examples:
+            ```python
+            a = [1, 2, 3]
+            assert IterMeta.iter(a).nth(1) == Option.some(2)
+            ```
+            Calling `nth()` multiple times doesn’t rewind the iterator:
+            ```python
+            a = [1, 2, 3]
+            it = IterMeta.iter(a)
+            assert it.nth(1) == Option.some(2)
+            assert it.nth(1) == Option.none()
+            ```
+            Returning `None` if there are less than `n + 1` elements:
+            ```python
+            a = [1, 2, 3]
+            assert IterMeta.iter(a).nth(10) == Option.none()
+            ```
+        """
+        for i in range(n):
+            if self.next().is_none():
+                return Option.none()
+        return self.next()
+
     def __iter__(self):
         return self.to_iter()
 
@@ -505,18 +577,6 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             cnt += 1
         return cnt
 
-    def exist(self, item: T) -> bool:
-        """A shortcut method for finding if an element exists in the iterator.
-
-        `exist()` will try to call `__eq__`(alias `==`) on each element, please make sure your element implements that.
-
-        `exist()` is short-circuiting, just like [`find`][monad_std.iter.iter.IterMeta.find].
-
-        Args:
-            item: The element to find.
-        """
-        return self.find(lambda x: x == item).is_some()
-
     def find(self, predicate: Callable[[T], bool]) -> Option[T]:
         """Searches for an element of an iterator that satisfies a predicate.
 
@@ -739,6 +799,90 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             ```
         """
         return self.reduce(lambda x, y: x + y)
+
+    def exist(self, item: T) -> bool:
+        """A shortcut method for finding if an element exists in the iterator.
+
+        `exist()` will try to call `__eq__`(alias `==`) on each element, please make sure your element implements that.
+
+        `exist()` is short-circuiting, just like [`find`][monad_std.iter.iter.IterMeta.find].
+
+        Args:
+            item: The element to find.
+        """
+        return self.find(lambda x: x == item).is_some()
+
+    def all(self, func: Callable[[T], bool] = lambda x: x) -> bool:
+        """Tests if every element of the iterator matches a predicate.
+
+        `all()` takes a closure that returns `True` or `False`. It applies this closure to each element of the
+        iterator, and if they all return `True`, then so does `all()`. If any of them return `False`, it returns
+        `False`.
+
+        `all()` is short-circuiting; in other words, it will stop processing as soon as it finds a `False`,
+        given that no matter what else happens, the result will also be `False`.
+
+        An empty iterator returns `True`.
+
+        Args:
+            func: The predicate function.
+
+        Examples:
+            ```python
+            a = [1, 2, 3]
+            assert IterMeta.iter(a).all(lambda x: x > 0)
+            assert not IterMeta.iter(a).all(lambda x: x > 2)
+            ```
+            Stopping at the first `False`:
+            ```python
+            a = [1, 2, 3]
+            it = IterMeta.iter(a)
+            assert not it.all(lambda x: x != 2)
+
+            # we can still use the iterator, as there are more elements.
+            assert it.next() == Option.some(3)
+            ```
+        """
+        while (x := self.next()).is_some():
+            if func(x.unwrap()) is False:
+                return False
+        return True
+
+    def any(self, func: Callable[[T], bool] = lambda x: x) -> bool:
+        """Tests if any element of the iterator matches a predicate.
+
+        `any()` takes a closure that returns `True` or `False`. It applies this closure to each element of the
+        iterator, and if any of them return `True`, then so does `any()`. If they all return `False`, it returns
+        `False`.
+
+        `any()` is short-circuiting; in other words, it will stop processing as soon as it finds a `True`, given that
+        no matter what else happens, the result will also be `True`.
+
+        An empty iterator returns `False`.
+
+        Args:
+            func: The predicate function.
+
+        Examples:
+            ```python
+            a = [1, 2, 3]
+            assert IterMeta.iter(a).any(lambda x: x > 2)
+            assert not IterMeta.iter(a).any(lambda x: x > 5)
+            ```
+            Stopping at the first `True`:
+            ```python
+            a = [1, 2, 3]
+            it = IterMeta.iter(a)
+            assert it.any(lambda x: x != 2)
+
+            # we can still use the iterator, as there are more elements.
+            assert it.next() == Option.some(2)
+            ```
+        """
+        while (x := self.next()).is_some():
+            if func(x.unwrap()) is True:
+                return True
+        return False
 
     def collect_list(self) -> List[T]:
         """Collect the iterator into a list."""

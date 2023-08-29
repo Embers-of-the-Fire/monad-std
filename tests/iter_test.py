@@ -18,6 +18,19 @@ class ResultTest(unittest.TestCase):
         t = IterMeta.iter(range(10))
         self.assertEqual(t.count(), 10)
 
+        a = [1, 2, 3, 4]
+        it = IterMeta.iter(a)
+        self.assertEqual(it.advance_by(2), Result.of_ok(None))
+        self.assertEqual(it.next(), Option.some(3))
+        self.assertEqual(it.advance_by(0), Result.of_ok(None))
+        self.assertEqual(it.advance_by(100), Result.of_err(99))
+
+        a = [1, 2, 3]
+        self.assertEqual(IterMeta.iter(a).nth(1), Option.some(2))
+
+        a = [1, 2, 3]
+        self.assertEqual(IterMeta.iter(a).nth(10), Option.none())
+
     def test_iter_enumerator(self):
         a = ["a", "b", "c"]
         it = IterMeta.iter(a).enumerate()
@@ -211,6 +224,23 @@ class ResultTest(unittest.TestCase):
         self.assertEqual(a.next(), Option.some(["e", "r"]))
         self.assertEqual(a.next(), Option.none())
         self.assertListEqual(a.get_unused().unwrap(), ["m"])
+
+    def test_iter_check(self):
+        a = [1, 2, 3]
+        self.assertTrue(IterMeta.iter(a).all(lambda x: x > 0))
+        self.assertFalse(IterMeta.iter(a).all(lambda x: x > 2))
+        a = [1, 2, 3]
+        it = IterMeta.iter(a)
+        self.assertFalse(it.all(lambda x: x != 2))
+        self.assertEqual(it.next(), Option.some(3))
+
+        a = [1, 2, 3]
+        self.assertTrue(IterMeta.iter(a).any(lambda x: x > 2))
+        self.assertFalse(IterMeta.iter(a).any(lambda x: x > 5))
+        a = [1, 2, 3]
+        it = IterMeta.iter(a)
+        self.assertTrue(it.any(lambda x: x != 2))
+        self.assertEqual(it.next(), Option.some(2))
 
 
 if __name__ == "__main__":

@@ -6,9 +6,12 @@
 
 - [`monad_std.iter.IterMeta`][monad_std.iter.iter.IterMeta]: Iterator tools.
     - Api List:
-        - Iter builder
+        - Iter builder:
             - [`iter`][monad_std.iter.iter.IterMeta.iter]
             - [`once`][monad_std.iter.iter.IterMeta.once]
+        - Iter pusher:
+            - [`advance_by`][monad_std.iter.iter.IterMeta.advance_by]
+            - [`nth`][monad_std.iter.iter.IterMeta.nth]
         - Iter sub tool: 
             - [`enumerate`][monad_std.iter.iter.IterMeta.enumerate]
             - [`filter`][monad_std.iter.iter.IterMeta.filter], [`filter_map`][monad_std.iter.iter.IterMeta.filter_map]
@@ -20,12 +23,15 @@
             - [`map`][monad_std.iter.iter.IterMeta.map]
             - [`peekable`][monad_std.iter.iter.IterMeta.peekable]
             - [`zip`][monad_std.iter.iter.IterMeta.zip]
-        - Iter collector
+        - Iter checker:
+            - [`all`][monad_std.iter.iter.IterMeta.all], [`any`][monad_std.iter.iter.IterMeta.any]
+            - [`exist`][monad_std.iter.iter.IterMeta.exist]
+        - Iter collector:
             - [`count`][monad_std.iter.iter.IterMeta.count]
             - [`fold`][monad_std.iter.iter.IterMeta.fold]
             - [`for_each`][monad_std.iter.iter.IterMeta.for_each]
-            - [`exist`][monad_std.iter.iter.IterMeta.exist], [`find`][monad_std.iter.iter.IterMeta.find],
-              [`find_map`][monad_std.iter.iter.IterMeta.find_map], [`position`][monad_std.iter.iter.IterMeta.position]
+            - [`find`][monad_std.iter.iter.IterMeta.find], [`find_map`][monad_std.iter.iter.IterMeta.find_map],
+              [`position`][monad_std.iter.iter.IterMeta.position]
             - [`product`][monad_std.iter.iter.IterMeta.product], [`sum`][monad_std.iter.iter.IterMeta.sum]
             - [`reduce`][monad_std.iter.iter.IterMeta.reduce]
 - [`monad_std.Result`](Api Document/result.md):
