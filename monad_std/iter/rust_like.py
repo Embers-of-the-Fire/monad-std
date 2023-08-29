@@ -8,7 +8,7 @@ T = TypeVar('T')
 U = TypeVar('U')
 
 
-class _IterZip(Generic[T, U], IterMeta[Tuple[T, U]]):
+class _IterZip(IterMeta[Tuple[T, U]], Generic[T, U]):
     __it1: IterMeta[T]
     __it2: IterMeta[U]
 
