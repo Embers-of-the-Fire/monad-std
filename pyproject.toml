@@ -60,3 +60,8 @@ priority = "primary"
 name = "PyPI"
 priority = "primary"
 
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::FutureWarning",
+]
+
