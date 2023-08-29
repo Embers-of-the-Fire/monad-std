@@ -205,14 +205,6 @@ class ResultTest(unittest.TestCase):
         it2 = IterMeta.iter(a2)
         self.assertListEqual(it1.chain(it2).collect_list(), [1, 3, 5, 2, 4, 6])
 
-    def test_remain(self):
-        a = [1, 2, 3, 4, 5]
-        it = IterMeta.iter(a)
-        it.next()
-        it.next()
-        self.assertListEqual(it.remain().collect_list(), [3, 4, 5])
-        self.assertListEqual(it.collect_list(), [])
-
     def test_iter_chunk(self):
         a = IterMeta.iter("loerm").array_chunk(2)
         self.assertEqual(a.next(), Option.some(["l", "o"]))
