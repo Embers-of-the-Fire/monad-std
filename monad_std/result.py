@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Callable, List
+from typing import Generic, TypeVar, Callable, List, Any, Iterator
 from abc import ABCMeta, abstractmethod
 
 from .error import UnwrapException
@@ -52,7 +52,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
             return Result.of_err(e)
 
     @staticmethod
-    def catch_from(func: Callable, *args: tuple, **kwargs: dict) -> "Result":
+    def catch_from(func: Callable, *args: Any, **kwargs: Any) -> "Result":
         """Catch a thrown exception from a function call.
 
         Args:
@@ -95,6 +95,41 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
     @abstractmethod
     def __eq__(self, other):
         ...
+
+    def __add__(self, other) -> "Result[Any, Any]":
+        """Alias `self.__value.__add__`.
+
+        Returns:
+            If both value are `Ok`, this will return `Ok(self + other)`. Otherwise, return the first `Err`.
+        """
+        if isinstance(other, Result):
+            if self.is_ok():
+                return other.map(lambda x: x + self.unwrap())
+            else:
+                return Result.of_err(self.unwrap_err())
+        else:
+            raise TypeError("expect a Result type")
+
+    def __mul__(self, other) -> "Result[Any, Any]":
+        """Alias `self.__value.__mul__`.
+
+        Returns:
+            If both value are `Ok`, this will return `Ok(self * other)`. Otherwise, return the first `Err`.
+        """
+        if isinstance(other, Result):
+            if self.is_ok():
+                return other.map(lambda x: x * self.unwrap())
+            else:
+                return Result.of_err(self.unwrap_err())
+        else:
+            raise TypeError("expect a Result type")
+
+    def __iter__(self) -> Iterator[KT]:
+        return iter(self.to_array())
+
+    def to_iter(self) -> Iterator[KT]:
+        """Alias `iter(self.to_array())`."""
+        return iter(self.to_array())
 
     def __and__(self, other):
         if isinstance(other, Result):

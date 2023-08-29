@@ -29,6 +29,7 @@ nav:
           - "Api Document/STD Types/pytuple.md"
           - "Api Document/STD Types/pydict.md"
           - "Api Document/STD Types/pyset.md"
+      - "Api Document/Option-Impl.md"
       - "Api Document/Result-Impl.md"
       - "Api Document/error.md"
   - Change Log: CHANGELOG.md
@@ -74,7 +75,7 @@ plugins:
           paths: ['..']
           options:
             show_root_heading: true
-            show_source: false
+            show_source: true
             heading_level: 1
   # - git-committers:
   #     repository: Embers-of-the-Fire/monad_std

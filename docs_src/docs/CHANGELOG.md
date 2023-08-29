@@ -1,5 +1,22 @@
 # Change Log
 
+## V0.2.0
+
+**ADD**
+
+- [`monad_std.Option`](Api Document/option.md):
+    - `__add__/+ __mul__/*`: Call on the contained value.
+    - `__iter__/to_iter`: Adapt from `to_array` method.
+- [`monad_std.Result`](Api Document/result.md):
+    - `__add__/+ __mul__/*`: Call on the contained value.
+    - `__iter__/to_iter`: Adapt from `to_array` method.
+
+**FIX**
+
+- [`monad_std.Option`](Api Document/option.md):
+  Split into [`OpSome`](Api Document/Option-Impl.md#monad_std.option.OpSome)
+  and [`OpNone`](Api Document/Option-Impl.md#monad_std.option.OpNone).
+
 ## V0.1.0
 
 **ADD**

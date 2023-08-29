@@ -1,5 +1,20 @@
 # Change Log
 
+## V0.2.0
+
+**ADD**
+
+- `monad_std.Option`:
+    - `__add__/+ __mul__/*`: Call on the contained value.
+    - `__iter__/to_iter`: Adapt from `to_array` method.
+- `monad_std.Result`:
+    - `__add__/+ __mul__/*`: Call on the contained value.
+    - `__iter__/to_iter`: Adapt from `to_array` method.
+
+**FIX**
+
+- `monad_std.Option`: Split into `OpSome` and `OpNone`.
+
 ## V0.1.0
 
 **ADD**
