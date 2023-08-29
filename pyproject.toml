@@ -22,14 +22,6 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Typing :: Typed"
 ]
-include = [
-    "monad_std/**/*",
-    "LICENSE-APACHE",
-    "LICENSE-MIT",
-    "poetry.lock",
-    "README.md",
-    "pyproject.toml"
-]
 
 [tool.poetry.dependencies]
 python = "^3.8"
