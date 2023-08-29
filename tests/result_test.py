@@ -10,29 +10,13 @@ class ResultTest(unittest.TestCase):
         self.assertFalse(monad_std.result.Result.of_err("err").is_ok())
         self.assertTrue(monad_std.result.Result.of_err("err").is_err())
 
-        self.assertTrue(
-            monad_std.result.Result.of_ok(2).is_ok_and(lambda x: x > 1)
-        )
-        self.assertFalse(
-            monad_std.result.Result.of_ok(0).is_ok_and(lambda x: x > 1)
-        )
-        self.assertFalse(
-            monad_std.result.Result.of_err("error").is_ok_and(lambda x: x > 1)
-        )
+        self.assertTrue(monad_std.result.Result.of_ok(2).is_ok_and(lambda x: x > 1))
+        self.assertFalse(monad_std.result.Result.of_ok(0).is_ok_and(lambda x: x > 1))
+        self.assertFalse(monad_std.result.Result.of_err("error").is_ok_and(lambda x: x > 1))
 
-        self.assertFalse(
-            monad_std.result.Result.of_ok(2).is_err_and(lambda x: len(x) == 3)
-        )
-        self.assertTrue(
-            monad_std.result.Result.of_err("err").is_err_and(
-                lambda x: len(x) == 3
-            )
-        )
-        self.assertFalse(
-            monad_std.result.Result.of_err("error").is_err_and(
-                lambda x: len(x) == 3
-            )
-        )
+        self.assertFalse(monad_std.result.Result.of_ok(2).is_err_and(lambda x: len(x) == 3))
+        self.assertTrue(monad_std.result.Result.of_err("err").is_err_and(lambda x: len(x) == 3))
+        self.assertFalse(monad_std.result.Result.of_err("error").is_err_and(lambda x: len(x) == 3))
 
     def test_catch(self):
         def maybe_error(v: int) -> int:
@@ -88,24 +72,18 @@ class ResultTest(unittest.TestCase):
             monad_std.result.Result.of_err("err"),
         )
 
-        self.assertEqual(
-            monad_std.result.Result.of_ok("foo").map_or(42, lambda s: len(s)), 3
-        )
+        self.assertEqual(monad_std.result.Result.of_ok("foo").map_or(42, lambda s: len(s)), 3)
         self.assertEqual(
             monad_std.result.Result.of_err("bar").map_or(42, lambda s: len(s)),
             42,
         )
 
         self.assertEqual(
-            monad_std.result.Result.of_ok("foo").map_or_else(
-                lambda e: len(e) + 3, lambda v: len(v)
-            ),
+            monad_std.result.Result.of_ok("foo").map_or_else(lambda e: len(e) + 3, lambda v: len(v)),
             3,
         )
         self.assertEqual(
-            monad_std.result.Result.of_err("bar").map_or_else(
-                lambda e: len(e) + 3, lambda v: len(v)
-            ),
+            monad_std.result.Result.of_err("bar").map_or_else(lambda e: len(e) + 3, lambda v: len(v)),
             6,
         )
 
@@ -133,9 +111,7 @@ class ResultTest(unittest.TestCase):
 
     def test_to_array(self):
         self.assertListEqual(monad_std.result.Result.of_ok(2).to_array(), [2])
-        self.assertListEqual(
-            monad_std.result.Result.of_err("err").to_array(), []
-        )
+        self.assertListEqual(monad_std.result.Result.of_err("err").to_array(), [])
 
     def test_unwrap(self):
         self.assertEqual(monad_std.result.Result.of_ok(2).expect("error"), 2)
@@ -144,9 +120,7 @@ class ResultTest(unittest.TestCase):
         except monad_std.UnwrapException as e:
             self.assertEqual(str(e), "ResultError: error: 'err'")
 
-        self.assertEqual(
-            monad_std.result.Result.of_err("err").expect_err("ok"), "err"
-        )
+        self.assertEqual(monad_std.result.Result.of_err("err").expect_err("ok"), "err")
         try:
             monad_std.result.Result.of_ok(2).expect_err("ok")
         except monad_std.UnwrapException as e:
@@ -161,9 +135,7 @@ class ResultTest(unittest.TestCase):
                 "ResultError: call `Result.unwrap` on an `Err` value: 'err'",
             )
 
-        self.assertEqual(
-            monad_std.result.Result.of_err("err").unwrap_err(), "err"
-        )
+        self.assertEqual(monad_std.result.Result.of_err("err").unwrap_err(), "err")
         try:
             monad_std.result.Result.of_ok(2).unwrap_err()
         except monad_std.UnwrapException as e:
@@ -175,84 +147,58 @@ class ResultTest(unittest.TestCase):
         self.assertEqual(monad_std.result.Result.of_ok(9).unwrap_or(2), 9)
         self.assertEqual(monad_std.result.Result.of_err("err").unwrap_or(2), 2)
 
+        self.assertEqual(monad_std.result.Result.of_ok(2).unwrap_or_else(lambda s: len(s)), 2)
         self.assertEqual(
-            monad_std.result.Result.of_ok(2).unwrap_or_else(lambda s: len(s)), 2
-        )
-        self.assertEqual(
-            monad_std.result.Result.of_err("foo").unwrap_or_else(
-                lambda s: len(s)
-            ),
+            monad_std.result.Result.of_err("foo").unwrap_or_else(lambda s: len(s)),
             3,
         )
 
     def test_bool(self):
         self.assertEqual(
-            monad_std.result.Result.of_ok(2).bool_and(
-                monad_std.result.Result.of_err("late error")
-            ),
+            monad_std.result.Result.of_ok(2).bool_and(monad_std.result.Result.of_err("late error")),
             monad_std.result.Result.of_err("late error"),
         )
         self.assertEqual(
-            monad_std.result.Result.of_err("early error").bool_and(
-                monad_std.result.Result.of_ok(2)
-            ),
+            monad_std.result.Result.of_err("early error").bool_and(monad_std.result.Result.of_ok(2)),
             monad_std.result.Result.of_err("early error"),
         )
         self.assertEqual(
-            monad_std.result.Result.of_err("early error").bool_and(
-                monad_std.result.Result.of_err("late error")
-            ),
+            monad_std.result.Result.of_err("early error").bool_and(monad_std.result.Result.of_err("late error")),
             monad_std.result.Result.of_err("early error"),
         )
         self.assertEqual(
-            monad_std.result.Result.of_ok(2).bool_and(
-                monad_std.result.Result.of_ok("another ok")
-            ),
+            monad_std.result.Result.of_ok(2).bool_and(monad_std.result.Result.of_ok("another ok")),
             monad_std.result.Result.of_ok("another ok"),
         )
 
         self.assertEqual(
-            monad_std.result.Result.of_ok(2).bool_or(
-                monad_std.result.Result.of_err("late error")
-            ),
+            monad_std.result.Result.of_ok(2).bool_or(monad_std.result.Result.of_err("late error")),
             monad_std.result.Result.of_ok(2),
         )
         self.assertEqual(
-            monad_std.result.Result.of_err("early error").bool_or(
-                monad_std.result.Result.of_ok(2)
-            ),
+            monad_std.result.Result.of_err("early error").bool_or(monad_std.result.Result.of_ok(2)),
             monad_std.result.Result.of_ok(2),
         )
         self.assertEqual(
-            monad_std.result.Result.of_err("early error").bool_or(
-                monad_std.result.Result.of_err("late error")
-            ),
+            monad_std.result.Result.of_err("early error").bool_or(monad_std.result.Result.of_err("late error")),
             monad_std.result.Result.of_err("late error"),
         )
         self.assertEqual(
-            monad_std.result.Result.of_ok(2).bool_or(
-                monad_std.result.Result.of_ok(100)
-            ),
+            monad_std.result.Result.of_ok(2).bool_or(monad_std.result.Result.of_ok(100)),
             monad_std.result.Result.of_ok(2),
         )
 
     def test_chain(self):
         self.assertEqual(
-            monad_std.result.Result.of_ok(2).and_then(
-                lambda n: monad_std.result.Result.of_ok(n * 2)
-            ),
+            monad_std.result.Result.of_ok(2).and_then(lambda n: monad_std.result.Result.of_ok(n * 2)),
             monad_std.result.Result.of_ok(4),
         )
         self.assertEqual(
-            monad_std.result.Result.of_ok(2).and_then(
-                lambda _: monad_std.result.Result.of_err("err")
-            ),
+            monad_std.result.Result.of_ok(2).and_then(lambda _: monad_std.result.Result.of_err("err")),
             monad_std.result.Result.of_err("err"),
         )
         self.assertEqual(
-            monad_std.result.Result.of_err("err").and_then(
-                lambda n: monad_std.result.Result.of_ok(n * 2)
-            ),
+            monad_std.result.Result.of_err("err").and_then(lambda n: monad_std.result.Result.of_ok(n * 2)),
             monad_std.result.Result.of_err("err"),
         )
 
@@ -290,31 +236,19 @@ class ResultTest(unittest.TestCase):
     def test_flatten(self):
         self.assertEqual(
             monad_std.result.Result.of_ok("hello"),
-            monad_std.result.Result.flatten(
-                monad_std.result.Result.of_ok(
-                    monad_std.result.Result.of_ok("hello")
-                )
-            ),
+            monad_std.result.Result.flatten(monad_std.result.Result.of_ok(monad_std.result.Result.of_ok("hello"))),
         )
         self.assertEqual(
             monad_std.result.Result.of_err(6),
-            monad_std.result.Result.flatten(
-                monad_std.result.Result.of_ok(monad_std.result.Result.of_err(6))
-            ),
+            monad_std.result.Result.flatten(monad_std.result.Result.of_ok(monad_std.result.Result.of_err(6))),
         )
         self.assertEqual(
             monad_std.result.Result.of_err(5),
             monad_std.result.Result.flatten(monad_std.result.Result.of_err(5)),
         )
-        x = monad_std.result.Result.of_ok(
-            monad_std.result.Result.of_ok(
-                monad_std.result.Result.of_ok("hello")
-            )
-        )
+        x = monad_std.result.Result.of_ok(monad_std.result.Result.of_ok(monad_std.result.Result.of_ok("hello")))
         self.assertEqual(
-            monad_std.result.Result.of_ok(
-                monad_std.result.Result.of_ok("hello")
-            ),
+            monad_std.result.Result.of_ok(monad_std.result.Result.of_ok("hello")),
             monad_std.result.Result.flatten(x),
         )
         self.assertEqual(
