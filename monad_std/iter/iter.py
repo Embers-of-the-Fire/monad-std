@@ -723,27 +723,6 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return self.next().map(lambda first: self.fold(first, func))
 
-    def remain(self) -> "IterMeta[T]":
-        """Yields out all remaining elements, consuming the complete iterator.
-
-        Examples:
-            ```python
-            a = [1, 2, 3, 4, 5]
-            it = IterMeta.iter(a)
-            it.next()
-            it.next()
-            assert it.remain().collect_list() == [3, 4, 5]
-            assert it.collect_list() == []
-            ```
-        """
-
-        def rem() -> Iterator[Option[T]]:
-            while (x := self.next()).is_some():
-                yield x.unwrap()
-            raise StopIteration
-
-        return IterMeta.iter(rem())
-
     def sum(self) -> Option[T]:
         """Sums the elements of an iterator.
 
