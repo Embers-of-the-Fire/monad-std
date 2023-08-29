@@ -786,7 +786,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             raise ImportError("You must install `funct` package to use this feature")
 
 
-class _IterIterable(IterMeta[T]):
+class _IterIterable(IterMeta[T], Generic[T]):
     __iter: Iterator[T]
 
     def __init__(self, v: Iterable[T]):
@@ -796,7 +796,7 @@ class _IterIterable(IterMeta[T]):
         return Result.catch(self.__iter.__next__).ok()
 
 
-class _IterIterator(IterMeta[T]):
+class _IterIterator(IterMeta[T], Generic[T]):
     __iter: Iterator[T]
 
     def __init__(self, v: Iterator[T]):
@@ -806,7 +806,7 @@ class _IterIterator(IterMeta[T]):
         return Result.catch(self.__iter.__next__).ok()
 
 
-class _Iter(Generic[T], Iterator[T]):
+class _Iter(Iterator[T], Generic[T]):
     __iter: IterMeta[T]
 
     def __init__(self, v: IterMeta[T]):
