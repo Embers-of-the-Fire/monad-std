@@ -11,6 +11,8 @@
             - [`once`][monad_std.iter.iter.IterMeta.once]
         - Iter pusher:
             - [`advance_by`][monad_std.iter.iter.IterMeta.advance_by]
+            - [`last`][monad_std.iter.iter.IterMeta.last]
+            - [`next_chunk`][monad_std.iter.iter.IterMeta.next_chunk]
             - [`nth`][monad_std.iter.iter.IterMeta.nth]
         - Iter sub tool: 
             - [`enumerate`][monad_std.iter.iter.IterMeta.enumerate]
@@ -22,6 +24,9 @@
               [`intersperse_with`][monad_std.iter.iter.IterMeta.intersperse_with]
             - [`map`][monad_std.iter.iter.IterMeta.map]
             - [`peekable`][monad_std.iter.iter.IterMeta.peekable]
+            - [`scan`][monad_std.iter.iter.IterMeta.scan]
+            - [`skip`][monad_std.iter.iter.IterMeta.skip]
+            - [`take`][monad_std.iter.iter.IterMeta.take], [`take_while`][monad_std.iter.iter.IterMeta.take_while]
             - [`zip`][monad_std.iter.iter.IterMeta.zip]
         - Iter checker:
             - [`all`][monad_std.iter.iter.IterMeta.all], [`any`][monad_std.iter.iter.IterMeta.any]

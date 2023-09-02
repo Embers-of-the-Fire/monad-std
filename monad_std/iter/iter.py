@@ -3,11 +3,12 @@ import collections.abc
 from abc import ABCMeta, abstractmethod
 
 from monad_std.option import Option
-from monad_std.result import Result
+from monad_std.result import Result, Err, Ok
 from monad_std.error import UnwrapException
 
 T = TypeVar("T")
 U = TypeVar("U")
+B = TypeVar("B")
 
 
 class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
@@ -77,10 +78,65 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         for i in range(n):
             if self.next().is_none():
-                return Result.of_err(n - i)
-        return Result.of_ok(None)
+                return Err(n - i)
+        return Ok(None)
 
-    def nth(self, n: int) -> Option[T]:
+    def last(self) -> Option[T]:
+        """Consumes the iterator, returning the last element.
+
+        This method will evaluate the iterator until it returns `None`. While doing so, it keeps track of the current
+        element. After `None` is returned, `last()` will then return the last element it saw.
+
+        Returns:
+            If the iterator is empty, returns `None`. Otherwise, returns the last element.
+
+        Examples:
+            ```python
+            a = [1, 2, 3]
+            assert IterMeta.iter(a).last() == Option.some(3)
+            a = []
+            assert IterMeta.iter(a).last() == Option.none()
+            ```
+        """
+        lst: Option[T] = Option.none()
+        while (x := self.next()).is_some():
+            lst = x
+        return lst
+
+    def next_chunk(self, n: int = 2) -> Result[List[T], List[T]]:
+        """Advances the iterator and returns an array containing the next `N` values.
+
+        If there are not enough elements to fill the array then `Err` is returned containing a list of the remaining
+        elements.
+
+        Returns:
+            Returns a list of `N` elements. If there aren't enough elements, returns `Err` with the remaining.
+
+        Examples:
+            ```python
+            a = [1, 2, 3]
+            it = IterMeta.iter(a)
+            assert it.next_chunk(2) == Ok([1, 2])
+            assert it.next_chunk(2) == Err([3])
+            ```
+            Split a string and get the first three items:
+            ```python
+            quote = "not all those who wander are lost"
+            first, second, third = IterMeta.iter(quote.split(' ')).next_chunk(3).unwrap()
+            assert first == 'not'
+            assert second == 'all'
+            assert third == 'those'
+            ```
+        """
+        ckl = []
+        for _ in range(n):
+            if (x := self.next()).is_some():
+                ckl.append(x.unwrap())
+            else:
+                return Err(ckl)
+        return Ok(ckl)
+
+    def nth(self, n: int = 1) -> Option[T]:
         """Returns the `n`th element of the iterator.
 
         Like most indexing operations, the count starts from zero, so `nth(0)` returns the first value, `nth(1)` the
@@ -533,6 +589,158 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return _IterPeekable(self)
 
+    def scan(self, init: U, func: Callable[[U, T], B]) -> "_IterScan[T, B, U]":
+        """An iterator adapter which, like fold, holds internal state, but unlike fold, produces a new iterator.
+
+        `scan()` takes two arguments: an initial value which seeds the internal state, and a closure with two
+        arguments, the first being the internal state and the second an iterator element. The closure can assign to
+        the internal state to share state between iterations.
+
+        On iteration, the closure will be applied to each element of the iterator and the return value from the
+        closure, an Option(`Option[B]`), is returned by the next method, while the other value(`U`) replace the
+        current state. Thus, the closure can return `Some(value)` to yield value, or `None` to end the iteration.
+
+        Args:
+            init: The initial state.
+            func: The function to scan the iterator.
+
+        Returns:
+            See [`_IterScan`][monad_std.iter.rust_like._IterScan].
+
+        Examples:
+            ```python
+            a = [1, 2, 3, 4]
+
+            def scanner(state: int, x: int):
+                st = state * x
+                if st > 6:
+                    res = Option.none()
+                else:
+                    res = Option.some(-st)
+                return st, res
+
+            it = IterMeta.iter(a).scan(1, scanner)
+
+            assert it.next() == Option.some(-1)
+            assert it.next() == Option.some(-2)
+            assert it.next() == Option.some(-6)
+            assert it.next() == Option.none()
+            ```
+        """
+        return _IterScan(self, init, func)
+
+    def skip(self, n: int) -> "_IterSkip[T]":
+        """Creates an iterator that skips the first `n` elements.
+
+        `skip(n)` skips elements until n elements are skipped or the end of the iterator is reached (whichever
+        happens first). After that, all the remaining elements are yielded. In particular, if the original iterator
+        is too short, then the returned iterator is empty.
+
+        Args:
+            n: The number of elements to skip.
+
+        Returns:
+            See [`_IterSkip`][monad_std.iter.rust_like._IterSkip].
+
+        Examples:
+            ```python
+            a = [1, 2, 3]
+            it = IterMeta.iter(a).skip(2)
+            assert it.next() == Option.some(3)
+            assert it.next() == Option.none()
+            assert it.next() == Option.none()
+            ```
+        """
+        return _IterSkip(self, n)
+
+    def take(self, n: int) -> "_IterTake[T]":
+        """Creates an iterator that yields the first `n` elements, or fewer if the underlying iterator ends sooner.
+
+        `take(n)` yields elements until `n` elements are yielded or the end of the iterator is reached (whichever
+        happens first). The returned iterator is a prefix of length `n` if the original iterator contains at least
+        `n` elements, otherwise it contains all the (fewer than `n`) elements of the original iterator.
+
+        Args:
+            n: The number of elements to take.
+
+        Returns:
+            See [`_IterTake`][monad_std.iter.rust_like._IterTake].
+
+        Examples:
+            Basic usage:
+            ```python
+            a = [1, 2, 3]
+            it = IterMeta.iter(a).take(2)
+            assert it.next() == Option.some(1)
+            assert it.next() == Option.some(2)
+            assert it.next() == Option.none()
+            ```
+            `take()` is often used with an infinite iterator, to make it finite:
+            ```python
+            def fib():
+                _f1 = 1
+                _f2 = 1
+                yield _f1
+                yield _f2
+                while True:
+                    _f3 = _f1 + _f2
+                    yield _f3
+                    _f1 = _f2
+                    _f2 = _f3
+
+            it = IterMeta.iter(fib()).take(4)
+            assert it.collect_list() == [1, 1, 2, 3]
+            it = IterMeta.iter(fib()).skip(5).take(5)
+            assert it.collect_list() == [8, 13, 21, 34, 55]
+            ```
+        """
+        return _IterTake(self, n)
+
+    def take_while(self, func: Callable[[T], bool]) -> "_IterTakeWhile[T]":
+        """Creates an iterator that yields elements based on a predicate.
+
+        `take_while()` takes a closure as an argument. It will call this closure on each element of the iterator, and yield elements while it returns `True`.
+
+        After `False` is returned, `take_while()`’s job is over, and the rest of the elements are ignored.
+
+        Args:
+            func: The predicate function.
+
+        Returns:
+            See [`_IterTakeWhile`][monad_std.iter.rust_like._IterTakeWhile].
+
+        Examples:
+            Basic usage:
+            ```python
+            a = [-1, 0, 1]
+            it = IterMeta.iter(a).take_while(lambda v: v < 0)
+            assert it.next() == Option.some(-1)
+            assert it.next() == Option.none()
+            ```
+            Stopping after an initial `False`:
+            ```python
+            a = [-1, 0, 1, -2]
+            it = IterMeta.iter(a).take_while(lambda v: v < 0)
+            assert it.next() == Option.some(-1)
+            assert it.next() == Option.none()
+            assert it.next() == Option.none()
+            assert it.next() == Option.none()
+            ```
+            Because `take_while()` needs to look at the value in order to see if it should be included or not,
+            consuming iterators will see that it is removed:
+            ```python
+            a = [1, 2, 3, 4]
+            it = IterMeta.iter(a)
+            result = it.take_while(lambda v: v != 3).collect_list()
+            assert result == [1, 2]
+            result = it.collect_list()
+            assert result == [4]
+            ```
+            The `3` is no longer there, because it was consumed in order to see if the iteration should stop,
+            but wasn’t placed back into the iterator.
+        """
+        return _IterTakeWhile(self, func)
+
     def zip(self, other: "IterMeta[U]") -> "_IterZip[T, U]":
         """‘Zips up’ two iterators into a single iterator of pairs.
 
@@ -956,5 +1164,9 @@ from .rust_like import (
     _IterPeekable,
     _IterIntersperse,
     _IterIntersperseWith,
+    _IterScan,
+    _IterSkip,
+    _IterTake,
+    _IterTakeWhile,
 )
 from .builtin_like import _IterMap, _IterFilter, _IterEnumerate

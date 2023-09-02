@@ -2,7 +2,7 @@ import unittest
 import funct
 
 from monad_std.iter import IterMeta
-from monad_std import Option, Result
+from monad_std import Option, Result, Ok, Err
 
 
 class ResultTest(unittest.TestCase):
@@ -27,9 +27,23 @@ class ResultTest(unittest.TestCase):
 
         a = [1, 2, 3]
         self.assertEqual(IterMeta.iter(a).nth(1), Option.some(2))
-
         a = [1, 2, 3]
         self.assertEqual(IterMeta.iter(a).nth(10), Option.none())
+
+        a = [1, 2, 3]
+        self.assertEqual(IterMeta.iter(a).last(), Option.some(3))
+        a = []
+        self.assertEqual(IterMeta.iter(a).last(), Option.none())
+
+        a = [1, 2, 3]
+        it = IterMeta.iter(a)
+        self.assertEqual(it.next_chunk(2), Ok([1, 2]))
+        self.assertEqual(it.next_chunk(2), Err([3]))
+        quote = "not all those who wander are lost"
+        first, second, third = IterMeta.iter(quote.split(' ')).next_chunk(3).unwrap()
+        self.assertEqual(first, 'not')
+        self.assertEqual(second, 'all')
+        self.assertEqual(third, 'those')
 
     def test_iter_enumerator(self):
         a = ["a", "b", "c"]
@@ -196,6 +210,73 @@ class ResultTest(unittest.TestCase):
 
         self.assertEqual(IterMeta.iter(range(1, 6)).product(), Option.some(120))
         self.assertEqual(IterMeta.iter(range(1, 1)).product(), Option.none())
+
+    def test_iter_scan(self):
+        a = [1, 2, 3, 4]
+
+        def scanner(state: int, x: int):
+            st = state * x
+            if st > 6:
+                res = Option.none()
+            else:
+                res = Option.some(-st)
+            return st, res
+
+        it = IterMeta.iter(a).scan(1, scanner)
+
+        self.assertEqual(it.next(), Option.some(-1))
+        self.assertEqual(it.next(), Option.some(-2))
+        self.assertEqual(it.next(), Option.some(-6))
+        self.assertEqual(it.next(), Option.none())
+
+    def test_iter_skip(self):
+        a = [1, 2, 3]
+        it = IterMeta.iter(a).skip(2)
+        self.assertEqual(it.next(), Option.some(3))
+        self.assertEqual(it.next(), Option.none())
+        self.assertEqual(it.next(), Option.none())
+
+    def test_iter_take(self):
+        a = [1, 2, 3]
+        it = IterMeta.iter(a).take(2)
+        self.assertEqual(it.next(), Option.some(1))
+        self.assertEqual(it.next(), Option.some(2))
+        self.assertEqual(it.next(), Option.none())
+
+        def fib():
+            _f1 = 1
+            _f2 = 1
+            yield _f1
+            yield _f2
+            while True:
+                _f3 = _f1 + _f2
+                yield _f3
+                _f1 = _f2
+                _f2 = _f3
+
+        it = IterMeta.iter(fib()).take(4)
+        self.assertListEqual(it.collect_list(), [1, 1, 2, 3])
+        it = IterMeta.iter(fib()).skip(5).take(5)
+        self.assertListEqual(it.collect_list(), [8, 13, 21, 34, 55])
+
+        a = [-1, 0, 1]
+        it = IterMeta.iter(a).take_while(lambda v: v < 0)
+        self.assertEqual(it.next(), Option.some(-1))
+        self.assertEqual(it.next(), Option.none())
+
+        a = [-1, 0, 1, -2]
+        it = IterMeta.iter(a).take_while(lambda v: v < 0)
+        self.assertEqual(it.next(), Option.some(-1))
+        self.assertEqual(it.next(), Option.none())
+        self.assertEqual(it.next(), Option.none())
+        self.assertEqual(it.next(), Option.none())
+
+        a = [1, 2, 3, 4]
+        it = IterMeta.iter(a)
+        result = it.take_while(lambda v: v != 3).collect_list()
+        self.assertListEqual(result, [1, 2])
+        result = it.collect_list()
+        self.assertListEqual(result, [4])
 
     def test_iter_zip(self):
         a1 = [1, 3, 5]

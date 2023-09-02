@@ -60,6 +60,22 @@
     options:
         heading_level: 2
 
+::: monad_std.iter.rust_like._IterScan
+    options:
+        heading_level: 2
+
+::: monad_std.iter.rust_like._IterSkip
+    options:
+        heading_level: 2
+
+::: monad_std.iter.rust_like._IterTake
+    options:
+        heading_level: 2
+
+::: monad_std.iter.rust_like._IterTakeWhile
+    options:
+        heading_level: 2
+
 ::: monad_std.iter.rust_like._IterZip
     options:
         heading_level: 2

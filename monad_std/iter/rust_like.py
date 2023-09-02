@@ -6,6 +6,7 @@ from .. import Option
 
 T = TypeVar('T')
 U = TypeVar('U')
+B = TypeVar('B')
 
 
 class _IterZip(IterMeta[Tuple[T, U]], Generic[T, U]):
@@ -236,3 +237,84 @@ class _IterIntersperseWith(IterMeta[T], Generic[T]):
         else:
             self.__need_sep = True
             return self.__it.next()
+
+
+class _IterScan(IterMeta[B], Generic[T, B, U]):
+    __it: IterMeta[T]
+    __func: Callable[[U, T], Tuple[U, Option[B]]]
+    __state: U
+
+    def __init__(self, it: IterMeta[T], init: U, func: Callable[[U, T], Tuple[U, Option[B]]]):
+        self.__it = it
+        self.__func = func
+        self.__state = init
+
+    def __update_state(self, x: T) -> Option[B]:
+        st, opt = self.__func(self.__state, x)
+        self.__state = st
+        return opt
+
+    def next(self) -> Option[B]:
+        return self.__it.next().and_then(lambda x: self.__update_state(x))
+
+
+class _IterSkip(IterMeta[T], Generic[T]):
+    __skipped: bool
+    __skip_n: int
+    __it: IterMeta[T]
+
+    def __init__(self, it: IterMeta[T], n: int):
+        self.__skipped = False
+        self.__skip_n = n
+        self.__it = it
+
+    def next(self) -> Option[T]:
+        if self.__skipped:
+            return self.__it.next()
+        else:
+            for _ in range(self.__skip_n):
+                if self.__it.next().is_none():
+                    self.__skipped = True
+                    return Option.none()
+            self.__skipped = True
+            return self.__it.next()
+
+
+class _IterTake(IterMeta[T], Generic[T]):
+    __remain: int
+    __it: IterMeta[T]
+
+    def __init__(self, it: IterMeta[T], take: int):
+        self.__remain = take
+        self.__it = it
+
+    def next(self) -> Option[T]:
+        if self.__remain != 0:
+            self.__remain -= 1
+            return self.__it.next()
+        else:
+            return Option.none()
+
+
+class _IterTakeWhile(IterMeta[T], Generic[T]):
+    __func: Callable[[T], bool]
+    __flag: bool
+    __it: IterMeta[T]
+
+    def __init__(self, it: IterMeta[T], func: Callable[[T], bool]):
+        self.__func = func
+        self.__it = it
+        self.__flag = False
+
+    def __while_check(self, value: T) -> Option[T]:
+        if self.__func(value):
+            return Option.some(value)
+        else:
+            self.__flag = True
+            return Option.none()
+
+    def next(self) -> Option[T]:
+        if self.__flag:
+            return Option.none()
+        else:
+            return self.__it.next().and_then(lambda x: self.__while_check(x))

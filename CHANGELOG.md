@@ -11,6 +11,8 @@
             - `once`
         - Iter pusher:
             - `advance_by`
+            - `last`
+            - `next_chunk`
             - `nth`
         - Iter sub tool: 
             - `enumerate`
@@ -21,10 +23,13 @@
             - `intersperse`, `intersperse_with`
             - `map`
             - `peekable`
+            - `scan`
+            - `skip`
+            - `take`, `take_while`
             - `zip`
         - Iter checker:
             - `all`, `any`
-            - `exist` 
+            - `exist`
         - Iter collector:
             - `count`
             - `fold`
