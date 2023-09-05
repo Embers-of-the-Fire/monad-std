@@ -33,7 +33,7 @@ Then, import the library:
 
 ```python
 >>> from monad_std import *
->>> Result.of_ok(2)
+>>> Ok(2)
 Result::Ok(2)
 ```
 
