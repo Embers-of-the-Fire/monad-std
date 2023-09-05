@@ -24,6 +24,7 @@ nav:
   - Api:
       - "Api Document/option.md"
       - "Api Document/result.md"
+      - "Api Document/Iterator Tools.md"
       - STD Types:
           - "Api Document/STD Types/pylist.md"
           - "Api Document/STD Types/pytuple.md"
@@ -31,6 +32,7 @@ nav:
           - "Api Document/STD Types/pyset.md"
       - "Api Document/Option-Impl.md"
       - "Api Document/Result-Impl.md"
+      - "Api Document/Iterator Tools Impl.md"
       - "Api Document/error.md"
   - Change Log: CHANGELOG.md
 theme:
@@ -42,11 +44,11 @@ theme:
     - content.code.annotate
     - content.code.copy
     - content.code.select
+    - navigation.tabs
     - navigation.footer
     - navigation.indexes
     - navigation.sections
     - navigation.path
-    - navigation.tabs
     - navigation.top
     - navigation.tracking
     - search.highlight

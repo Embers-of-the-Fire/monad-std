@@ -4,6 +4,52 @@
 
 **ADD**
 
+- `monad_std.iter.IterMeta`: Iterator tools.
+    - Api List:
+        - Iter builder:
+            - `iter`
+            - `once`
+        - Iter pusher:
+            - `advance_by`
+            - `last`
+            - `next_chunk`
+            - `nth`
+        - Iter sub tool: 
+            - `enumerate`
+            - `filter`, `filter_map`
+            - `flat_map`, `flatten`
+            - `fuse`
+            - `inspect`
+            - `intersperse`, `intersperse_with`
+            - `map`
+            - `peekable`
+            - `scan`
+            - `skip`
+            - `take`, `take_while`
+            - `zip`
+        - Iter checker:
+            - `all`, `any`
+            - `exist`
+        - Iter collector:
+            - `count`
+            - `fold`
+            - `for_each`
+            - `find`, `find_map`, `position`
+            - `product`, `sum`
+            - `reduce`
+- `monad_std.Result`:
+    - Exposed `Ok` and `Err` constructor.
+
+**Breaking Change**
+
+- `monad_std.Option`:
+    - `of_some` -> `some`
+    - `of_none` -> `none`
+
+## V0.1.1
+
+**ADD**
+
 - `monad_std.Option`:
     - `__add__/+ __mul__/*`: Call on the contained value.
     - `__iter__/to_iter`: Adapt from `to_array` method.

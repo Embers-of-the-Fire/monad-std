@@ -4,6 +4,54 @@
 
 **ADD**
 
+- [`monad_std.iter.IterMeta`][monad_std.iter.iter.IterMeta]: Iterator tools.
+    - Api List:
+        - Iter builder:
+            - [`iter`][monad_std.iter.iter.IterMeta.iter]
+            - [`once`][monad_std.iter.iter.IterMeta.once]
+        - Iter pusher:
+            - [`advance_by`][monad_std.iter.iter.IterMeta.advance_by]
+            - [`last`][monad_std.iter.iter.IterMeta.last]
+            - [`next_chunk`][monad_std.iter.iter.IterMeta.next_chunk]
+            - [`nth`][monad_std.iter.iter.IterMeta.nth]
+        - Iter sub tool: 
+            - [`enumerate`][monad_std.iter.iter.IterMeta.enumerate]
+            - [`filter`][monad_std.iter.iter.IterMeta.filter], [`filter_map`][monad_std.iter.iter.IterMeta.filter_map]
+            - [`flat_map`][monad_std.iter.iter.IterMeta.flat_map], [`flatten`][monad_std.iter.iter.IterMeta.flatten]
+            - [`fuse`][monad_std.iter.iter.IterMeta.fuse]
+            - [`inspect`][monad_std.iter.iter.IterMeta.inspect]
+            - [`intersperse`][monad_std.iter.iter.IterMeta.intersperse],
+              [`intersperse_with`][monad_std.iter.iter.IterMeta.intersperse_with]
+            - [`map`][monad_std.iter.iter.IterMeta.map]
+            - [`peekable`][monad_std.iter.iter.IterMeta.peekable]
+            - [`scan`][monad_std.iter.iter.IterMeta.scan]
+            - [`skip`][monad_std.iter.iter.IterMeta.skip]
+            - [`take`][monad_std.iter.iter.IterMeta.take], [`take_while`][monad_std.iter.iter.IterMeta.take_while]
+            - [`zip`][monad_std.iter.iter.IterMeta.zip]
+        - Iter checker:
+            - [`all`][monad_std.iter.iter.IterMeta.all], [`any`][monad_std.iter.iter.IterMeta.any]
+            - [`exist`][monad_std.iter.iter.IterMeta.exist]
+        - Iter collector:
+            - [`count`][monad_std.iter.iter.IterMeta.count]
+            - [`fold`][monad_std.iter.iter.IterMeta.fold]
+            - [`for_each`][monad_std.iter.iter.IterMeta.for_each]
+            - [`find`][monad_std.iter.iter.IterMeta.find], [`find_map`][monad_std.iter.iter.IterMeta.find_map],
+              [`position`][monad_std.iter.iter.IterMeta.position]
+            - [`product`][monad_std.iter.iter.IterMeta.product], [`sum`][monad_std.iter.iter.IterMeta.sum]
+            - [`reduce`][monad_std.iter.iter.IterMeta.reduce]
+- [`monad_std.Result`](Api Document/result.md):
+    - Exposed [`Ok`][monad_std.result.Ok] and [`Err`][monad_std.result.Err] constructor.
+
+**Breaking Change**
+
+- [`monad_std.Option`](Api Document/option.md):
+    - `of_some` -> [`some`][monad_std.result.Option.some]
+    - `of_none` -> [`none`][monad_std.result.Option.none]
+
+## V0.1.1
+
+**ADD**
+
 - [`monad_std.Option`](Api Document/option.md):
     - `__add__/+ __mul__/*`: Call on the contained value.
     - `__iter__/to_iter`: Adapt from `to_array` method.

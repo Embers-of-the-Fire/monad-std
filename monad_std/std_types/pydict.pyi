@@ -17,8 +17,8 @@ class MDict(Generic[K, V], Dict[K, V]):
         Examples:
             ```python
             x = MDict({'a': 1, 'b': 2, 'c': 3})
-            assert x.get('b') == Option.of_some(2)
-            assert x.get('d') == Option.of_none()
+            assert x.get('b') == Option.some(2)
+            assert x.get('d') == Option.none()
             ```
         """
     def popitem(self) -> Option[MTuple[K, V]]:
@@ -32,8 +32,8 @@ class MDict(Generic[K, V], Dict[K, V]):
         Examples:
             ```python
             x = MDict({'a': 1})
-            assert x.popitem() == Option.of_some(('a', 1))
-            assert x.popitem() == Option.of_none()
+            assert x.popitem() == Option.some(('a', 1))
+            assert x.popitem() == Option.none()
             ```
         """
     def pop(self, key: K) -> Option[V]:
@@ -48,8 +48,8 @@ class MDict(Generic[K, V], Dict[K, V]):
         Examples:
             ```python
             x = MDict({'a': 1})
-            assert x.pop('a') == Option.of_some(1)
-            assert x.pop('b') == Option.of_none()
-            assert x.pop('a') == Option.of_none()
+            assert x.pop('a') == Option.some(1)
+            assert x.pop('b') == Option.none()
+            assert x.pop('a') == Option.none()
             ```
         """

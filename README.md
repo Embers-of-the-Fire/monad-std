@@ -33,7 +33,7 @@ Then, import the library:
 
 ```python-repl
 >>> from monad_std import *
->>> Result.of_ok(2)
+>>> Ok(2)
 Result::Ok(2)
 ```
 
@@ -49,7 +49,10 @@ Until now, this library provides the following features:
 
 - `monad_std.Option`: An optional value.
 - `monad_std.Result`: A structure containing a success value or an error.
+    - `monad_std.Ok`: A successful value.
+    - `monad_std.Err`: An error value.
 - `monad_std.std_types`: Wrapped api around std types.
+- `monad_std.iter`: Iterator interface with functors and monads support.
 
 And the following are being developed:
 
