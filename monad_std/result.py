@@ -563,8 +563,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         """
         ...
 
-    @staticmethod
-    def transpose(res: "Result[Option[T], E]") -> "Option[Result[T, E]]":
+    def transpose(self: "Result[Option[T], E]") -> "Option[Result[T, E]]":
         """Transposes a `Result` of an `Option` into an `Option` of a `Result`.
 
         `Ok(None)` will be mapped to `None`.
@@ -574,35 +573,34 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
             ```python
             x = Result.of_ok(Option.some(5))
             y = Option.some(Result.of_ok(5))
-            assert Result.transpose(x) == y
+            assert x.transpose() == y
             ```
         """
-        if res.is_err():
-            return Option.some(Result.of_err(res.unwrap_err()))
+        if self.is_err():
+            return Option.some(Result.of_err(self.unwrap_err()))
         else:
-            return res.unwrap().map(Result.of_ok)
+            return self.unwrap().map(Result.of_ok)
 
-    @staticmethod
-    def flatten(res: "Result[Result[T, E], E]") -> "Result[T, E]":
+    def flatten(self: "Result[Result[T, E], E]") -> "Result[T, E]":
         """Converts from `Result<Result<T, E>, E>` to `Result<T, E>`.
 
         Examples:
             ```python
-            assert Result.of_ok('hello') == Result.flatten(Result.of_ok(Result.of_ok('hello')))
-            assert Result.of_err(6) == Result.flatten(Result.of_ok(Result.of_err(6)))
-            assert Result.of_err(5) == Result.flatten(Result.of_err(5))
+            assert Result.of_ok('hello') == Result.of_ok(Result.of_ok('hello')).flatten()
+            assert Result.of_err(6) == Result.of_ok(Result.of_err(6)).flatten()
+            assert Result.of_err(5) == Result.of_err(5).flatten()
             ```
             Flattening only removes one level of nesting at a time:
             ```python
             x = Result.of_ok(Result.of_ok(Result.of_ok('hello')))
-            assert Result.of_ok(Result.of_ok('hello')) == Result.flatten(x)
-            assert Result.of_ok('hello') == Result.flatten(Result.flatten(x))
+            assert Result.of_ok(Result.of_ok('hello')) == x.flatten()
+            assert Result.of_ok('hello') == x.flatten().flatten()
             ```
         """
-        if res.is_err():
-            return Result.of_err(res.unwrap_err())
+        if self.is_err():
+            return Result.of_err(self.unwrap_err())
         else:
-            return res.unwrap()
+            return self.unwrap()
 
 
 class Ok(Generic[KT, KE], Result[KT, KE]):

@@ -39,6 +39,8 @@ Result::Ok(2)
 
 Now you could use the utilities this library provides. For more information and examples, see the documentation above.
 
+For a better guide, see [the documentation's quick start guide](https://embers-of-the-fire.github.io/monad-std/quick%20start/).
+
 ## Contribution
 
 Any issue and pull request is welcomed, and you can directly make a pr for new features or open an issue for bug reports.

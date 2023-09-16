@@ -21,24 +21,6 @@
 
 </div>
 
-## Quick Start
-
-To install this library, simply use your favorite package manager, here we use pure pip.
-
-```bash
-pip install monad-std
-```
-
-Then, import the library:
-
-```python
->>> from monad_std import *
->>> Result.of_ok(2)
-Result::Ok(2)
-```
-
-Now you could use the utilities this library provides. For more information and examples, see the documentation above.
-
 ## Contribution
 
 Any issue and pull request is welcomed, and you can directly make a pr for new features or open an issue for bug reports.
@@ -49,6 +31,10 @@ Until now, this library provides the following features:
 
 - `monad_std.Option`: An optional value.
 - `monad_std.Result`: A structure containing a success value or an error.
+    - `monad_std.Ok`: A successful value.
+    - `monad_std.Err`: An error value.
+- `monad_std.std_types`: Wrapped api around std types.
+- `monad_std.iter`: Iterator interface with functors and monads support.
 
 And the following are being developed:
 
