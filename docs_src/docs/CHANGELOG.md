@@ -2,6 +2,11 @@
 
 ## V0.3.0
 
+**Breaking Change**
+
+- [`monad_std.Option`][monad_std.option.Option], [`monad_std.Result`][monad_std.result.Result]:
+    - Move `transpose`, `flatten`, `unzip` from `staticmethod` to object method.
+
 **DOCUMENTATION**
 
 - Move **STD Types** to one page.
