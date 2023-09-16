@@ -235,14 +235,14 @@ class OptionTest(unittest.TestCase):
 
     def test_unzip(self):
         self.assertTupleEqual(
-            monad_std.option.Option.unzip(monad_std.option.Option.some((1, "hi"))),
+            monad_std.option.Option.some((1, "hi")).unzip(),
             (
                 monad_std.option.Option.some(1),
                 monad_std.option.Option.some("hi"),
             ),
         )
         self.assertTupleEqual(
-            monad_std.option.Option.unzip(monad_std.option.Option.none()),
+            monad_std.option.Option.none().unzip(),
             (
                 monad_std.option.Option.none(),
                 monad_std.option.Option.none(),
@@ -252,33 +252,31 @@ class OptionTest(unittest.TestCase):
     def test_transpose(self):
         x = monad_std.result.Result.of_ok(monad_std.option.Option.some(5))
         y = monad_std.option.Option.some(monad_std.result.Result.of_ok(5))
-        self.assertEqual(x, monad_std.option.Option.transpose(y))
+        self.assertEqual(x, y.transpose())
 
     def test_flatten(self):
         self.assertEqual(
-            monad_std.option.Option.flatten(monad_std.option.Option.some(monad_std.option.Option.some(6))),
+            monad_std.option.Option.some(monad_std.option.Option.some(6)).flatten(),
             monad_std.option.Option.some(6),
         )
         self.assertEqual(
-            monad_std.option.Option.flatten(monad_std.option.Option.some(monad_std.option.Option.none())),
+            monad_std.option.Option.some(monad_std.option.Option.none()).flatten(),
             monad_std.option.Option.none(),
         )
         self.assertEqual(
-            monad_std.option.Option.flatten(monad_std.option.Option.none()),
+            monad_std.option.Option.none().flatten(),
             monad_std.option.Option.none(),
         )
         self.assertEqual(
-            monad_std.option.Option.flatten(
-                monad_std.option.Option.some(monad_std.option.Option.some(monad_std.option.Option.some(6)))
-            ),
+            monad_std.option.Option.some(
+                monad_std.option.Option.some(monad_std.option.Option.some(6))
+            ).flatten(),
             monad_std.option.Option.some(monad_std.option.Option.some(6)),
         )
         self.assertEqual(
-            monad_std.option.Option.flatten(
-                monad_std.option.Option.flatten(
-                    monad_std.option.Option.some(monad_std.option.Option.some(monad_std.option.Option.some(6)))
-                )
-            ),
+            monad_std.option.Option.some(monad_std.option.Option.some(monad_std.option.Option.some(6)))
+            .flatten()
+            .flatten(),
             monad_std.option.Option.some(6),
         )
 

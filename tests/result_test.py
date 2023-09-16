@@ -231,29 +231,29 @@ class ResultTest(unittest.TestCase):
     def test_transpose(self):
         x = monad_std.result.Result.of_ok(monad_std.option.Option.some(5))
         y = monad_std.option.Option.some(monad_std.result.Result.of_ok(5))
-        self.assertEqual(monad_std.result.Result.transpose(x), y)
+        self.assertEqual(x.transpose(), y)
 
     def test_flatten(self):
         self.assertEqual(
             monad_std.result.Result.of_ok("hello"),
-            monad_std.result.Result.flatten(monad_std.result.Result.of_ok(monad_std.result.Result.of_ok("hello"))),
+            monad_std.result.Result.of_ok(monad_std.result.Result.of_ok("hello")).flatten(),
         )
         self.assertEqual(
             monad_std.result.Result.of_err(6),
-            monad_std.result.Result.flatten(monad_std.result.Result.of_ok(monad_std.result.Result.of_err(6))),
+            monad_std.result.Result.of_ok(monad_std.result.Result.of_err(6)).flatten(),
         )
         self.assertEqual(
             monad_std.result.Result.of_err(5),
-            monad_std.result.Result.flatten(monad_std.result.Result.of_err(5)),
+            monad_std.result.Result.of_err(5).flatten(),
         )
         x = monad_std.result.Result.of_ok(monad_std.result.Result.of_ok(monad_std.result.Result.of_ok("hello")))
         self.assertEqual(
             monad_std.result.Result.of_ok(monad_std.result.Result.of_ok("hello")),
-            monad_std.result.Result.flatten(x),
+            x.flatten(),
         )
         self.assertEqual(
             monad_std.result.Result.of_ok("hello"),
-            monad_std.result.Result.flatten(monad_std.result.Result.flatten(x)),
+            x.flatten().flatten(),
         )
 
 

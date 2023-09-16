@@ -582,8 +582,7 @@ class Option(Generic[KT], metaclass=ABCMeta):
         """Clone an `Option`."""
         return value.clone()
 
-    @staticmethod
-    def unzip(opt: "Option[Tuple[T, U]]") -> Tuple["Option[T]", "Option[U]"]:
+    def unzip(self: "Option[Tuple[T, U]]") -> Tuple["Option[T]", "Option[U]"]:
         """ Unzips an option containing a tuple of two options.
 
         If self is `Some((a, b))` this method returns `(Some(a), Some(b))`. Otherwise, `(None, None)` is returned.
@@ -593,18 +592,17 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.unzip(Option.some((1, 'hi'))) == (Option.some(1), Option.some('hi'))
-            assert Option.unzip(Option.none()) == (Option.none(), Option.none())
+            assert Option.some((1, 'hi')).unzip() == (Option.some(1), Option.some('hi'))
+            assert Option.none().unzip() == (Option.none(), Option.none())
             ```
         """
-        if opt.is_some():
-            uwp = opt.unwrap()
+        if self.is_some():
+            uwp = self.unwrap()
             return Option.some(uwp[0]), Option.some(uwp[1])
         else:
             return OpNone(), OpNone()
 
-    @staticmethod
-    def transpose(opt: "Option[Result[T, E]]") -> "Result[Option[T], E]":
+    def transpose(self: "Option[Result[T, E]]") -> "Result[Option[T], E]":
         """Transposes an `Option` of a [`Result`][monad_std.result.Result] into a `Result` of an `Option`.
 
         `None` will be mapped to `Ok(None)`.
@@ -617,18 +615,17 @@ class Option(Generic[KT], metaclass=ABCMeta):
             ```python
             x = Result.of_ok(Option.some(5))
             y = Option.some(Result.of_ok(5))
-            assert x == Option.transpose(y)
+            assert x == y.transpose()
             ```
         """
-        if opt.is_none():
+        if self.is_none():
             return Result.of_ok(OpNone())
-        elif opt.unwrap().is_ok():
-            return Result.of_ok(Option.some(opt.unwrap().unwrap()))
+        elif self.unwrap().is_ok():
+            return Result.of_ok(Option.some(self.unwrap().unwrap()))
         else:
-            return Result.of_err(opt.unwrap().unwrap_err())
+            return Result.of_err(self.unwrap().unwrap_err())
 
-    @staticmethod
-    def flatten(opt: "Option[Option[T]]") -> "Option[T]":
+    def flatten(self: "Option[Option[KT]]") -> "Option[KT]":
         """Converts from `Option<Option<KT>>` to `Option<KT>`.
 
         Args:
@@ -636,20 +633,20 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         Examples:
             ```python
-            assert Option.flatten(Option.some(Option.some(6))) == Option.some(6)
-            assert Option.flatten(Option.some(Option.none())) == Option.none()
-            assert Option.flatten(Option.none()) == Option.none()
+            assert Option.some(Option.some(6)).flatten() == Option.some(6)
+            assert Option.some(Option.none()).flatten() == Option.none()
+            assert Option.none().flatten() == Option.none()
             ```
             Flattening only removes one level of nesting at a time:
             ```python
-            assert (Option.flatten(Option.some(Option.some(Option.some(6))))
+            assert (Option.some(Option.some(Option.some(6))).flatten()
                 == Option.some(Option.some(6)))
-            assert (Option.flatten(Option.flatten(Option.some(Option.some(Option.some(6)))))
+            assert (Option.some(Option.some(Option.some(6))).flatten().flatten()
                 == Option.some(6))
             ```
         """
-        if opt.is_some() and opt.unwrap().is_some():
-            return Option.some(opt.unwrap().unwrap())
+        if self.is_some() and self.unwrap().is_some():
+            return Option.some(self.unwrap().unwrap())
         else:
             return OpNone()
 

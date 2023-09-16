@@ -13,7 +13,7 @@ B = TypeVar("B")
 
 class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
     @staticmethod
-    def iter(v: Union[Iterable[T], Iterator[T]]) -> "IterMeta[T]":
+    def iter(v: "Union[Iterable[T@IterMeta], Iterator[T@IterMeta]]") -> "IterMeta[T]":
         """Convert an iterator or iterable object into `IterMeta`.
 
         For implementations, see [`_IterIterable`][monad_std.iter.iter._IterIterable] and
@@ -27,7 +27,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             raise TypeError("expect an iterator or iterable object")
 
     @staticmethod
-    def once(v: T) -> "IterMeta[T]":
+    def once(v: "T@IterMeta") -> "IterMeta[T]":
         """Convert a single element into `IterMeta`.
 
         This method actually constructs a list and turns it into a [`_IterIterable`][monad_std.iter.iter._IterIterable].
