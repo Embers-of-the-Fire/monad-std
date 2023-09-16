@@ -7,6 +7,11 @@
 - `monad_std.Option`, `monad_std.Result`:
     - Move `transpose`, `flatten`, `unzip` from `staticmethod` to object method.
 
+**Impl Change**
+
+- `monad_std.Option`:
+    - `__and__`, `__or__`, `__xor__` are not abstract methods now, and is implemented by `Option` itself.
+
 **DOCUMENTATION**
 
 - Move **STD Types** to one page.
