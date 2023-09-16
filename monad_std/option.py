@@ -70,20 +70,26 @@ class Option(Generic[KT], metaclass=ABCMeta):
         """Alias `iter(self.to_array())`."""
         return iter(self.to_array())
 
-    @abstractmethod
     def __and__(self, other):
         """Alias [`bool_and`][monad_std.option.Option.bool_and]."""
-        ...
+        if isinstance(other, Option):
+            return self.bool_and(other)
+        else:
+            raise TypeError("expect another Option")
 
-    @abstractmethod
     def __or__(self, other):
         """Alias [`bool_or`][monad_std.option.Option.bool_or]."""
-        ...
+        if isinstance(other, Option):
+            return self.bool_or(other)
+        else:
+            raise TypeError("expect another Option")
 
-    @abstractmethod
     def __xor__(self, other):
         """Alias [`bool_xor`][monad_std.option.Option.bool_xor]."""
-        ...
+        if isinstance(other, Option):
+            return self.bool_xor(other)
+        else:
+            raise TypeError("expect another Option")
 
     @staticmethod
     def from_nullable(value: Optional[KT]) -> "Option[KT]":
@@ -666,27 +672,6 @@ class OpSome(Generic[KT], Option[KT]):
     def __hash__(self):
         return hash(self.__value)
 
-    def __and__(self, other):
-        if isinstance(other, Option):
-            return Option.clone(other)
-        else:
-            raise TypeError("expect another Option")
-
-    def __or__(self, other):
-        if isinstance(other, Option):
-            return self.clone()
-        else:
-            raise TypeError("expect another Option")
-
-    def __xor__(self, other):
-        if isinstance(other, Option):
-            if other.is_some():
-                return OpNone()
-            else:
-                return self.clone()
-        else:
-            raise TypeError("expect another Option")
-
     def clone(self):
         return OpSome(self.__value)
 
@@ -791,24 +776,6 @@ class OpNone(Generic[KT], Option[KT]):
 
     def __hash__(self):
         return hash(None)
-
-    def __and__(self, other):
-        if isinstance(other, Option):
-            return self
-        else:
-            raise TypeError("expect another Option")
-
-    def __or__(self, other):
-        if isinstance(other, Option):
-            return other.clone()
-        else:
-            raise TypeError("expect another Option")
-
-    def __xor__(self, other):
-        if isinstance(other, Option):
-            return other.clone()
-        else:
-            raise TypeError("expect another Option")
 
     def clone(self):
         return self
