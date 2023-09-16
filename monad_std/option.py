@@ -587,9 +587,6 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
         If self is `Some((a, b))` this method returns `(Some(a), Some(b))`. Otherwise, `(None, None)` is returned.
 
-        Args:
-            opt: Option to unzip.
-
         Examples:
             ```python
             assert Option.some((1, 'hi')).unzip() == (Option.some(1), Option.some('hi'))
@@ -608,9 +605,6 @@ class Option(Generic[KT], metaclass=ABCMeta):
         `None` will be mapped to `Ok(None)`.
         `Some(Ok(_))` and `Some(Err(_))` will be mapped to `Ok(Some(_))` and `Err(_)`.
 
-        Args:
-            opt: Option to be transposed
-
         Examples:
             ```python
             x = Result.of_ok(Option.some(5))
@@ -627,9 +621,6 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
     def flatten(self: "Option[Option[KT]]") -> "Option[KT]":
         """Converts from `Option<Option<KT>>` to `Option<KT>`.
-
-        Args:
-            opt: Option to flatten.
 
         Examples:
             ```python
