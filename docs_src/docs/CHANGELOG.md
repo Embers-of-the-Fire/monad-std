@@ -1,5 +1,13 @@
 # Change Log
 
+## V0.3.0
+
+**DOCUMENTATION**
+
+- Move **STD Types** to one page.
+- Add overview for API documentation.
+- Add a quick start guide.
+
 ## V0.2.0
 
 **ADD**
@@ -70,15 +78,15 @@
 **ADD**
 
 - `monad_std.std_types`: Wrapped api around std types.
-    - [`MList`](Api Document/STD Types/pylist.md):
+    - [`MList`][monad_std.std_types.MList]:
         - Rewrite `list.index`, `list.pop`: Now they'll return an `Option[T]`.
         - Add `MList.get`: Get an `Option` of the indexed value.
-    - [`MTuple`](Api Document/STD Types/pytuple.md):
+    - [`MTuple`][monad_std.std_types.MTuple]:
         - Rewrite `tuple.index`: Now it'll return an `Option`.
         - Add `MTuple.get`: Get an `Option` of the indexed value.
-    - [`MSet`](Api Document/STD Types/pyset.md):
+    - [`MSet`][monad_std.std_types.MSet]:
         - Rewrite `set.pop`: Now it'll return an `Option`.
-    - [`MDict`](Api Document/STD Types/pydict.md):
+    - [`MDict`][monad_std.std_types.MDict]:
         - Rewrite `dict.popitem`, `dict.pop`: Now they'll return an `Option`.
         - Add `MDict.get`: Get an `Option` of the keyed value.
 - [`monad_std.Option`](Api Document/option.md):
