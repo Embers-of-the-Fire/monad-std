@@ -1,5 +1,14 @@
 # Change Log
 
+## V0.4.0
+
+**ADD**
+
+- `monad_std.Option`:
+    - `to_nullable`/`unwrap_unchecked`: Convert `Option[T]` to `Optional[T]`.
+- `monad_std.Result`:
+    - `unwrap_unchecked`: Convert `Result[T, E]` to `Union[T, E]`.
+
 ## V0.3.0
 
 **Breaking Change**
