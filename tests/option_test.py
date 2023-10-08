@@ -70,6 +70,13 @@ class OptionTest(unittest.TestCase):
         self.assertEqual(monad_std.Option.some(4).unwrap_unchecked(), 4)
         self.assertTrue(monad_std.Option.none().unwrap_unchecked() is None)
 
+        x: monad_std.Option[str] = monad_std.Option.some("air")
+        self.assertEqual(x.to_nullable(), "air")
+        x: monad_std.Option[str] = monad_std.Option.none()
+        self.assertIsNone(x.to_nullable())
+        x: monad_std.Option[None] = monad_std.Option.some(None)
+        self.assertIsNone(x.to_nullable())
+
     def test_map(self):
         x = []
         monad_std.Option.some(2).inspect(lambda s: x.append(s))

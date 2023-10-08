@@ -167,6 +167,9 @@ class ResultTest(unittest.TestCase):
             3,
         )
 
+        self.assertEqual(monad_std.Result.of_ok("foo").unwrap_unchecked(),
+                         monad_std.Result.of_err("foo").unwrap_unchecked())
+
     def test_bool(self):
         self.assertEqual(
             monad_std.Result.of_ok(2).bool_and(monad_std.Result.of_err("late error")),

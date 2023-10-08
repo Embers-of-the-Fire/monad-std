@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Callable, List, Any, Iterator
+from typing import Generic, TypeVar, Callable, List, Any, Iterator, Union
 from abc import ABCMeta, abstractmethod
 
 from .error import UnwrapException
@@ -401,6 +401,17 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
+    def unwrap_unchecked(self) -> Union[KT, KE]:
+        """Returns the contained value, no matter what it is.
+
+        Examples:
+            ```python
+            assert Ok("foo").unwrap_unchecked() == Err("foo").unwrap_unchecked()
+            ```
+        """
+        ...
+
+    @abstractmethod
     def unwrap(self) -> KT:
         """Returns the contained `Ok` value.
 
@@ -667,6 +678,9 @@ class Ok(Generic[KT, KE], Result[KT, KE]):
     def expect_err(self, msg: str) -> KE:
         raise UnwrapException("Result", msg + f': {repr(self.__value)}')
 
+    def unwrap_unchecked(self) -> Union[KT, KE]:
+        return self.__value
+
     def unwrap(self) -> KT:
         return self.__value
 
@@ -757,6 +771,9 @@ class Err(Generic[KT, KE], Result[KT, KE]):
         raise UnwrapException("Result", msg + f': {repr(self.__value)}')
 
     def expect_err(self, msg: str) -> KE:
+        return self.__value
+
+    def unwrap_unchecked(self) -> Union[KT, KE]:
         return self.__value
 
     def unwrap(self) -> KT:

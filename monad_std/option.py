@@ -218,6 +218,33 @@ class Option(Generic[KT], metaclass=ABCMeta):
         ...
 
     @abstractmethod
+    def to_nullable(self) -> Optional[KT]:
+        """Returns the contained value. If `self` is an `Option::None`, this will return Python's `None` directly.
+
+        **Note**: If the wrapped object is `None` itself, this will also return `None` as it's wrapped by the `Some`.
+        It's impossible to distinguish between `Option::Some(None)` and `Option::None` by using this method.
+
+        Returns:
+            The contained value.
+
+        Examples:
+            ```python
+            x: Option[str] = Option.some("air")
+            assert x.to_nullable() == "air"
+            x: Option[str] = Option.none()
+            assert x.to_nullable() is None
+            x: Option[None] = Option.some(None)
+            assert x.to_nullable() is None
+            ```
+        """
+        ...
+
+    @abstractmethod
+    def unwrap_unchecked(self) -> Optional[KT]:
+        """This is the same as [`Option.to_nullable()`][monad_std.option.Option.to_nullable]."""
+        ...
+
+    @abstractmethod
     def unwrap(self) -> KT:
         """Returns the contained `Some` value.
 
@@ -687,6 +714,9 @@ class OpSome(Generic[KT], Option[KT]):
     def expect(self, msg: str) -> KT:
         return self.__value
 
+    def to_nullable(self) -> Optional[KT]:
+        return self.__value
+
     def unwrap(self) -> KT:
         return self.__value
 
@@ -791,6 +821,9 @@ class OpNone(Generic[KT], Option[KT]):
 
     def expect(self, msg: str) -> KT:
         raise UnwrapException("Option", msg)
+
+    def to_nullable(self) -> Optional[KT]:
+        return None
 
     def unwrap(self) -> KT:
         raise UnwrapException("Option", "call `Option.unwrap` on an `Option::None` object")
