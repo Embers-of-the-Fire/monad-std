@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Callable, List, Any, Iterator, Union
+from typing import Generic, TypeVar, Callable, List, Any, Iterator, Union, Tuple, Literal
 from abc import ABCMeta, abstractmethod
 
 from .error import UnwrapException
@@ -13,6 +13,15 @@ F = TypeVar('F')
 
 class Result(Generic[KT, KE], metaclass=ABCMeta):
     """An ancestor class of any `Result` type, inherited by `Ok` and `Err` subclasses."""
+
+    ERR: Literal[False] = False
+    """The flag for error value.
+    See [`Result.to_pattern`][monad_std.result.Result.to_pattern] for more information.
+    """
+    OK: Literal[False] = True
+    """The flag for ok value.
+    See [`Result.to_pattern`][monad_std.result.Result.to_pattern] for more information.
+    """
 
     @staticmethod
     def of_ok(value: KT) -> "Result[KT, KE]":
@@ -401,6 +410,27 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
+    def to_pattern(self) -> Tuple[bool, Union[KT, KE]]:
+        """Returns a flag and the contained value for pattern-matching.
+
+        For flags, see [`Result.OK`][monad_std.result.Result.OK] and [`Result.ERR`][monad_std.result.Result.ERR].
+
+        Returns:
+            A tuple, where the first element is the flag, and the second element is the value.
+
+        Examples:
+            **Built-in pattern-matching is only available in Python 3.10+.**
+            ```python
+            match Ok("ok").to_pattern:
+                case (Result.OK, val):
+                    print("OK: ", val)      # expect this
+                case (Result.ERR, val):
+                    print("ERR: ", val)
+            ```
+        """
+        ...
+
+    @abstractmethod
     def unwrap_unchecked(self) -> Union[KT, KE]:
         """Returns the contained value, no matter what it is.
 
@@ -678,6 +708,9 @@ class Ok(Generic[KT, KE], Result[KT, KE]):
     def expect_err(self, msg: str) -> KE:
         raise UnwrapException("Result", msg + f': {repr(self.__value)}')
 
+    def to_pattern(self) -> Tuple[bool, Union[KT, KE]]:
+        return True, self.__value
+
     def unwrap_unchecked(self) -> Union[KT, KE]:
         return self.__value
 
@@ -772,6 +805,9 @@ class Err(Generic[KT, KE], Result[KT, KE]):
 
     def expect_err(self, msg: str) -> KE:
         return self.__value
+
+    def to_pattern(self) -> Tuple[bool, Union[KT, KE]]:
+        return False, self.__value
 
     def unwrap_unchecked(self) -> Union[KT, KE]:
         return self.__value

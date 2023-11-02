@@ -70,6 +70,9 @@ class OptionTest(unittest.TestCase):
         self.assertEqual(monad_std.Option.some(4).unwrap_unchecked(), 4)
         self.assertTrue(monad_std.Option.none().unwrap_unchecked() is None)
 
+        self.assertEqual(monad_std.Option.some(4).to_pattern(), 4)
+        self.assertTrue(monad_std.Option.none().to_pattern() is None)
+
         x: monad_std.Option[str] = monad_std.Option.some("air")
         self.assertEqual(x.to_nullable(), "air")
         x: monad_std.Option[str] = monad_std.Option.none()

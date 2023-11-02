@@ -170,6 +170,11 @@ class ResultTest(unittest.TestCase):
         self.assertEqual(monad_std.Result.of_ok("foo").unwrap_unchecked(),
                          monad_std.Result.of_err("foo").unwrap_unchecked())
 
+        self.assertEqual(monad_std.Result.OK, True)
+        self.assertEqual(monad_std.Result.ERR, False)
+        self.assertTupleEqual(monad_std.Ok(3).to_pattern(), (monad_std.Result.OK, 3))
+        self.assertTupleEqual(monad_std.Err(3).to_pattern(), (monad_std.Result.ERR, 3))
+
     def test_bool(self):
         self.assertEqual(
             monad_std.Result.of_ok(2).bool_and(monad_std.Result.of_err("late error")),
