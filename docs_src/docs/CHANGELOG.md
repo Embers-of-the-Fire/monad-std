@@ -1,5 +1,17 @@
 # Change Log
 
+## V0.5.0
+
+**ADD**:
+
+- [`monad_std.Option`][monad_std.option.Option]:
+    - [`to_pattern`][monad_std.option.Option.to_pattern]:
+        An alias for [`unwrap_unchecked`][monad_std.option.Option.unwrap_unchecked].
+- [`monad_std.Result`][monad_std.result.Result]:
+    - [`to_pattern`][monad_std.option.Result.to_pattern]: Transfer into a tuple for pattern matching.
+    - [`ERR`][monad_std.option.Result.ERR], [`OK`][monad_std.option.Result.OK]: Constant flag value.
+        See [`monad_std.Result.to_pattern`][monad_std.option.Result.to_pattern].
+
 ## V0.4.0
 
 **ADD**

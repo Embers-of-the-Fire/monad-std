@@ -10,6 +10,13 @@ E = TypeVar('E')
 R = TypeVar('R')
 
 
+__all__ = [
+    "Option",
+    "OpSome",
+    "OpNone"
+]
+
+
 class Option(Generic[KT], metaclass=ABCMeta):
     """`Option` monad for python."""
 
@@ -218,6 +225,13 @@ class Option(Generic[KT], metaclass=ABCMeta):
         ...
 
     @abstractmethod
+    def to_pattern(self) -> Optional[KT]:
+        """Returns the contained value for pattern-matching.
+
+        This is the same as [`Option.to_nullable()`][monad_std.option.Option.to_nullable]."""
+        ...
+
+    @abstractmethod
     def to_nullable(self) -> Optional[KT]:
         """Returns the contained value. If `self` is an `Option::None`, this will return Python's `None` directly.
 
@@ -241,7 +255,9 @@ class Option(Generic[KT], metaclass=ABCMeta):
 
     @abstractmethod
     def unwrap_unchecked(self) -> Optional[KT]:
-        """This is the same as [`Option.to_nullable()`][monad_std.option.Option.to_nullable]."""
+        """Returns the contained value. If `self` is an `Option::None`, this will return Python's `None` directly.
+
+        This is the same as [`Option.to_nullable()`][monad_std.option.Option.to_nullable]."""
         ...
 
     @abstractmethod
@@ -303,11 +319,6 @@ class Option(Generic[KT], metaclass=ABCMeta):
             assert Option.none().unwrap_or_else(lambda: 2 * k) == 20
             ```
         """
-        ...
-
-    @abstractmethod
-    def unwrap_unchecked(self) -> Optional[KT]:
-        """Returns the contained `Some` value, without checking that the value is not `None`."""
         ...
 
     @abstractmethod
@@ -479,9 +490,9 @@ class Option(Generic[KT], metaclass=ABCMeta):
                 except IndexError:
                     return Option.none()
 
-            arr2d = [["A0", "A1"], ["B0", "B1"]]
-            assert get_from(arr2d, 0).and_then(lambda row: get_from(row, 1)) == Option.some('A1')
-            assert get_from(arr2d, 2).and_then(lambda row: get_from(row, 0)) == Option.none()
+            arr_2d = [["A0", "A1"], ["B0", "B1"]]
+            assert get_from(arr_2d, 0).and_then(lambda row: get_from(row, 1)) == Option.some('A1')
+            assert get_from(arr_2d, 2).and_then(lambda row: get_from(row, 0)) == Option.none()
             ```
         """
         ...
@@ -729,6 +740,9 @@ class OpSome(Generic[KT], Option[KT]):
     def unwrap_unchecked(self) -> Optional[KT]:
         return self.__value
 
+    def to_pattern(self) -> Optional[KT]:
+        return self.__value
+
     def inspect(self, func: Callable[[KT], None]) -> Option[KT]:
         func(self.__value)
         return self
@@ -835,6 +849,9 @@ class OpNone(Generic[KT], Option[KT]):
         return func()
 
     def unwrap_unchecked(self) -> Optional[KT]:
+        return None
+
+    def to_pattern(self) -> Optional[KT]:
         return None
 
     def inspect(self, func: Callable[[KT], None]) -> "Option[KT]":
