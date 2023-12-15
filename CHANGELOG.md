@@ -1,5 +1,12 @@
 # Change Log
 
+## V0.6.0
+
+**ADD**:
+
+- `monad_std.iter.IterMeta`:
+    - `chunk`: Data chunks which will return all the data, including those ignored ones by `array_chunk`.
+
 ## V0.5.0
 
 **ADD**:
