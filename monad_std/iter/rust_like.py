@@ -65,7 +65,38 @@ class _IterArrayChunk(IterMeta[List[T]], Generic[T]):
         return Option.none()
 
     def get_unused(self) -> Option[List[T]]:
+        """Return the last/unused several elements.
+
+        Examples:
+            ```python
+            it = IterMeta.iter([1, 2, 3, 4]).array_chunk(3)
+            assert it.next() == Option.some([1, 2, 3])
+            assert it.next() == Option.none()
+            assert it.get_unused() == Option.some([4])
+            ```
+        """
         return self.__unused
+
+
+class _IterChunk(IterMeta[List[T]], Generic[T]):
+    __it: _IterArrayChunk[T]
+    __finished: bool
+
+    def __init__(self, it: IterMeta[T], chunk_size: int):
+        assert chunk_size > 0, "Chunk size must be greater than zero!"
+        self.__it = it.array_chunk(chunk_size)
+        self.__finished = False
+
+    def next(self) -> Option[List[T]]:
+        if not self.__finished:
+            nxt = self.__it.next()
+            if nxt.is_none():
+                unused = self.__it.get_unused()
+                self.__finished = True
+                return unused
+            return nxt
+        else:
+            return Option.none()
 
 
 class _IterFilterMap(IterMeta[U], Generic[T, U]):

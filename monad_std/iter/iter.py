@@ -183,6 +183,11 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         The chunks do not overlap. If `N` does not divide the length of the iterator, then the last up to `N-1`
         elements will be omitted and can be retrieved from the `get_unused()` method of the sub-iterator-class.
 
+        **Note:**
+        The `_IterArrayChunk` does not yield the last several elements, and you should call
+        [`_IterArrayChunk.get_unused`][monad_std.iter.rust_like._IterArrayChunk.get_unused]
+        method to get the last one(s).
+
         Args:
             chunk_size: The number of elements to yield at a time, default 2. **Must be greater than zero!**
 
@@ -199,6 +204,33 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             ```
         """
         return _IterArrayChunk(self, chunk_size)
+
+    def chunk(self, chunk_size: int = 2) -> "_IterChunk[T]":
+        """Returns an iterator over `N` elements of the iterator at a time,
+        and also returns its last several uniter-ed elements.
+
+        This will return a list of `N` elements unless the iterator cannot provide enough elements to fulfill
+        a list of such length. Then this will return its last unused elements.
+
+        Calling this is equivalent to calling [`array_chunk`][monad_std.iter.iter.IterMeta.array_chunk] and chaining
+        the last unused elements, through the `get_unused` method.
+
+        Args:
+            chunk_size: The number of elements to yield at a time, default 2. **Must be greater than zero!**
+
+        Returns:
+            See [`_IterChunk`][monad_std.iter.rust_like._IterChunk].
+
+        Examples:
+            ```python
+            a = IterMeta.iter("loerm").chunk(2)
+            assert a.next() == Option.some(['l', 'o'])
+            assert a.next() == Option.some(['e', 'r'])
+            assert a.next() == Option.some(['m'])
+            assert a.next() == Option.none()
+            ```
+        """
+        return _IterChunk(self, chunk_size)
 
     def chain(self, other: "IterMeta[T]") -> "_IterChain[T]":
         """Takes two iterators and creates a new iterator over both in sequence.
@@ -1168,5 +1200,6 @@ from .rust_like import (
     _IterSkip,
     _IterTake,
     _IterTakeWhile,
+    _IterChunk
 )
 from .builtin_like import _IterMap, _IterFilter, _IterEnumerate
