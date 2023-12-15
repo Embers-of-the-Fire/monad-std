@@ -24,6 +24,10 @@
     options:
         heading_level: 2
 
+::: monad_std.iter.rust_like._IterChunk
+    options:
+        heading_level: 2
+
 ::: monad_std.iter.rust_like._IterChain
     options:
         heading_level: 2

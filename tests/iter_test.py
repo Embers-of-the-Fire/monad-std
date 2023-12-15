@@ -305,6 +305,18 @@ class ResultTest(unittest.TestCase):
         self.assertEqual(a.next(), Option.some(["e", "r"]))
         self.assertEqual(a.next(), Option.none())
         self.assertListEqual(a.get_unused().unwrap(), ["m"])
+        self.assertListEqual(a.get_unused().unwrap(), ["m"])
+
+        it = IterMeta.iter([1, 2, 3, 4]).array_chunk(3)
+        self.assertEqual(it.next(), Option.some([1, 2, 3]))
+        self.assertEqual(it.next(), Option.none())
+        self.assertEqual(it.get_unused(), Option.some([4]))
+
+        a = IterMeta.iter("loerm").chunk(2)
+        self.assertEqual(a.next(), Option.some(["l", "o"]))
+        self.assertEqual(a.next(), Option.some(["e", "r"]))
+        self.assertEqual(a.next(), Option.some(["m"]))
+        self.assertIsNone(a.next().to_nullable())
 
     def test_iter_check(self):
         a = [1, 2, 3]
