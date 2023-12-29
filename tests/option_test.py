@@ -110,6 +110,18 @@ class OptionTest(unittest.TestCase):
             monad_std.Option.none().map_or_else(lambda: 2 * k, lambda s: len(s)),
             42,
         )
+        class Test:
+            val: int
+            def __init__(self, val: int):
+                self.val = val
+
+            def change_value(self, new_value: int):
+                self.val = new_value
+
+        maybe_something = monad_std.Option.some(Test(1))
+        self.assertEqual(maybe_something.unwrap().val, 1)
+        maybe_something.map_mut(lambda x: x.change_value(5))
+        self.assertEqual(maybe_something.unwrap().val, 5)
 
     def test_into_result(self):
         self.assertEqual(

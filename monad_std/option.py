@@ -362,6 +362,36 @@ class Option(Generic[KT], metaclass=ABCMeta):
         ...
 
     @abstractmethod
+    def map_mut(self, func: Callable[[KT], None]) -> "Option[KT]":
+        """Maps and `Option<KT>` by changing its wrapped value.
+
+        This method require a function to return nothing, and passes a reference into it.
+        Actually, python doesn't differentiate mutable / immutable value,
+        and this method is just for explicit notification.
+
+        Args:
+            func: A callable object that accepts the wrapped value.
+
+        Examples:
+            ```python
+            class Test:
+                value: int
+                def __init__(self, val: int):
+                    self.value = val
+
+                def change_value(self, new_value: int):
+                    print('old:', self.value, 'new:', new_value)
+                    self.value = new_value
+
+            maybe_something = Option.some(Test(1))
+            assert maybe_something.unwrap().value == 1
+            maybe_something.map_mut(lambda x: x.change_value(5))
+            assert maybe_something.unwrap().value == 5
+            ```
+        """
+        ...
+
+    @abstractmethod
     def map_or(self, default: U, func: Callable[[KT], U]) -> U:
         """Returns the provided default result (if none), or applies a function to the contained value (if any).
 
@@ -750,6 +780,10 @@ class OpSome(Generic[KT], Option[KT]):
     def map(self, func: Callable[[KT], U]) -> Option[U]:
         return Option.some(func(self.__value))
 
+    def map_mut(self, func: Callable[[KT], None]) -> Option[KT]:
+        func(self.__value)
+        return self
+
     def map_or(self, default: U, func: Callable[[KT], U]) -> U:
         return func(self.__value)
 
@@ -786,7 +820,7 @@ class OpSome(Generic[KT], Option[KT]):
         else:
             return self.clone()
 
-    def filter(self, func: Callable[[KT], bool]) -> "Option[KT]":
+    def filter(self, func: Callable[[KT], bool]) -> Option[KT]:
         if func(self.__value):
             return self.clone()
         else:
@@ -854,10 +888,13 @@ class OpNone(Generic[KT], Option[KT]):
     def to_pattern(self) -> Optional[KT]:
         return None
 
-    def inspect(self, func: Callable[[KT], None]) -> "Option[KT]":
+    def inspect(self, func: Callable[[KT], None]) -> Option[KT]:
         return self
 
-    def map(self, func: Callable[[KT], U]) -> "Option[U]":
+    def map(self, func: Callable[[KT], U]) -> Option[U]:
+        return self
+
+    def map_mut(self, func: Callable[[KT], None]) -> Option[KT]:
         return self
 
     def map_or(self, default: U, func: Callable[[KT], U]) -> U:
@@ -875,31 +912,31 @@ class OpNone(Generic[KT], Option[KT]):
     def to_array(self) -> List[KT]:
         return []
 
-    def bool_and(self, optb: "Option[U]") -> "Option[U]":
+    def bool_and(self, optb: Option[U]) -> Option[U]:
         return self
 
-    def and_then(self, func: Callable[[KT], "Option[U]"]) -> "Option[U]":
+    def and_then(self, func: Callable[[KT], Option[U]]) -> Option[U]:
         return self
 
-    def flatmap(self, func: Callable[[KT], "Option[U]"]) -> "Option[U]":
+    def flatmap(self, func: Callable[[KT], Option[U]]) -> Option[U]:
         return self
 
-    def bool_or(self, optb: "Option[KT]") -> "Option[KT]":
+    def bool_or(self, optb: Option[KT]) -> Option[KT]:
         return optb.clone()
 
-    def or_else(self, func: Callable[[], "Option[KT]"]) -> "Option[KT]":
+    def or_else(self, func: Callable[[], Option[KT]]) -> Option[KT]:
         return func()
 
-    def bool_xor(self, optb: "Option[KT]") -> "Option[KT]":
+    def bool_xor(self, optb: Option[KT]) -> Option[KT]:
         return optb.clone()
 
-    def filter(self, func: Callable[[KT], bool]) -> "Option[KT]":
+    def filter(self, func: Callable[[KT], bool]) -> Option[KT]:
         return self
 
-    def zip(self, other: "Option[U]") -> "Option[Tuple[KT, U]]":
+    def zip(self, other: Option[U]) -> Option[Tuple[KT, U]]:
         return self
 
-    def zip_with(self, other: "Option[U]", func: Callable[["Option[KT]", "Option[U]"], "Option[R]"]) -> "Option[R]":
+    def zip_with(self, other: Option[U], func: Callable[[Option[KT], Option[U]], Option[R]]) -> Option[R]:
         return self
 
 

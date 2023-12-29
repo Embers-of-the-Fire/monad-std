@@ -109,6 +109,24 @@ class ResultTest(unittest.TestCase):
             monad_std.Result.of_err(-1).map_err(lambda x: str(x)),
             monad_std.Result.of_err("-1"),
         )
+        class Test:
+            value: int
+            def __init__(self, val: int):
+                self.value = val
+
+            def change_value(self, new_value: int):
+                print('old:', self.value, 'new:', new_value)
+                self.value = new_value
+
+        maybe_ok = monad_std.Result.of_ok(Test(1))
+        self.assertEqual(maybe_ok.unwrap().value, 1)
+        maybe_ok.map_mut(lambda x: x.change_value(5))
+        self.assertEqual(maybe_ok.unwrap().value, 5)
+
+        maybe_ok = monad_std.Result.of_err(Test(1))
+        self.assertEqual(maybe_ok.unwrap_err().value, 1)
+        maybe_ok.map_err_mut(lambda x: x.change_value(5))
+        self.assertEqual(maybe_ok.unwrap_err().value, 5)
 
     def test_inspect(self):
         k = []
