@@ -8,78 +8,78 @@
     options:
         heading_level: 2
 
-::: monad_std.iter.builtin_like._IterEnumerate
+::: monad_std.iter.builtin_like.Enumerate
     options:
         heading_level: 2
 
-::: monad_std.iter.builtin_like._IterFilter
+::: monad_std.iter.builtin_like.Filter
     options:
         heading_level: 2
 
-::: monad_std.iter.builtin_like._IterMap
+::: monad_std.iter.builtin_like.Map
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterArrayChunk
+::: monad_std.iter.rust_like.ArrayChunk
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterChunk
+::: monad_std.iter.rust_like.Chunk
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterChain
+::: monad_std.iter.rust_like.Chain
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterFilterMap
+::: monad_std.iter.rust_like.FilterMap
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterFlatMap
+::: monad_std.iter.rust_like.FlatMap
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterFlatten
+::: monad_std.iter.rust_like.Flatten
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterFuse
+::: monad_std.iter.rust_like.Fuse
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterInspect
+::: monad_std.iter.rust_like.Inspect
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterIntersperse
+::: monad_std.iter.rust_like.Intersperse
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterIntersperseWith
+::: monad_std.iter.rust_like.IntersperseWith
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterPeekable
+::: monad_std.iter.rust_like.Peekable
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterScan
+::: monad_std.iter.rust_like.Scan
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterSkip
+::: monad_std.iter.rust_like.Skip
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterTake
+::: monad_std.iter.rust_like.Take
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterTakeWhile
+::: monad_std.iter.rust_like.TakeWhile
     options:
         heading_level: 2
 
-::: monad_std.iter.rust_like._IterZip
+::: monad_std.iter.rust_like.Zip
     options:
         heading_level: 2

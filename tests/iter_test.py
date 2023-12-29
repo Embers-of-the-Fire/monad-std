@@ -1,6 +1,7 @@
 import unittest
 import funct
 
+import monad_std.iter.iter
 from monad_std.iter import IterMeta
 from monad_std import Option, Result, Ok, Err
 
