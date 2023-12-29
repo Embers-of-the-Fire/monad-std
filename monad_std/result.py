@@ -255,6 +255,66 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
+    def map_mut(self, func: Callable[[KT], None]) -> "Result[KT, KE]":
+        """Maps a `Result<KT, KE>`'s ok value by changing it within the closure.
+
+        This method require a function to return nothing, and passes a reference into it.
+        Actually, python doesn't differentiate mutable / immutable value,
+        and this method is just for explicit notification.
+
+        Args:
+            func: A callable object that accepts the wrapped value.
+
+        Examples:
+            ```python
+            class Test:
+                value: int
+                def __init__(self, val: int):
+                    self.value = val
+
+                def change_value(self, new_value: int):
+                    print('old:', self.value, 'new:', new_value)
+                    self.value = new_value
+
+            maybe_ok = Result.of_ok(Test(1))
+            assert maybe_ok.unwrap().value == 1
+            maybe_ok.map_mut(lambda x: x.change_value(5))
+            assert maybe_ok.unwrap().value == 5
+            ```
+        """
+        ...
+
+    @abstractmethod
+    def map_err_mut(self, func: Callable[[KE], None]) -> "Result[KT, KE]":
+        """Maps a `Result<KT, KE>`'s err value by changing it within the closure.
+
+        This method require a function to return nothing, and passes a reference into it.
+        Actually, python doesn't differentiate mutable / immutable value,
+        and this method is just for explicit notification.
+
+        Args:
+            func: A callable object that accepts the wrapped value.
+
+        Examples:
+            ```python
+            class Test:
+                value: int
+                def __init__(self, val: int):
+                    self.value = val
+
+                def change_value(self, new_value: int):
+                    print('old:', self.value, 'new:', new_value)
+                    self.value = new_value
+
+            maybe_ok = Result.of_err(Test(1))
+            assert maybe_ok.unwrap_err().value == 1
+            maybe_ok.map_err_mut(lambda x: x.change_value(5))
+            assert maybe_ok.unwrap_err().value == 5
+            ```
+        """
+        ...
+
+    @abstractmethod
     def map_or(self, default: U, func: Callable[[KT], U]) -> U:
         """Returns the provided `default` (if `Err`), or applies a function to the contained value (if `Ok`).
 
@@ -683,6 +743,13 @@ class Ok(Generic[KT, KE], Result[KT, KE]):
     def map(self, func: Callable[[KT], U]) -> Result[U, KE]:
         return Result.of_ok(func(self.__value))
 
+    def map_mut(self, func: Callable[[KT], None]) -> Result[KT, KE]:
+        func(self.__value)
+        return self
+
+    def map_err_mut(self, func: Callable[[KE], None]) -> Result[KT, KE]:
+        return self
+
     def map_or(self, default: U, func: Callable[[KT], U]) -> U:
         return func(self.__value)
 
@@ -780,6 +847,13 @@ class Err(Generic[KT, KE], Result[KT, KE]):
 
     def map(self, func: Callable[[KT], U]) -> Result[U, KE]:
         return Result.of_err(self.__value)
+
+    def map_mut(self, func: Callable[[KT], None]) -> Result[KT, KE]:
+        return self
+
+    def map_err_mut(self, func: Callable[[KE], None]) -> Result[KT, KE]:
+        func(self.__value)
+        return self
 
     def map_or(self, default: U, func: Callable[[KT], U]) -> U:
         return default

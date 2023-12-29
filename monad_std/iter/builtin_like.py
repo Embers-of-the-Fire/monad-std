@@ -7,7 +7,7 @@ T = TypeVar('T')
 U = TypeVar('U')
 
 
-class _IterMap(IterMeta[U], Generic[T, U]):
+class Map(IterMeta[U], Generic[T, U]):
     __it: IterMeta[T]
     __func: Callable[[T], U]
 
@@ -19,7 +19,7 @@ class _IterMap(IterMeta[U], Generic[T, U]):
         return self.__it.next().map(self.__func)
 
 
-class _IterFilter(IterMeta[T], Generic[T]):
+class Filter(IterMeta[T], Generic[T]):
     __it: IterMeta[T]
     __func: Callable[[T], bool]
 
@@ -35,7 +35,7 @@ class _IterFilter(IterMeta[T], Generic[T]):
             return Option.none()
 
 
-class _IterEnumerate(IterMeta[Tuple[int, T]], Generic[T]):
+class Enumerate(IterMeta[Tuple[int, T]], Generic[T]):
     __it: IterMeta[T]
     __num: int
 

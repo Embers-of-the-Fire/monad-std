@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "monad-std"
-version = "0.6.0"
+version = "0.7.0"
 description = "A library of rust-styled monad utils for python."
 authors = ["Embers-of-the-Fire <stellarishs@163.com>"]
 homepage = "https://embers-of-the-fire.github.io/monad-std/"

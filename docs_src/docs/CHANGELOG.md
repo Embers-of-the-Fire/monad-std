@@ -1,5 +1,20 @@
 # Change Log
 
+## V0.7.0
+
+**ADD**:
+
+- [`monad_std.Option`][monad_std.option.Option]:
+    - [`map_mut`][monad_std.option.Option.map_mut]: Map a value by changing itself.
+- [`monad_std.Result`][monad_std.result.Result]:
+    - [`map_mut`][monad_std.result.Result.map_mut], [`map_err_mut`][monad_std.result.Result.map_err_mut]:
+      Map a value by changing itself.
+
+**Breaking Change**
+
+- Renamed all iterator tools' implement definition. Now they're not prefix-ed by an `_Iter`.
+  You can now import them via `monad_std.iter.impl`.
+
 ## V0.6.0
 
 **ADD**:
@@ -40,7 +55,9 @@
 **Impl Change**
 
 - [`monad_std.Option`][monad_std.option.Option]:
-    - [`__and__`][monad_std.option.Option.__and__], [`__or__`][monad_std.option.Option.__or__], [`__xor__`][monad_std.option.Option.__xor__] are not abstract methods now, and is implemented by [`Option`][monad_std.option.Option] itself.
+    - [`__and__`][monad_std.option.Option.__and__], [`__or__`][monad_std.option.Option.__or__],
+      [`__xor__`][monad_std.option.Option.__xor__] are not abstract methods now,
+      and is implemented by [`Option`][monad_std.option.Option] itself.
 
 **DOCUMENTATION**
 

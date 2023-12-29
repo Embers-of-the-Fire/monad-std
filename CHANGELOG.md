@@ -1,5 +1,19 @@
 # Change Log
 
+## V0.7.0
+
+**ADD**:
+
+- `monad_std.Option`:
+    - `map_mut`: Map a value by changing itself.
+- `monad_std.Result`:
+    - `map_mut`, `map_err_mut`: Map a value by changing itself.
+
+**Breaking Change**
+
+- Renamed all iterator tools' implement definition. Now they're not prefix-ed by an `_Iter`.
+  You can now import them via `monad_std.iter.impl`.
+
 ## V0.6.0
 
 **ADD**:

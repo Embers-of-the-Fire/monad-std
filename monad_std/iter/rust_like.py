@@ -9,7 +9,7 @@ U = TypeVar('U')
 B = TypeVar('B')
 
 
-class _IterZip(IterMeta[Tuple[T, U]], Generic[T, U]):
+class Zip(IterMeta[Tuple[T, U]], Generic[T, U]):
     __it1: IterMeta[T]
     __it2: IterMeta[U]
 
@@ -21,7 +21,7 @@ class _IterZip(IterMeta[Tuple[T, U]], Generic[T, U]):
         return self.__it1.next().zip(self.__it2.next())
 
 
-class _IterChain(IterMeta[T], Generic[T]):
+class Chain(IterMeta[T], Generic[T]):
     __it1: Option[IterMeta[T]]
     __it2: Option[IterMeta[T]]
 
@@ -41,7 +41,7 @@ class _IterChain(IterMeta[T], Generic[T]):
         return self.__it1.and_then(lambda x: x.next()).or_else(lambda: self.__clear_it1())
 
 
-class _IterArrayChunk(IterMeta[List[T]], Generic[T]):
+class ArrayChunk(IterMeta[List[T]], Generic[T]):
     __it: IterMeta[T]
     __chunk_size: int
     __unused: Option[List[T]]
@@ -78,8 +78,8 @@ class _IterArrayChunk(IterMeta[List[T]], Generic[T]):
         return self.__unused
 
 
-class _IterChunk(IterMeta[List[T]], Generic[T]):
-    __it: _IterArrayChunk[T]
+class Chunk(IterMeta[List[T]], Generic[T]):
+    __it: ArrayChunk[T]
     __finished: bool
 
     def __init__(self, it: IterMeta[T], chunk_size: int):
@@ -99,7 +99,7 @@ class _IterChunk(IterMeta[List[T]], Generic[T]):
             return Option.none()
 
 
-class _IterFilterMap(IterMeta[U], Generic[T, U]):
+class FilterMap(IterMeta[U], Generic[T, U]):
     __it: IterMeta[T]
     __func: Callable[[T], Option[U]]
 
@@ -115,7 +115,7 @@ class _IterFilterMap(IterMeta[U], Generic[T, U]):
             return Option.none()
 
 
-class _IterFlatten(IterMeta[T], Generic[T]):
+class Flatten(IterMeta[T], Generic[T]):
     __it: IterMeta[Union[T, IterMeta[T], Iterable[T], Iterator[T]]]
     __current_it: Option[IterMeta[T]]
 
@@ -148,7 +148,7 @@ class _IterFlatten(IterMeta[T], Generic[T]):
         return self.__it_next()
 
 
-class _IterFlatMap(IterMeta[U], Generic[T, U]):
+class FlatMap(IterMeta[U], Generic[T, U]):
     __it: IterMeta[T]
     __current_it: Option[IterMeta[U]]
     __func: Callable[[T], Union[U, IterMeta[U], Iterable[U], Iterator[U]]]
@@ -184,7 +184,7 @@ class _IterFlatMap(IterMeta[U], Generic[T, U]):
         return self.__it_next()
 
 
-class _IterFuse(IterMeta[T], Generic[T]):
+class Fuse(IterMeta[T], Generic[T]):
     __it: Option[IterMeta[T]]
 
     def __init__(self, it: IterMeta[T]):
@@ -198,7 +198,7 @@ class _IterFuse(IterMeta[T], Generic[T]):
         return self.__it.and_then(lambda x: x.next()).or_else(lambda: self.__finish())
 
 
-class _IterInspect(IterMeta[T], Generic[T]):
+class Inspect(IterMeta[T], Generic[T]):
     __it: IterMeta[T]
     __func: Callable[[T], None]
 
@@ -210,7 +210,7 @@ class _IterInspect(IterMeta[T], Generic[T]):
         return self.__it.next().inspect(self.__func)
 
 
-class _IterPeekable(IterMeta[T], Generic[T]):
+class Peekable(IterMeta[T], Generic[T]):
     __it: IterMeta[T]
     __peek: Option[Option[T]]
 
@@ -232,13 +232,13 @@ class _IterPeekable(IterMeta[T], Generic[T]):
         return self.__peek.or_else(lambda: self.__peek_next())
 
 
-class _IterIntersperse(IterMeta[T], Generic[T]):
-    __it: _IterPeekable[T]
+class Intersperse(IterMeta[T], Generic[T]):
+    __it: Peekable[T]
     __sep: T
     __need_sep: bool
 
     def __init__(self, it: IterMeta[T], sep: T):
-        self.__it = _IterPeekable(it)
+        self.__it = Peekable(it)
         self.__sep = sep
         self.__need_sep = False
 
@@ -251,13 +251,13 @@ class _IterIntersperse(IterMeta[T], Generic[T]):
             return self.__it.next()
 
 
-class _IterIntersperseWith(IterMeta[T], Generic[T]):
-    __it: _IterPeekable[T]
+class IntersperseWith(IterMeta[T], Generic[T]):
+    __it: Peekable[T]
     __sep: Callable[[], T]
     __need_sep: bool
 
     def __init__(self, it: IterMeta[T], sep: Callable[[], T]):
-        self.__it = _IterPeekable(it)
+        self.__it = Peekable(it)
         self.__sep = sep
         self.__need_sep = False
 
@@ -270,7 +270,7 @@ class _IterIntersperseWith(IterMeta[T], Generic[T]):
             return self.__it.next()
 
 
-class _IterScan(IterMeta[B], Generic[T, B, U]):
+class Scan(IterMeta[B], Generic[T, B, U]):
     __it: IterMeta[T]
     __func: Callable[[U, T], Tuple[U, Option[B]]]
     __state: U
@@ -289,7 +289,7 @@ class _IterScan(IterMeta[B], Generic[T, B, U]):
         return self.__it.next().and_then(lambda x: self.__update_state(x))
 
 
-class _IterSkip(IterMeta[T], Generic[T]):
+class Skip(IterMeta[T], Generic[T]):
     __skipped: bool
     __skip_n: int
     __it: IterMeta[T]
@@ -311,7 +311,7 @@ class _IterSkip(IterMeta[T], Generic[T]):
             return self.__it.next()
 
 
-class _IterTake(IterMeta[T], Generic[T]):
+class Take(IterMeta[T], Generic[T]):
     __remain: int
     __it: IterMeta[T]
 
@@ -327,7 +327,7 @@ class _IterTake(IterMeta[T], Generic[T]):
             return Option.none()
 
 
-class _IterTakeWhile(IterMeta[T], Generic[T]):
+class TakeWhile(IterMeta[T], Generic[T]):
     __func: Callable[[T], bool]
     __flag: bool
     __it: IterMeta[T]
