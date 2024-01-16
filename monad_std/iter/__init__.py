@@ -15,7 +15,7 @@ __all__ = [
 
 
 V = t.TypeVar(name="V")
-T = t.TypeVar(name="T", bound=t.Union[t.Iterable[V], t.Iterator[V]])
+T = t.TypeVar("T", t.Iterable[V], t.Iterator[V])
 
 
 def siter(it: T) -> IterMeta[V]:
