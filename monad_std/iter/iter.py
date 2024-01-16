@@ -43,6 +43,29 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return _IterIterable([v])
 
+    @staticmethod
+    def once_with(func: Callable[[], T]) -> "OnceWith[T]":
+        """Convert a closure which produces a value to a single-use iterator.
+
+        Examples:
+            ```python
+            flag = 0
+
+            def closure() -> int:
+                nonlocal flag
+                flag += 1
+                return flag
+
+            it = once_with(closure)
+            assert flag == 0
+            assert it.next() == Option.some(1)
+            assert flag == 1
+            assert it.next() == Option.none()
+            assert flag == 1
+            ```
+        """
+        return OnceWith(func)
+
     @abstractmethod
     def next(self) -> Option[T]:
         """Return the next element."""
@@ -129,6 +152,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             assert third == 'those'
             ```
         """
+        assert n > 0, "Chunk size must be positive"
         ckl = []
         for _ in range(n):
             if (x := self.next()).is_some():
@@ -592,8 +616,9 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """Creates an iterator which can use the `peek` method to look at the next element of the iterator without
         consuming it.
 
-        Note that the underlying iterator is **still advanced** when `peek` is called for the first time: In order to
-        retrieve the next element, [`next`][monad_std.iter.iter.IterMeta.next] is called on the underlying iterator,
+        Note that the underlying iterator is **still advanced** when [`peek`][monad_std.iter.rust_like.Peekable.peek]
+        is called for the first time: In order to retrieve the next element,
+        [`next`][monad_std.iter.iter.IterMeta.next] is called on the underlying iterator,
         hence any side effects (i.e. anything other than fetching the next value) of the `next` method will occur.
 
         Returns:
@@ -1191,6 +1216,55 @@ class _Iter(Iterator[T], Generic[T]):
             return n.unwrap()
         except UnwrapException:
             raise StopIteration
+
+
+class OnceWith(IterMeta[T], Generic[T]):
+    __func: Option[Callable[[], T]]
+
+    def __init__(self, func: Callable[[], T]):
+        self.__func = Option.some(func)
+
+    def next(self) -> Option[T]:
+        if self.__func.is_some():
+            val = self.__func.map(lambda s: s())
+            self.__func = Option.none()
+            return val
+        else:
+            return Option.none()
+
+    def nth(self, n: int = 1) -> Option[T]:
+        if self.__func.is_none():
+            pass
+        elif n > 0:
+            self.__func = Option.none()
+        else:
+            val = self.__func.map(lambda s: s())
+            self.__func = Option.none()
+            return val
+
+        return Option.none()
+
+    def next_chunk(self, n: int = 2) -> Result[List[T], List[T]]:
+        assert n > 0, "Chunk size must be positive"
+        if n > 1:
+            val = Result.of_err(list(self.__func.map(lambda s: s()).to_iter()))
+            self.__func = Option.none()
+            return val
+        else:
+            val = self.__func.map(lambda s: [s()]).ok_or([])
+            self.__func = Option.none()
+            return val
+
+    def advance_by(self, n: int = 0) -> Result[None, int]:
+        if n == 0:
+            return Result.of_ok(None)
+        elif self.__func.is_none() and n > 0:
+            return Result.of_err(n)
+        elif self.__func.is_some():
+            self.__func = Option.none()
+            if n == 1:
+                return Result.of_ok(None)
+            return Result.of_err(n - 1)
 
 # Import types at the bottom of the file to avoid circular imports.
 from .rust_like import (

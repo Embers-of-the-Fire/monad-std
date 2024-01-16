@@ -35,6 +35,7 @@ Until now, this library provides the following features:
     - `monad_std.Err`: An error value.
 - `monad_std.std_types`: Wrapped api around std types.
 - `monad_std.iter`: Iterator interface with functors and monads support.
+- `monad_std.prelude`: Prelude package, containing `Option`, `Result` and iterators.
 
 And the following are being developed:
 

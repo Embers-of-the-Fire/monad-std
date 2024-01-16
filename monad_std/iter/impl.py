@@ -23,6 +23,8 @@ from .rust_like import (
     Peekable,
 )
 
+from .iter import OnceWith
+
 
 __all__ = [
     "ArrayChunk",
@@ -38,6 +40,7 @@ __all__ = [
     "Intersperse",
     "IntersperseWith",
     "Map",
+    "OnceWith",
     "Peekable",
     "Scan",
     "Skip",

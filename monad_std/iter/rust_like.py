@@ -229,6 +229,25 @@ class Peekable(IterMeta[T], Generic[T]):
         return pk
 
     def peek(self) -> Option[T]:
+        """Peek the next element of the inner iterator.
+
+        Note that the underlying iterator is still advanced when `peek` is called for the first time:
+        In order to retrieve the next element, `next` is called on the underlying iterator,
+        hence any side effects (i.e. anything other than fetching the next value) of the next method will occur.
+
+        Examples:
+            ```python
+            it = siter([1, 2, 3]).peekable()
+            assert it.peek() == Option.some(1)
+            assert it.next() == Option.some(1)
+            assert it.peek() == Option.some(2)
+            assert it.peek() == Option.some(2)
+            assert it.next() == Option.some(2)
+            assert it.next() == Option.some(3)
+            assert it.peek() == Option.none()
+            assert it.next() == Option.none()
+            ```
+        """
         return self.__peek.or_else(lambda: self.__peek_next())
 
 
