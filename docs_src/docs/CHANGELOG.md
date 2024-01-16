@@ -1,5 +1,7 @@
 # Change Log
 
+## V0.8.0
+
 **ADD**:
 
 - `monad_std.prelude`: module that contains all frequently used utilities.
