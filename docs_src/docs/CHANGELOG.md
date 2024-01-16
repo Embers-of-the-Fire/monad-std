@@ -1,5 +1,14 @@
 # Change Log
 
+**ADD**:
+
+- `monad_std.prelude`: module that contains all frequently used utilities.
+- `monad_std.iter`:
+    - [`siter`][monad_std.iter.siter]: See [`IterMeta.iter`][monad_std.iter.iter.IterMeta.iter].
+    - [`once`][monad_std.iter.once]: See [`IterMeta.once`][monad_std.iter.iter.IterMeta.once].
+    - [`once_with`][monad_std.iter.once_with]: See [`IterMeta.once_with`][monad_std.iter.iter.IterMeta.once_with].
+    - [`repeat`][monad_std.iter.repeat]: See [`IterMeta.repeat`][monad_std.iter.iter.IterMeta.repeat].
+
 ## V0.7.0
 
 **ADD**:
