@@ -1,6 +1,8 @@
+import warnings
 from typing import Iterator, TypeVar, Generic, List, Iterable, Callable, Union
 import collections.abc
 from abc import ABCMeta, abstractmethod
+import copy
 
 from monad_std.option import Option
 from monad_std.result import Result, Err, Ok
@@ -42,6 +44,46 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             ```
         """
         return _IterIterable([v])
+
+    @staticmethod
+    def once_with(func: Callable[[], T]) -> "OnceWith[T]":
+        """Convert a closure which produces a value to a single-use iterator.
+
+        Examples:
+            ```python
+            flag = 0
+
+            def closure() -> int:
+                nonlocal flag
+                flag += 1
+                return flag
+
+            it = once_with(closure)
+            assert flag == 0
+            assert it.next() == Option.some(1)
+            assert flag == 1
+            assert it.next() == Option.none()
+            assert flag == 1
+            ```
+        """
+        return OnceWith(func)
+
+    @staticmethod
+    def repeat(value: T) -> "Repeat[T]":
+        """Creates a new iterator that endlessly repeats a single element.
+
+        The `repeat()` function repeats a single value over and over again.
+
+        Infinite iterators like `repeat()` are often used with adapters like
+        [`IterMeta.take`][monad_std.iter.iter.IterMeta.take], in order to make them finite.
+
+        Examples:
+            ```python
+            it = repeat(5)
+            assert it.take(10).collect_list(), [5] * 10
+            ```
+        """
+        return Repeat(value)
 
     @abstractmethod
     def next(self) -> Option[T]:
@@ -129,6 +171,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             assert third == 'those'
             ```
         """
+        assert n > 0, "Chunk size must be positive"
         ckl = []
         for _ in range(n):
             if (x := self.next()).is_some():
@@ -592,8 +635,9 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """Creates an iterator which can use the `peek` method to look at the next element of the iterator without
         consuming it.
 
-        Note that the underlying iterator is **still advanced** when `peek` is called for the first time: In order to
-        retrieve the next element, [`next`][monad_std.iter.iter.IterMeta.next] is called on the underlying iterator,
+        Note that the underlying iterator is **still advanced** when [`peek`][monad_std.iter.rust_like.Peekable.peek]
+        is called for the first time: In order to retrieve the next element,
+        [`next`][monad_std.iter.iter.IterMeta.next] is called on the underlying iterator,
         hence any side effects (i.e. anything other than fetching the next value) of the `next` method will occur.
 
         Returns:
@@ -1191,6 +1235,102 @@ class _Iter(Iterator[T], Generic[T]):
             return n.unwrap()
         except UnwrapException:
             raise StopIteration
+
+
+class OnceWith(IterMeta[T], Generic[T]):
+    __func: Option[Callable[[], T]]
+
+    def __init__(self, func: Callable[[], T]):
+        self.__func = Option.some(func)
+
+    def next(self) -> Option[T]:
+        if self.__func.is_some():
+            val = self.__func.map(lambda s: s())
+            self.__func = Option.none()
+            return val
+        else:
+            return Option.none()
+
+    def nth(self, n: int = 1) -> Option[T]:
+        if self.__func.is_none():
+            pass
+        elif n > 0:
+            self.__func = Option.none()
+        else:
+            val = self.__func.map(lambda s: s())
+            self.__func = Option.none()
+            return val
+
+        return Option.none()
+
+    def next_chunk(self, n: int = 2) -> Result[List[T], List[T]]:
+        assert n > 0, "Chunk size must be positive"
+        if n > 1:
+            val = Result.of_err(list(self.__func.map(lambda s: s()).to_iter()))
+            self.__func = Option.none()
+            return val
+        else:
+            val = self.__func.map(lambda s: [s()]).ok_or([])
+            self.__func = Option.none()
+            return val
+
+    def advance_by(self, n: int = 0) -> Result[None, int]:
+        if n == 0:
+            return Result.of_ok(None)
+        elif self.__func.is_none() and n > 0:
+            return Result.of_err(n)
+        elif self.__func.is_some():
+            self.__func = Option.none()
+            if n == 1:
+                return Result.of_ok(None)
+            return Result.of_err(n - 1)
+
+
+class Repeat(IterMeta[T], Generic[T]):
+    __val: T
+
+    def __init__(self, value: T):
+        self.__val = value
+
+    def next(self) -> Option[T]:
+        return Option.some(copy.deepcopy(self.__val))
+
+    def nth(self, n: int = 1) -> Option[T]:
+        return Option.some(copy.deepcopy(self.__val))
+
+    def advance_by(self, n: int = 0) -> Result[None, int]:
+        return Ok(None)
+
+    def next_chunk(self, n: int = 2) -> Result[List[T], List[T]]:
+        assert n > 0, "Chunk size must be positive"
+        return Ok(copy.deepcopy(self.__val) for _ in range(n))
+
+    def any(self, func: Callable[[T], bool] = lambda x: x) -> bool:
+        return func(self.__val)
+
+    def all(self, func: Callable[[T], bool] = lambda x: x) -> bool:
+        return func(self.__val)
+
+    def count(self) -> int:
+        raise ValueError("Repeat iterator is infinitive and you cannot count it.")
+
+    def find(self, predicate: Callable[[T], bool]) -> Option[T]:
+        if predicate(self.__val):
+            return Option.some(copy.deepcopy(self.__val))
+        else:
+            return Option.none()
+
+    def find_map(self, func: Callable[[T], Option[U]]) -> Option[U]:
+        return func(self.__val)
+
+    def fuse(self) -> "Fuse":
+        warnings.warn("Fusing repeated iterator is meaningless.", Warning)
+        return self
+
+    def skip(self, n: int) -> "Skip[T]":
+        warnings.warn("Skip repeated iterator is meaningless.", Warning)
+        return self
+
 
 # Import types at the bottom of the file to avoid circular imports.
 from .rust_like import (

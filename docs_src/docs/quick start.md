@@ -11,7 +11,7 @@ pip install monad-std
 Then, import the library:
 
 ```python
->>> from monad_std import *
+>>> from monad_std.prelude import *
 >>> Ok(2)
 Result::Ok(2)
 ```
@@ -33,7 +33,7 @@ from monad_std import Option
 And create value like this:
 
 ```python
-from monad_std import Option
+from monad_std.prelude import *
 Option.some(3) # This will create a box containing a `3`
 Option.none()  # This will produce a ZST value, representing the `None` in `monad_std`
 ```
@@ -49,7 +49,7 @@ For more information, see the documentation: [monad-std: Option](./Api%20Documen
 <div markdown>
 
 ```python
-from monad_std import Option
+from monad_std.prelude import *
 import math
 def solution(v: Option[float]) -> Option[float]:
     return v.and_then(lambda x: Option.some(math.sqrt(x)) if x >= 0 else Option.none())
@@ -66,7 +66,7 @@ If one of the number is null, use `0` as a fallback.**
 <div markdown>
 
 ```python
-from monad_std import Option
+from monad_std.prelude import *
 def solution(v1: Option[float], v2: Option[float]) -> Option[float]:
     return v1.and_then(lambda x: Option.some(x + v2.unwrap_or(0))).or_else(lambda: v2)
 ```
@@ -87,7 +87,7 @@ from monad_std import Result, Err, Ok
 Values can be created via both `Result`'s static methods and `Err` or `Ok`.
 
 ```python
-from monad_std import Result, Err, Ok
+from monad_std.prelude import *
 
 # The following two operations are equivalent
 Result.of_ok(2)
@@ -103,7 +103,7 @@ For more information, see the documentation: [monad-std: Result](./Api%20Documen
 **Note:** `Result`s can be transformed into `Option`s via the `Result.ok` and `Result.err` method.
 
 ```python
-from monad_std import Ok, Err
+from monad_std.prelude import *
 
 print(repr(Ok(2).ok()), repr(Ok(2).err()))
 # Output: Option::Some(2) Option::None
@@ -115,7 +115,7 @@ print(repr(Err('err').err()), repr(Err('err').ok()))
 accept a function call and return a result, containing the raised exception:
 
 ```python
-from monad_std import Result
+from monad_std.prelude import *
 from math import sqrt
 
 def maybe_raise_exception(value: float) -> float:
@@ -132,15 +132,19 @@ print(repr(Result.catch_from(maybe_raise_exception, -1)))
 The iterator can be used through the [`IterMeta`][monad_std.iter.iter.IterMeta] abstract class(as an entry point):
 
 ```python
-from monad_std.iter import IterMeta
+from monad_std.iter impot IterMeta # Basic iterator class
+from monad_std.prelude import siter, once # Iterator constructor
 ```
 
-`IterMeta` can be constructed by passing any iterator or iterable objects:
+An iterator can be constructed by passing any iterator or iterable objects, or a single value(`once`):
 
 ```python
-from monad_std.iter import IterMeta
-IterMeta.iter([1, 2, 4])
-IterMeta.iter(range(10))
+from monad_std.prelude import *
+# construct from iterator/iterable
+siter([1, 2, 4])
+siter(range(10))
+# construct from a single value
+once(5)
 ```
 
 The iterator is lazily calculated, so call `collect` if you want to get the result:
@@ -164,9 +168,9 @@ and returns those integers that can be devided exactly by 3 and 5.**
 <div markdown>
 
 ```python
-from monad_std.iter import IterMeta
+from monad_std.prelude import *
 def solution(v: list) -> list:
-    return IterMeta.iter(v).filter(lambda x: x % 3 == 0 and x % 5 == 0).collect_list()
+    return siter(v).filter(lambda x: x % 3 == 0 and x % 5 == 0).collect_list()
 ```
 
 </div>
@@ -184,9 +188,9 @@ Output: `[0, 0, 1, 2, 2, 4, 3, 6, 4, 8, 5, 10, 6, 12, 7, 14, 8, 16, 9, 18]`
 <div markdown>
 
 ```python
-from monad_std.iter import IterMeta
+from monad_std.prelude import *
 def solution(v: list) -> list:
-    return IterMeta.iter(v).flat_map(lambda x: [x, x * 2]).collect_list()
+    return siter(v).flat_map(lambda x: [x, x * 2]).collect_list()
 ```
 
 </div>

@@ -60,6 +60,10 @@
     options:
         heading_level: 2
 
+::: monad_std.iter.iter.OnceWith
+    options:
+        heading_level: 2
+
 ::: monad_std.iter.rust_like.Peekable
     options:
         heading_level: 2

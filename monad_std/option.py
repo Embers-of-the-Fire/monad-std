@@ -646,10 +646,13 @@ class Option(Generic[KT], metaclass=ABCMeta):
         """
         ...
 
-    @abstractmethod
     def clone(self) -> "Option[KT]":
         """Clone self."""
-        ...
+        if self.is_some():
+            import copy
+            return Option.some(copy.deepcopy(self.unwrap_unchecked()))
+        else:
+            return Option.none()
 
     @staticmethod
     def clone_from(value: "Option[KT]") -> "Option[KT]":

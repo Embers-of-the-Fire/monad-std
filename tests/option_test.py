@@ -1,113 +1,114 @@
 import unittest
 
-import monad_std
+from monad_std.prelude import *
+from monad_std import UnwrapException
 
 
 class OptionTest(unittest.TestCase):
     def test_build(self):
-        self.assertEqual(monad_std.Option.from_nullable(None), monad_std.Option.none())
-        self.assertEqual(monad_std.Option.from_nullable(2), monad_std.Option.some(2))
+        self.assertEqual(Option.from_nullable(None), Option.none())
+        self.assertEqual(Option.from_nullable(2), Option.some(2))
 
     def test_identify(self):
-        x: monad_std.Option[int] = monad_std.Option.some(2)
+        x: Option[int] = Option.some(2)
         self.assertTrue(x.is_some())
         self.assertFalse(x.is_none())
-        x: monad_std.Option[int] = monad_std.Option.none()
+        x: Option[int] = Option.none()
         self.assertFalse(x.is_some())
         self.assertTrue(x.is_none())
 
-        x: monad_std.Option[int] = monad_std.Option.some(2)
+        x: Option[int] = Option.some(2)
         self.assertTrue(x.is_some_and(lambda v: v > 1))
-        x: monad_std.Option[int] = monad_std.Option.some(0)
+        x: Option[int] = Option.some(0)
         self.assertFalse(x.is_some_and(lambda v: v > 1))
-        x: monad_std.Option[int] = monad_std.Option.none()
+        x: Option[int] = Option.none()
         self.assertFalse(x.is_some_and(lambda v: v > 1))
 
     def test_magic_method(self):
-        self.assertTrue(monad_std.Option.some(2))
-        self.assertFalse(monad_std.Option.none())
+        self.assertTrue(Option.some(2))
+        self.assertFalse(Option.none())
 
-        self.assertEqual(monad_std.Option.some(2), monad_std.Option.some(1) + monad_std.Option.some(1))
+        self.assertEqual(Option.some(2), Option.some(1) + Option.some(1))
 
-        self.assertEqual(monad_std.Option.some(4), monad_std.Option.some(2) * monad_std.Option.some(2))
+        self.assertEqual(Option.some(4), Option.some(2) * Option.some(2))
 
-        self.assertEqual(hash(monad_std.Option.some(2)), hash(2))
+        self.assertEqual(hash(Option.some(2)), hash(2))
 
-        v1 = monad_std.Option.some(2)
-        v2 = monad_std.Option.some(4)
+        v1 = Option.some(2)
+        v2 = Option.some(4)
 
         self.assertEqual(v1 & v2, v1.bool_and(v2))
         self.assertEqual(v1 | v2, v1.bool_or(v2))
         self.assertEqual(v1 ^ v2, v1.bool_xor(v2))
 
     def test_unwrap(self):
-        x: monad_std.Option[str] = monad_std.Option.some("value")
+        x: Option[str] = Option.some("value")
         self.assertEqual(x.expect("hey, this is an `Option::None` object"), "value")
-        x: monad_std.Option[str] = monad_std.Option.none()
+        x: Option[str] = Option.none()
         try:
             x.expect("hey, this is an `Option::None` object")
-        except monad_std.UnwrapException as e:
+        except UnwrapException as e:
             self.assertEqual(str(e), "OptionError: hey, this is an `Option::None` object")
 
-        x: monad_std.Option[str] = monad_std.Option.some("air")
+        x: Option[str] = Option.some("air")
         self.assertEqual(x.unwrap(), "air")
-        x: monad_std.Option[str] = monad_std.Option.none()
+        x: Option[str] = Option.none()
         try:
             x.unwrap()
-        except monad_std.UnwrapException as e:
+        except UnwrapException as e:
             self.assertEqual(
                 str(e),
                 "OptionError: call `Option.unwrap` on an " "`Option::None` object",
             )
 
-        self.assertEqual(monad_std.Option.some("car").unwrap_or("bike"), "car")
-        self.assertEqual(monad_std.Option.none().unwrap_or("bike"), "bike")
+        self.assertEqual(Option.some("car").unwrap_or("bike"), "car")
+        self.assertEqual(Option.none().unwrap_or("bike"), "bike")
 
         k = 10
-        self.assertEqual(monad_std.Option.some(4).unwrap_or_else(lambda: 2 * k), 4)
-        self.assertEqual(monad_std.Option.none().unwrap_or_else(lambda: 2 * k), 20)
+        self.assertEqual(Option.some(4).unwrap_or_else(lambda: 2 * k), 4)
+        self.assertEqual(Option.none().unwrap_or_else(lambda: 2 * k), 20)
 
-        self.assertEqual(monad_std.Option.some(4).unwrap_unchecked(), 4)
-        self.assertTrue(monad_std.Option.none().unwrap_unchecked() is None)
+        self.assertEqual(Option.some(4).unwrap_unchecked(), 4)
+        self.assertTrue(Option.none().unwrap_unchecked() is None)
 
-        self.assertEqual(monad_std.Option.some(4).to_pattern(), 4)
-        self.assertTrue(monad_std.Option.none().to_pattern() is None)
+        self.assertEqual(Option.some(4).to_pattern(), 4)
+        self.assertTrue(Option.none().to_pattern() is None)
 
-        x: monad_std.Option[str] = monad_std.Option.some("air")
+        x: Option[str] = Option.some("air")
         self.assertEqual(x.to_nullable(), "air")
-        x: monad_std.Option[str] = monad_std.Option.none()
+        x: Option[str] = Option.none()
         self.assertIsNone(x.to_nullable())
-        x: monad_std.Option[None] = monad_std.Option.some(None)
+        x: Option[None] = Option.some(None)
         self.assertIsNone(x.to_nullable())
 
     def test_map(self):
         x = []
-        monad_std.Option.some(2).inspect(lambda s: x.append(s))
+        Option.some(2).inspect(lambda s: x.append(s))
         self.assertListEqual(x, [2])
-        monad_std.Option.none().inspect(lambda s: x.append(s))
+        Option.none().inspect(lambda s: x.append(s))
         self.assertListEqual(x, [2])
 
-        maybe_some_string = monad_std.Option.some("Hello, World!")
+        maybe_some_string = Option.some("Hello, World!")
         maybe_some_len = maybe_some_string.map(lambda s: len(s))
-        self.assertEqual(maybe_some_len, monad_std.Option.some(13))
+        self.assertEqual(maybe_some_len, Option.some(13))
         self.assertEqual(
-            monad_std.Option.none().map(lambda s: len(s)),
-            monad_std.Option.none(),
+            Option.none().map(lambda s: len(s)),
+            Option.none(),
         )
 
         self.assertEqual(
-            monad_std.Option.some("foo").map_or(42, lambda s: len(s)),
+            Option.some("foo").map_or(42, lambda s: len(s)),
             3,
         )
-        self.assertEqual(monad_std.Option.none().map_or(42, lambda s: len(s)), 42)
+        self.assertEqual(Option.none().map_or(42, lambda s: len(s)), 42)
 
         k = 21
         self.assertEqual(
-            monad_std.Option.some("bar").map_or_else(lambda: 2 * k, lambda s: len(s)),
+            Option.some("bar").map_or_else(lambda: 2 * k, lambda s: len(s)),
             3,
         )
         self.assertEqual(
-            monad_std.Option.none().map_or_else(lambda: 2 * k, lambda s: len(s)),
+            Option.none().map_or_else(lambda: 2 * k, lambda s: len(s)),
             42,
         )
         class Test:
@@ -118,205 +119,205 @@ class OptionTest(unittest.TestCase):
             def change_value(self, new_value: int):
                 self.val = new_value
 
-        maybe_something = monad_std.Option.some(Test(1))
+        maybe_something = Option.some(Test(1))
         self.assertEqual(maybe_something.unwrap().val, 1)
         maybe_something.map_mut(lambda x: x.change_value(5))
         self.assertEqual(maybe_something.unwrap().val, 5)
 
     def test_into_result(self):
         self.assertEqual(
-            monad_std.Option.some("foo").ok_or(0),
-            monad_std.Result.of_ok("foo"),
+            Option.some("foo").ok_or(0),
+            Result.of_ok("foo"),
         )
         self.assertEqual(
-            monad_std.Option.none().ok_or(0),
-            monad_std.Result.of_err(0),
+            Option.none().ok_or(0),
+            Result.of_err(0),
         )
 
         k = 21
         self.assertEqual(
-            monad_std.Option.some("foo").ok_or_else(lambda: k * 2),
-            monad_std.Result.of_ok("foo"),
+            Option.some("foo").ok_or_else(lambda: k * 2),
+            Result.of_ok("foo"),
         )
         self.assertEqual(
-            monad_std.Option.none().ok_or_else(lambda: k * 2),
-            monad_std.Result.of_err(42),
+            Option.none().ok_or_else(lambda: k * 2),
+            Result.of_err(42),
         )
 
     def test_to_array(self):
-        self.assertListEqual(monad_std.Option.some(1).to_array(), [1])
-        self.assertListEqual(monad_std.Option.none().to_array(), [])
+        self.assertListEqual(Option.some(1).to_array(), [1])
+        self.assertListEqual(Option.none().to_array(), [])
 
     def test_bool_eval(self):
         self.assertEqual(
-            monad_std.Option.some(2).bool_and(monad_std.Option.none()),
-            monad_std.Option.none(),
+            Option.some(2).bool_and(Option.none()),
+            Option.none(),
         )
         self.assertEqual(
-            monad_std.Option.none().bool_and(monad_std.Option.some("foo")),
-            monad_std.Option.none(),
+            Option.none().bool_and(Option.some("foo")),
+            Option.none(),
         )
         self.assertEqual(
-            monad_std.Option.some(2).bool_and(monad_std.Option.some("bar")),
-            monad_std.Option.some("bar"),
+            Option.some(2).bool_and(Option.some("bar")),
+            Option.some("bar"),
         )
         self.assertEqual(
-            monad_std.Option.none().bool_and(monad_std.Option.none()),
-            monad_std.Option.none(),
-        )
-
-        self.assertEqual(
-            monad_std.Option.some(2).bool_or(monad_std.Option.none()),
-            monad_std.Option.some(2),
-        )
-        self.assertEqual(
-            monad_std.Option.none().bool_or(monad_std.Option.some(100)),
-            monad_std.Option.some(100),
-        )
-        self.assertEqual(
-            monad_std.Option.some(2).bool_or(monad_std.Option.some(100)),
-            monad_std.Option.some(2),
-        )
-        self.assertEqual(
-            monad_std.Option.none().bool_or(monad_std.Option.none()),
-            monad_std.Option.none(),
+            Option.none().bool_and(Option.none()),
+            Option.none(),
         )
 
         self.assertEqual(
-            monad_std.Option.some(2).bool_xor(monad_std.Option.none()),
-            monad_std.Option.some(2),
+            Option.some(2).bool_or(Option.none()),
+            Option.some(2),
         )
         self.assertEqual(
-            monad_std.Option.none().bool_xor(monad_std.Option.some(2)),
-            monad_std.Option.some(2),
+            Option.none().bool_or(Option.some(100)),
+            Option.some(100),
         )
         self.assertEqual(
-            monad_std.Option.some(2).bool_xor(monad_std.Option.some(2)),
-            monad_std.Option.none(),
+            Option.some(2).bool_or(Option.some(100)),
+            Option.some(2),
         )
         self.assertEqual(
-            monad_std.Option.none().bool_xor(monad_std.Option.none()),
-            monad_std.Option.none(),
+            Option.none().bool_or(Option.none()),
+            Option.none(),
+        )
+
+        self.assertEqual(
+            Option.some(2).bool_xor(Option.none()),
+            Option.some(2),
+        )
+        self.assertEqual(
+            Option.none().bool_xor(Option.some(2)),
+            Option.some(2),
+        )
+        self.assertEqual(
+            Option.some(2).bool_xor(Option.some(2)),
+            Option.none(),
+        )
+        self.assertEqual(
+            Option.none().bool_xor(Option.none()),
+            Option.none(),
         )
 
     def test_chain(self):
         self.assertEqual(
-            monad_std.Option.some(2).and_then(lambda x: monad_std.Option.some(str(x))),
-            monad_std.Option.some("2"),
+            Option.some(2).and_then(lambda x: Option.some(str(x))),
+            Option.some("2"),
         )
         self.assertEqual(
-            monad_std.Option.some(10).and_then(lambda _: monad_std.Option.none()),
-            monad_std.Option.none(),
+            Option.some(10).and_then(lambda _: Option.none()),
+            Option.none(),
         )
         self.assertEqual(
-            monad_std.Option.none().and_then(lambda x: monad_std.Option.some(str(x))),
-            monad_std.Option.none(),
+            Option.none().and_then(lambda x: Option.some(str(x))),
+            Option.none(),
         )
 
         def get_from(l, i):
             try:
-                return monad_std.Option.some(l[i])
+                return Option.some(l[i])
             except IndexError:
-                return monad_std.Option.none()
+                return Option.none()
 
         arr2d = [["A0", "A1"], ["B0", "B1"]]
         self.assertEqual(
             get_from(arr2d, 0).and_then(lambda row: get_from(row, 1)),
-            monad_std.Option.some("A1"),
+            Option.some("A1"),
         )
         self.assertEqual(
             get_from(arr2d, 2).and_then(lambda row: get_from(row, 0)),
-            monad_std.Option.none(),
+            Option.none(),
         )
 
         self.assertEqual(
-            monad_std.Option.some("foo").or_else(lambda: monad_std.Option.some("bar")),
-            monad_std.Option.some("foo"),
+            Option.some("foo").or_else(lambda: Option.some("bar")),
+            Option.some("foo"),
         )
         self.assertEqual(
-            monad_std.Option.none().or_else(lambda: monad_std.Option.some("bar")),
-            monad_std.Option.some("bar"),
+            Option.none().or_else(lambda: Option.some("bar")),
+            Option.some("bar"),
         )
         self.assertEqual(
-            monad_std.Option.none().or_else(lambda: monad_std.Option.none()),
-            monad_std.Option.none(),
-        )
-
-        self.assertEqual(
-            monad_std.Option.none().filter(lambda n: n % 2 == 0),
-            monad_std.Option.none(),
-        )
-        self.assertEqual(
-            monad_std.Option.some(3).filter(lambda n: n % 2 == 0),
-            monad_std.Option.none(),
-        )
-        self.assertEqual(
-            monad_std.Option.some(4).filter(lambda n: n % 2 == 0),
-            monad_std.Option.some(4),
+            Option.none().or_else(lambda: Option.none()),
+            Option.none(),
         )
 
         self.assertEqual(
-            monad_std.Option.some(1).zip(monad_std.Option.some("hi")),
-            monad_std.Option.some((1, "hi")),
+            Option.none().filter(lambda n: n % 2 == 0),
+            Option.none(),
         )
         self.assertEqual(
-            monad_std.Option.some(1).zip(monad_std.Option.none()),
-            monad_std.Option.none(),
+            Option.some(3).filter(lambda n: n % 2 == 0),
+            Option.none(),
+        )
+        self.assertEqual(
+            Option.some(4).filter(lambda n: n % 2 == 0),
+            Option.some(4),
+        )
+
+        self.assertEqual(
+            Option.some(1).zip(Option.some("hi")),
+            Option.some((1, "hi")),
+        )
+        self.assertEqual(
+            Option.some(1).zip(Option.none()),
+            Option.none(),
         )
 
         def make_point(x, y):
-            return monad_std.Option.some({"x": x, "y": y})
+            return Option.some({"x": x, "y": y})
 
         self.assertEqual(
-            monad_std.Option.some(2).zip_with(monad_std.Option.some(4), make_point),
-            monad_std.Option.some({"x": 2, "y": 4}),
+            Option.some(2).zip_with(Option.some(4), make_point),
+            Option.some({"x": 2, "y": 4}),
         )
         self.assertEqual(
-            monad_std.Option.some(2).zip_with(monad_std.Option.none(), make_point),
-            monad_std.Option.none(),
+            Option.some(2).zip_with(Option.none(), make_point),
+            Option.none(),
         )
 
     def test_unzip(self):
         self.assertTupleEqual(
-            monad_std.Option.some((1, "hi")).unzip(),
+            Option.some((1, "hi")).unzip(),
             (
-                monad_std.Option.some(1),
-                monad_std.Option.some("hi"),
+                Option.some(1),
+                Option.some("hi"),
             ),
         )
         self.assertTupleEqual(
-            monad_std.Option.none().unzip(),
+            Option.none().unzip(),
             (
-                monad_std.Option.none(),
-                monad_std.Option.none(),
+                Option.none(),
+                Option.none(),
             ),
         )
 
     def test_transpose(self):
-        x = monad_std.Result.of_ok(monad_std.Option.some(5))
-        y = monad_std.Option.some(monad_std.Result.of_ok(5))
+        x = Result.of_ok(Option.some(5))
+        y = Option.some(Result.of_ok(5))
         self.assertEqual(x, y.transpose())
 
     def test_flatten(self):
         self.assertEqual(
-            monad_std.Option.some(monad_std.Option.some(6)).flatten(),
-            monad_std.Option.some(6),
+            Option.some(Option.some(6)).flatten(),
+            Option.some(6),
         )
         self.assertEqual(
-            monad_std.Option.some(monad_std.Option.none()).flatten(),
-            monad_std.Option.none(),
+            Option.some(Option.none()).flatten(),
+            Option.none(),
         )
         self.assertEqual(
-            monad_std.Option.none().flatten(),
-            monad_std.Option.none(),
+            Option.none().flatten(),
+            Option.none(),
         )
         self.assertEqual(
-            monad_std.Option.some(monad_std.Option.some(monad_std.Option.some(6))).flatten(),
-            monad_std.Option.some(monad_std.Option.some(6)),
+            Option.some(Option.some(Option.some(6))).flatten(),
+            Option.some(Option.some(6)),
         )
         self.assertEqual(
-            monad_std.Option.some(monad_std.Option.some(monad_std.Option.some(6))).flatten().flatten(),
-            monad_std.Option.some(6),
+            Option.some(Option.some(Option.some(6))).flatten().flatten(),
+            Option.some(6),
         )
 
 
