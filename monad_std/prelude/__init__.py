@@ -1,5 +1,5 @@
 from monad_std import Option, Ok, Err, Result
-from monad_std.iter import siter, once, once_with
+from monad_std.iter import siter, once, once_with, repeat
 
 
 __all__ = [
@@ -10,4 +10,5 @@ __all__ = [
     "siter",
     "once",
     "once_with",
+    "repeat",
 ]

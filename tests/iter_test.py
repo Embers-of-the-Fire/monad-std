@@ -337,6 +337,10 @@ class ResultTest(unittest.TestCase):
         it = once_with(lambda: 1)
         self.assertEqual(it.nth(1), Option.none())
 
+    def test_iter_repeat(self):
+        it = repeat(5)
+        self.assertListEqual(it.take(5).collect_list(), [5] * 5)
+
     def test_iter_chunk(self):
         a = siter("loerm").array_chunk(2)
         self.assertEqual(a.next(), Option.some(["l", "o"]))

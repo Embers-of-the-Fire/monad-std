@@ -1,6 +1,8 @@
+import warnings
 from typing import Iterator, TypeVar, Generic, List, Iterable, Callable, Union
 import collections.abc
 from abc import ABCMeta, abstractmethod
+import copy
 
 from monad_std.option import Option
 from monad_std.result import Result, Err, Ok
@@ -65,6 +67,23 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             ```
         """
         return OnceWith(func)
+
+    @staticmethod
+    def repeat(value: T) -> "Repeat[T]":
+        """Creates a new iterator that endlessly repeats a single element.
+
+        The `repeat()` function repeats a single value over and over again.
+
+        Infinite iterators like `repeat()` are often used with adapters like
+        [`IterMeta.take`][monad_std.iter.iter.IterMeta.take], in order to make them finite.
+
+        Examples:
+            ```python
+            it = repeat(5)
+            assert it.take(10).collect_list(), [5] * 10
+            ```
+        """
+        return Repeat(value)
 
     @abstractmethod
     def next(self) -> Option[T]:
@@ -1265,6 +1284,53 @@ class OnceWith(IterMeta[T], Generic[T]):
             if n == 1:
                 return Result.of_ok(None)
             return Result.of_err(n - 1)
+
+
+class Repeat(IterMeta[T], Generic[T]):
+    __val: T
+
+    def __init__(self, value: T):
+        self.__val = value
+
+    def next(self) -> Option[T]:
+        return Option.some(copy.deepcopy(self.__val))
+
+    def nth(self, n: int = 1) -> Option[T]:
+        return Option.some(copy.deepcopy(self.__val))
+
+    def advance_by(self, n: int = 0) -> Result[None, int]:
+        return Ok(None)
+
+    def next_chunk(self, n: int = 2) -> Result[List[T], List[T]]:
+        assert n > 0, "Chunk size must be positive"
+        return Ok(copy.deepcopy(self.__val) for _ in range(n))
+
+    def any(self, func: Callable[[T], bool] = lambda x: x) -> bool:
+        return func(self.__val)
+
+    def all(self, func: Callable[[T], bool] = lambda x: x) -> bool:
+        return func(self.__val)
+
+    def count(self) -> int:
+        raise ValueError("Repeat iterator is infinitive and you cannot count it.")
+
+    def find(self, predicate: Callable[[T], bool]) -> Option[T]:
+        if predicate(self.__val):
+            return Option.some(copy.deepcopy(self.__val))
+        else:
+            return Option.none()
+
+    def find_map(self, func: Callable[[T], Option[U]]) -> Option[U]:
+        return func(self.__val)
+
+    def fuse(self) -> "Fuse":
+        warnings.warn("Fusing repeated iterator is meaningless.", Warning)
+        return self
+
+    def skip(self, n: int) -> "Skip[T]":
+        warnings.warn("Skip repeated iterator is meaningless.", Warning)
+        return self
+
 
 # Import types at the bottom of the file to avoid circular imports.
 from .rust_like import (

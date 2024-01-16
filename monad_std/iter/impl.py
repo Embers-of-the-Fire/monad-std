@@ -23,7 +23,7 @@ from .rust_like import (
     Peekable,
 )
 
-from .iter import OnceWith
+from .iter import OnceWith, Repeat
 
 
 __all__ = [
@@ -42,6 +42,7 @@ __all__ = [
     "Map",
     "OnceWith",
     "Peekable",
+    "Repeat",
     "Scan",
     "Skip",
     "Take",
