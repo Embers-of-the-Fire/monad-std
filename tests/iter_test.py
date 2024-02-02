@@ -115,10 +115,10 @@ class ResultTest(unittest.TestCase):
     def test_iter_inspect(self):
         a = [1, 4, 2, 3]
         sumed = (siter(a)
-               .inspect(lambda x: None)
-               .filter(lambda x: x % 2 == 0)
-               .inspect(lambda x: None)
-               .fold(0, lambda acc, x: acc + x))
+                 .inspect(lambda x: None)
+                 .filter(lambda x: x % 2 == 0)
+                 .inspect(lambda x: None)
+                 .fold(0, lambda acc, x: acc + x))
         self.assertEqual(sumed, 6)
 
     def test_iter_intersperse(self):
@@ -158,6 +158,61 @@ class ResultTest(unittest.TestCase):
         self.assertEqual(it.next(), Option.some(4))
         self.assertEqual(it.next(), Option.some(6))
         self.assertEqual(it.next(), Option.none())
+
+        #############
+        # Map While #
+        #############
+
+        a = [-1, 4, 0, 1]
+
+        it = siter(a).map_while(lambda x: Option.none() if x == 0 else Option.some(16 / x))
+
+        self.assertEqual(it.next(), Option.some(-16))
+        self.assertEqual(it.next(), Option.some(4))
+        self.assertEqual(it.next(), Option.none())
+
+        a = [-1, 4, 0, 1]
+
+        it = siter(a) \
+            .map(lambda x: Option.none() if x == 0 else Option.some(16 / x)) \
+            .take_while(lambda x: x.is_some()) \
+            .map(lambda x: x.unwrap())
+
+        self.assertEqual(it.next(), Option.some(-16))
+        self.assertEqual(it.next(), Option.some(4))
+        self.assertEqual(it.next(), Option.none())
+
+        a = [0, 1, 2, -3, 4, 5, -6];
+
+        it = siter(a).map_while(lambda x: Option.none() if x < 0 else Option.some(x))
+        lst = it.collect_list()
+
+        self.assertListEqual(lst, [0, 1, 2])
+
+        a = [1, 2, -3, 4]
+        it = siter(a)
+
+        res = it.map_while(lambda x: Option.none() if x < 0 else Option.some(x)).collect_list()
+
+        self.assertListEqual(res, [1, 2])
+
+        res2 = it.collect_list()
+
+        self.assertListEqual(res2, [4])
+
+        ###############
+        # Map Windows #
+        ###############
+
+        strings = siter('abcd') \
+            .map_windows(2, lambda dq: f'{dq[0]}+{dq[1]}') \
+            .collect_list()
+
+        self.assertListEqual(strings, ["a+b", "b+c", "c+d"])
+
+        limited = siter("abcd").map_windows(5, lambda dq: dq)
+        self.assertEqual(limited.next(), Option.none())
+        self.assertEqual(limited.next(), Option.none())
 
     def test_iter_peek(self):
         xs = [1, 2, 3]

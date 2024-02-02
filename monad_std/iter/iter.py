@@ -11,6 +11,7 @@ from monad_std.error import UnwrapException
 T = t.TypeVar("T")
 U = t.TypeVar("U")
 B = t.TypeVar("B")
+R = t.TypeVar("R")
 
 
 class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
@@ -229,14 +230,14 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
 
         **Note:**
         The `ArrayChunk` does not yield the last several elements, and you should call
-        [`ArrayChunk.get_unused`][monad_std.iter.rust_like.ArrayChunk.get_unused]
+        [`ArrayChunk.get_unused`][monad_std.iter.impl.array_chunk.ArrayChunk.get_unused]
         method to get the last one(s).
 
         Args:
             chunk_size: The number of elements to yield at a time, default 2. **Must be greater than zero!**
 
         Returns:
-            See [`ArrayChunk`][monad_std.iter.rust_like.ArrayChunk].
+            See [`ArrayChunk`][monad_std.iter.impl.array_chunk.ArrayChunk].
 
         Examples:
             ```python
@@ -263,7 +264,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             chunk_size: The number of elements to yield at a time, default 2. **Must be greater than zero!**
 
         Returns:
-            See [`Chunk`][monad_std.iter.rust_like.Chunk].
+            See [`Chunk`][monad_std.iter.impl.chunk.Chunk].
 
         Examples:
             ```python
@@ -289,7 +290,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             other: Another iterator to chain with.
 
         Returns:
-            See [`Chain`][monad_std.iter.rust_like.Chain].
+            See [`Chain`][monad_std.iter.impl.chain.Chain].
 
         Examples:
             ```python
@@ -312,7 +313,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         the [`zip`][monad_std.iter.iter.IterMeta.zip] function provides similar functionality.
 
         Returns:
-            See [`Enumerate`][monad_std.iter.builtin_like.Enumerate].
+            See [`Enumerate`][monad_std.iter.impl.enumerate.Enumerate].
 
         Examples:
             ```python
@@ -340,7 +341,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             func: The closure to be used to determine if an element should be yielded.
 
         Returns:
-            See [`Filter`][monad_std.iter.builtin_like.Filter].
+            See [`Filter`][monad_std.iter.impl.filter.Filter].
 
         Examples:
             ```python
@@ -363,7 +364,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             func:
 
         Returns:
-            See [`FilterMap`][monad_std.iter.rust_like.FilterMap].
+            See [`FilterMap`][monad_std.iter.impl.filter_map.FilterMap].
 
         Examples:
             The example below shows how a `map().filter().map()` can be shortened to a single call to `filter_map`.
@@ -396,7 +397,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             func: The function to apply to each element which produces an item or an iterator.
 
         Returns:
-            See [`FlatMap`][monad_std.iter.rust_like.FlatMap].
+            See [`FlatMap`][monad_std.iter.impl.flat_map.FlatMap].
 
         Examples:
             ```python
@@ -419,7 +420,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         get a one-dimensional structure, you have to `flatten()` again.
 
         Returns:
-            See [`Flatten`][monad_std.iter.rust_like.Flatten].
+            See [`Flatten`][monad_std.iter.impl.flatten.Flatten].
 
         Examples:
             Basic usage:
@@ -450,7 +451,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         `fuse()` adapts an iterator, ensuring that after a `None` is given, it will always return `None` forever.
 
         Returns:
-            See [`Fuse`][monad_std.iter.rust_like.Fuse].
+            See [`Fuse`][monad_std.iter.impl.fuse.Fuse].
 
         Examples:
             ```python
@@ -497,7 +498,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         but applications may find it useful in certain situations when errors need to be logged before being discarded.
 
         Returns:
-            See [`Inspect`][monad_std.iter.rust_like.Inspect].
+            See [`Inspect`][monad_std.iter.impl.inspect.Inspect].
 
         Examples:
             ```python
@@ -537,7 +538,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             sep: The separator to insert between each element.
 
         Returns:
-            See [`Intersperse`][monad_std.iter.rust_like.Intersperse].
+            See [`Intersperse`][monad_std.iter.impl.intersperse.Intersperse].
 
         Examples:
             ```python
@@ -556,6 +557,134 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             ```
         """
         return Intersperse(self, sep)
+    
+    def map_while(self, predicate: t.Callable[[T], Option[U]]) -> "MapWhile[U]":
+        """Creates an iterator that both yields elements based on a predicate and maps.
+
+        `map_while()` takes a closure as an argument.
+        It will call this closure on each element of the iterator,
+        and yield elements while it returns `Some(_)`.
+        
+        Creates an iterator that both yields elements based on a predicate and maps.
+
+        Args:
+            predicate: The predicate to determine if the map will produce something.
+
+        Returns:
+            See [`MapWhile`][monad_std.iter.impl.map.MapWhile].
+
+        Examples:
+            Basic usage:
+
+            ```python
+            a = [-1, 4, 0, 1]
+
+            it = siter(a).map_while(lambda x: Option.none() if x == 0 else Option.some(16 / x))
+
+            assert it.next() == Option.some(-16)
+            assert it.next() == Option.some(4)
+            assert it.next() == Option.none()
+            ```
+            
+            Here’s the same example, but with take_while and map:
+
+            ```python
+            a = [-1, 4, 0, 1]
+
+            it = siter(a)\\
+                .map(lambda x: Option.none() if x == 0 else Option.some(16 / x))\\
+                .take_while(Option.is_some)\\
+                .map(Option.unwrap)
+
+            assert it.next() == Option.some(-16)
+            assert it.next() == Option.some(4)
+            assert it.next() == Option.none()
+            ```
+
+            Stopping after an initial None:
+
+            ```python
+            a = [0, 1, 2, -3, 4, 5, -6];
+
+            it = siter(a).map_while(lambda x: Option.none() if x < 0 else Option.some(x))
+            lst = it.collect_list()
+
+            # We have more elements which could fit in positive-int (4, 5), but `map_while` returned `None` for `-3`
+            # (as the `predicate` returned `None`) and `collect` stops at the first `None` encountered.
+            assert lst == [0, 1, 2]
+            ```
+
+            Because `map_while()` needs to look at the value in order
+            to see if it should be included or not,
+            consuming iterators will see that it is removed:
+
+            ```python
+            a = [1, 2, -3, 4]
+            it = siter(a)
+
+            res = it.map_while(lambda x: Option.none() if x < 0 else Option.some(x)).collect_list()
+
+            assert res == [1, 2]
+
+            res2 = it.collect_list()
+
+            assert res2 == [4]
+            ```
+
+            The `-3` is no longer there, because it was consumed in order
+            to see if the iteration should stop, but wasn’t placed back into the iterator.
+
+            Note that unlike `take_while` this iterator is not fused.
+            It is also not specified what this iterator returns after the first None is returned.
+            If you need fused iterator, use [`fuse`][monad_std.iter.iter.IterMeta.fuse]."""
+        return MapWhile(self, predicate)
+
+    def map_windows(self, window_size: int, f: t.Callable[[t.Deque[T]], R]) -> "MapWindows[R]":
+        """Calls the given function `f` for each contiguous window of size `window_size`
+        over `self` and returns an iterator over the outputs of `f`. The windows during mapping overlap.
+
+        The returned iterator yields `𝑘 − N + 1` items
+        (where `𝑘` is the number of items yielded by `self` and `N` is `window_size`).
+        If `𝑘` is less than `N`, this method yields an empty iterator.
+
+        For non-fused iterators, they are fused after map_windows.
+
+        **Note**:
+
+        Typically this should return a list or an array in other languages,
+        but since Python do not offer length-strict array support,
+        the internal implementation uses the `collections.deque` to create the windows.
+        Therefore, the list provided to the function `f` is `deque[T]`
+        instead of something like `List[T]`, `T[]`(C-like) or `[T; N]`(Rust).
+
+        Args:
+            window_size: The size of each window.
+            f: A function to operate on each window.
+        
+        Returns:
+            See [`MapWindows`][monad_std.iter.impl.map.MapWindows].
+        
+        Examples:
+            In the following example, the closure is called three times
+            with the arguments `['a', 'b']`, `['b', 'c']` and `['c', 'd']` respectively.
+            
+            ```python
+            strings = siter('abcd')\\
+                .map_windows(2, lambda dq: f'{dq[0]}+{dq[1]}')\\
+                .collect_list()
+
+            assert strings == ["a+b", "b+c", "c+d"]
+            ```
+            
+            If the window size is too large, then nothing will be yielded.
+            
+            ```python
+            limited = siter('abc').map_windows(4, lambda dq: dq)
+            
+            assert limited.next() == Option.none()
+            assert limited.next() == Option.none()
+            ```"""
+        return MapWindows(window_size, self, f)
 
     def intersperse_with(self, sep: t.Callable[[], T]) -> "IntersperseWith[T]":
         """Creates a new iterator which places an item generated by separator between adjacent items of the original
@@ -572,7 +701,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             sep: The function to produce the separator.
 
         Returns:
-            See [`IntersperseWith`][monad_std.iter.rust_like.IntersperseWith].
+            See [`IntersperseWith`][monad_std.iter.impl.intersperse.IntersperseWith].
 
         Examples:
             For ordinary usage it's recommended to use [`intersperse`][monad_std.iter.iter.IterMeta.intersperse],
@@ -606,7 +735,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             func: A closure to be called on each element.
 
         Returns:
-            See [`Map`][monad_std.iter.builtin_like.Map].
+            See [`Map`][monad_std.iter.impl.map.Map].
 
         Examples:
             ```python
@@ -635,13 +764,13 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         """Creates an iterator which can use the `peek` method to look at the next element of the iterator without
         consuming it.
 
-        Note that the underlying iterator is **still advanced** when [`peek`][monad_std.iter.rust_like.Peekable.peek]
+        Note that the underlying iterator is **still advanced** when [`peek`][monad_std.iter.impl.peekable.Peekable.peek]
         is called for the first time: In order to retrieve the next element,
         [`next`][monad_std.iter.iter.IterMeta.next] is called on the underlying iterator,
         hence any side effects (i.e. anything other than fetching the next value) of the `next` method will occur.
 
         Returns:
-            See [`Peekable`][monad_std.iter.rust_like.Peekable].
+            See [`Peekable`][monad_std.iter.impl.peekable.Peekable].
 
         Examples:
             ```python
@@ -682,7 +811,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             func: The function to scan the iterator.
 
         Returns:
-            See [`Scan`][monad_std.iter.rust_like.Scan].
+            See [`Scan`][monad_std.iter.impl.scan.Scan].
 
         Examples:
             ```python
@@ -717,7 +846,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             n: The number of elements to skip.
 
         Returns:
-            See [`Skip`][monad_std.iter.rust_like.Skip].
+            See [`Skip`][monad_std.iter.impl.skip.Skip].
 
         Examples:
             ```python
@@ -741,7 +870,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             n: The number of elements to take.
 
         Returns:
-            See [`Take`][monad_std.iter.rust_like.Take].
+            See [`Take`][monad_std.iter.impl.take.Take].
 
         Examples:
             Basic usage:
@@ -784,7 +913,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             func: The predicate function.
 
         Returns:
-            See [`TakeWhile`][monad_std.iter.rust_like.TakeWhile].
+            See [`TakeWhile`][monad_std.iter.impl.take.TakeWhile].
 
         Examples:
             Basic usage:
@@ -834,7 +963,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             other: Another iterator to zip with.
 
         Returns:
-            See [`Zip`][monad_std.iter.rust_like.Zip].
+            See [`Zip`][monad_std.iter.impl.zip.Zip].
 
         Examples:
             ```python
@@ -1179,7 +1308,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
 
     def collect_string(self) -> str:
         """Collect the iterator into a string. Using `__str__` but not `__repr__` as default."""
-        return "".join(map(str, self.to_iter()))
+        return "".join(str(x) for x in self.to_iter())
 
     def collect_array(self):
         """Collect the iterator into a `funct.Array`.
@@ -1192,16 +1321,6 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             return funct.Array(self.to_iter())
         except ImportError:
             raise ImportError("You must install `funct` package to use this feature")
-
-
-class MIterable(IterMeta[T], t.Generic[T]):
-    __iter: t.Iterator[T]
-
-    def __init__(self, v: t.Iterable[T]):
-        self.__iter = iter(v)
-
-    def next(self) -> Option[T]:
-        return Result.catch(self.__iter.__next__).ok()
 
 
 class _IterIterable(IterMeta[T], t.Generic[T]):
@@ -1334,22 +1453,6 @@ class Repeat(IterMeta[T], t.Generic[T]):
 
 
 # Import types at the bottom of the file to avoid circular imports.
-from .rust_like import (
-    Zip,
-    Chain,
-    ArrayChunk,
-    FilterMap,
-    Flatten,
-    FlatMap,
-    Fuse,
-    Inspect,
-    Peekable,
-    Intersperse,
-    IntersperseWith,
-    Scan,
-    Skip,
-    Take,
-    TakeWhile,
-    Chunk
-)
-from .builtin_like import Map, Filter, Enumerate
+# Here we can import everything because the `impl` package only
+# export iterator implementions.
+from .impl import *

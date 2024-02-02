@@ -2,9 +2,17 @@
 
 ## V0.9.0
 
+**ADD**:
+
+- `monad_std.iter.IterMeta`:
+    - `map_while`: Yields elements based on both a predicate and maps.
+    - `map_windows`: A map but with fixed-sized windows.
+
 **Impl Change**
 
 - Use `import typing` instead of `from typing import ...` to make the scope and namespace cleaner.
+- All iterator implementation will be moved to their single files,
+  and can stil be imported from `monad_std.iter.impl`.
 
 ## V0.8.0
 

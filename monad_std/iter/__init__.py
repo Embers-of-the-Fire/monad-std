@@ -27,12 +27,12 @@ def once(value: V) -> IterMeta[V]:
     """See [`IterMeta.once`][monad_std.iter.iter.IterMeta.once] for more information."""
     return IterMeta.once(value)
 
-def once_with(value: V) -> impl.OnceWith[V]:
+def once_with(value: V) -> iter.OnceWith[V]:
     """See [`IterMeta.once_with`][monad_std.iter.iter.IterMeta.once_with] for more information."""
     return IterMeta.once_with(value)
 
 
-def repeat(value: V) -> impl.Repeat[V]:
+def repeat(value: V) -> iter.Repeat[V]:
     """See [`IterMeta.repeat`][monad_std.iter.iter.IterMeta.repeat] for more information."""
     return IterMeta.repeat(value)
 
