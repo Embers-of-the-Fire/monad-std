@@ -1203,6 +1203,7 @@ class MIterable(IterMeta[T], Generic[T]):
     def next(self) -> Option[T]:
         return Result.catch(self.__iter.__next__).ok()
 
+
 class _IterIterable(IterMeta[T], Generic[T]):
     __iter: Iterator[T]
 
@@ -1323,11 +1324,11 @@ class Repeat(IterMeta[T], Generic[T]):
     def find_map(self, func: Callable[[T], Option[U]]) -> Option[U]:
         return func(self.__val)
 
-    def fuse(self) -> "Fuse":
+    def fuse(self) -> "Repeat[T]":
         warnings.warn("Fusing repeated iterator is meaningless.", Warning)
         return self
 
-    def skip(self, n: int) -> "Skip[T]":
+    def skip(self, n: int) -> "Repeat[T]":
         warnings.warn("Skip repeated iterator is meaningless.", Warning)
         return self
 
