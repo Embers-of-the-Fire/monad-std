@@ -1,17 +1,17 @@
-from typing import TypeVar, Generic, Callable, Tuple
+import typing as t
 
 from .iter import IterMeta
 from .. import Option
 
-T = TypeVar('T')
-U = TypeVar('U')
+T = t.TypeVar('T')
+U = t.TypeVar('U')
 
 
-class Map(IterMeta[U], Generic[T, U]):
+class Map(IterMeta[U], t.Generic[T, U]):
     __it: IterMeta[T]
-    __func: Callable[[T], U]
+    __func: t.Callable[[T], U]
 
-    def __init__(self, __it: IterMeta[T], __func: Callable[[T], U]):
+    def __init__(self, __it: IterMeta[T], __func: t.Callable[[T], U]):
         self.__it = __it
         self.__func = __func
 
@@ -19,11 +19,11 @@ class Map(IterMeta[U], Generic[T, U]):
         return self.__it.next().map(self.__func)
 
 
-class Filter(IterMeta[T], Generic[T]):
+class Filter(IterMeta[T], t.Generic[T]):
     __it: IterMeta[T]
-    __func: Callable[[T], bool]
+    __func: t.Callable[[T], bool]
 
-    def __init__(self, __it: IterMeta[T], __func: Callable[[T], bool]):
+    def __init__(self, __it: IterMeta[T], __func: t.Callable[[T], bool]):
         self.__it = __it
         self.__func = __func
 
@@ -35,7 +35,7 @@ class Filter(IterMeta[T], Generic[T]):
             return Option.none()
 
 
-class Enumerate(IterMeta[Tuple[int, T]], Generic[T]):
+class Enumerate(IterMeta[t.Tuple[int, T]], t.Generic[T]):
     __it: IterMeta[T]
     __num: int
 

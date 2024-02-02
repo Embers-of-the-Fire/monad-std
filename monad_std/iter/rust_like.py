@@ -1,15 +1,15 @@
-from typing import TypeVar, Generic, Callable, Tuple, List, Union, Iterable, Iterator
+import typing as t
 import collections.abc
 
 from .iter import IterMeta
 from .. import Option
 
-T = TypeVar('T')
-U = TypeVar('U')
-B = TypeVar('B')
+T = t.TypeVar('T')
+U = t.TypeVar('U')
+B = t.TypeVar('B')
 
 
-class Zip(IterMeta[Tuple[T, U]], Generic[T, U]):
+class Zip(IterMeta[t.Tuple[T, U]], t.Generic[T, U]):
     __it1: IterMeta[T]
     __it2: IterMeta[U]
 
@@ -17,11 +17,11 @@ class Zip(IterMeta[Tuple[T, U]], Generic[T, U]):
         self.__it1 = iter1
         self.__it2 = iter2
 
-    def next(self) -> Option[Tuple[T, U]]:
+    def next(self) -> Option[t.Tuple[T, U]]:
         return self.__it1.next().zip(self.__it2.next())
 
 
-class Chain(IterMeta[T], Generic[T]):
+class Chain(IterMeta[T], t.Generic[T]):
     __it1: Option[IterMeta[T]]
     __it2: Option[IterMeta[T]]
 
@@ -41,17 +41,17 @@ class Chain(IterMeta[T], Generic[T]):
         return self.__it1.and_then(lambda x: x.next()).or_else(lambda: self.__clear_it1())
 
 
-class ArrayChunk(IterMeta[List[T]], Generic[T]):
+class ArrayChunk(IterMeta[t.List[T]], t.Generic[T]):
     __it: IterMeta[T]
     __chunk_size: int
-    __unused: Option[List[T]]
+    __unused: Option[t.List[T]]
 
     def __init__(self, it: IterMeta[T], chunk_size: int):
         assert chunk_size > 0, "Chunk size must be greater than zero!"
         self.__it = it
         self.__chunk_size = chunk_size
 
-    def next(self) -> Option[List[T]]:
+    def next(self) -> Option[t.List[T]]:
         arr = []
         for _ in range(self.__chunk_size):
             if (x := self.__it.next()).is_some():
@@ -64,7 +64,7 @@ class ArrayChunk(IterMeta[List[T]], Generic[T]):
         self.__unused = Option.some(arr)
         return Option.none()
 
-    def get_unused(self) -> Option[List[T]]:
+    def get_unused(self) -> Option[t.List[T]]:
         """Return the last/unused several elements.
 
         Examples:
@@ -78,7 +78,7 @@ class ArrayChunk(IterMeta[List[T]], Generic[T]):
         return self.__unused
 
 
-class Chunk(IterMeta[List[T]], Generic[T]):
+class Chunk(IterMeta[t.List[T]], t.Generic[T]):
     __it: ArrayChunk[T]
     __finished: bool
 
@@ -87,7 +87,7 @@ class Chunk(IterMeta[List[T]], Generic[T]):
         self.__it = it.array_chunk(chunk_size)
         self.__finished = False
 
-    def next(self) -> Option[List[T]]:
+    def next(self) -> Option[t.List[T]]:
         if not self.__finished:
             nxt = self.__it.next()
             if nxt.is_none():
@@ -99,11 +99,11 @@ class Chunk(IterMeta[List[T]], Generic[T]):
             return Option.none()
 
 
-class FilterMap(IterMeta[U], Generic[T, U]):
+class FilterMap(IterMeta[U], t.Generic[T, U]):
     __it: IterMeta[T]
-    __func: Callable[[T], Option[U]]
+    __func: t.Callable[[T], Option[U]]
 
-    def __init__(self, it: IterMeta[T], func: Callable[[T], Option[U]]):
+    def __init__(self, it: IterMeta[T], func: t.Callable[[T], Option[U]]):
         self.__it = it
         self.__func = func
 
@@ -115,11 +115,11 @@ class FilterMap(IterMeta[U], Generic[T, U]):
             return Option.none()
 
 
-class Flatten(IterMeta[T], Generic[T]):
-    __it: IterMeta[Union[T, IterMeta[T], Iterable[T], Iterator[T]]]
+class Flatten(IterMeta[T], t.Generic[T]):
+    __it: IterMeta[t.Union[T, IterMeta[T], t.Iterable[T], t.Iterator[T]]]
     __current_it: Option[IterMeta[T]]
 
-    def __init__(self, it: IterMeta[Union[T, IterMeta[T], Iterable[T], Iterator[T]]]):
+    def __init__(self, it: IterMeta[t.Union[T, IterMeta[T], t.Iterable[T], t.Iterator[T]]]):
         self.__it = it
         self.__current_it = Option.none()
 
@@ -148,12 +148,12 @@ class Flatten(IterMeta[T], Generic[T]):
         return self.__it_next()
 
 
-class FlatMap(IterMeta[U], Generic[T, U]):
+class FlatMap(IterMeta[U], t.Generic[T, U]):
     __it: IterMeta[T]
     __current_it: Option[IterMeta[U]]
-    __func: Callable[[T], Union[U, IterMeta[U], Iterable[U], Iterator[U]]]
+    __func: t.Callable[[T], t.Union[U, IterMeta[U], t.Iterable[U], t.Iterator[U]]]
 
-    def __init__(self, __it: IterMeta[T], __func: Callable[[T], Union[U, IterMeta[U], Iterable[U], Iterator[U]]]):
+    def __init__(self, __it: IterMeta[T], __func: t.Callable[[T], t.Union[U, IterMeta[U], t.Iterable[U], t.Iterator[U]]]):
         self.__it = __it
         self.__func = __func
         self.__current_it = Option.none()
@@ -184,7 +184,7 @@ class FlatMap(IterMeta[U], Generic[T, U]):
         return self.__it_next()
 
 
-class Fuse(IterMeta[T], Generic[T]):
+class Fuse(IterMeta[T], t.Generic[T]):
     __it: Option[IterMeta[T]]
 
     def __init__(self, it: IterMeta[T]):
@@ -198,11 +198,11 @@ class Fuse(IterMeta[T], Generic[T]):
         return self.__it.and_then(lambda x: x.next()).or_else(lambda: self.__finish())
 
 
-class Inspect(IterMeta[T], Generic[T]):
+class Inspect(IterMeta[T], t.Generic[T]):
     __it: IterMeta[T]
-    __func: Callable[[T], None]
+    __func: t.Callable[[T], None]
 
-    def __init__(self, it: IterMeta[T], func: Callable[[T], None]):
+    def __init__(self, it: IterMeta[T], func: t.Callable[[T], None]):
         self.__it = it
         self.__func = func
 
@@ -210,7 +210,7 @@ class Inspect(IterMeta[T], Generic[T]):
         return self.__it.next().inspect(self.__func)
 
 
-class Peekable(IterMeta[T], Generic[T]):
+class Peekable(IterMeta[T], t.Generic[T]):
     __it: IterMeta[T]
     __peek: Option[Option[T]]
 
@@ -251,7 +251,7 @@ class Peekable(IterMeta[T], Generic[T]):
         return self.__peek.or_else(lambda: self.__peek_next())
 
 
-class Intersperse(IterMeta[T], Generic[T]):
+class Intersperse(IterMeta[T], t.Generic[T]):
     __it: Peekable[T]
     __sep: T
     __need_sep: bool
@@ -270,12 +270,12 @@ class Intersperse(IterMeta[T], Generic[T]):
             return self.__it.next()
 
 
-class IntersperseWith(IterMeta[T], Generic[T]):
+class IntersperseWith(IterMeta[T], t.Generic[T]):
     __it: Peekable[T]
-    __sep: Callable[[], T]
+    __sep: t.Callable[[], T]
     __need_sep: bool
 
-    def __init__(self, it: IterMeta[T], sep: Callable[[], T]):
+    def __init__(self, it: IterMeta[T], sep: t.Callable[[], T]):
         self.__it = Peekable(it)
         self.__sep = sep
         self.__need_sep = False
@@ -289,12 +289,12 @@ class IntersperseWith(IterMeta[T], Generic[T]):
             return self.__it.next()
 
 
-class Scan(IterMeta[B], Generic[T, B, U]):
+class Scan(IterMeta[B], t.Generic[T, B, U]):
     __it: IterMeta[T]
-    __func: Callable[[U, T], Tuple[U, Option[B]]]
+    __func: t.Callable[[U, T], t.Tuple[U, Option[B]]]
     __state: U
 
-    def __init__(self, it: IterMeta[T], init: U, func: Callable[[U, T], Tuple[U, Option[B]]]):
+    def __init__(self, it: IterMeta[T], init: U, func: t.Callable[[U, T], t.Tuple[U, Option[B]]]):
         self.__it = it
         self.__func = func
         self.__state = init
@@ -308,7 +308,7 @@ class Scan(IterMeta[B], Generic[T, B, U]):
         return self.__it.next().and_then(lambda x: self.__update_state(x))
 
 
-class Skip(IterMeta[T], Generic[T]):
+class Skip(IterMeta[T], t.Generic[T]):
     __skipped: bool
     __skip_n: int
     __it: IterMeta[T]
@@ -330,7 +330,7 @@ class Skip(IterMeta[T], Generic[T]):
             return self.__it.next()
 
 
-class Take(IterMeta[T], Generic[T]):
+class Take(IterMeta[T], t.Generic[T]):
     __remain: int
     __it: IterMeta[T]
 
@@ -346,12 +346,12 @@ class Take(IterMeta[T], Generic[T]):
             return Option.none()
 
 
-class TakeWhile(IterMeta[T], Generic[T]):
-    __func: Callable[[T], bool]
+class TakeWhile(IterMeta[T], t.Generic[T]):
+    __func: t.Callable[[T], bool]
     __flag: bool
     __it: IterMeta[T]
 
-    def __init__(self, it: IterMeta[T], func: Callable[[T], bool]):
+    def __init__(self, it: IterMeta[T], func: t.Callable[[T], bool]):
         self.__func = func
         self.__it = it
         self.__flag = False

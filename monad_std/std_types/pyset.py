@@ -1,11 +1,11 @@
-from typing import TypeVar, Generic, Set
+import typing as t
 
 from ..option import Option
 
-K = TypeVar('K')
+K = t.TypeVar('K')
 
 
-class MSet(Generic[K], Set[K]):
+class MSet(t.Generic[K], t.Set[K]):
     def pop(self) -> Option[K]:
         try:
             return Option.some(super().pop())

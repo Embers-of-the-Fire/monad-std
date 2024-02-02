@@ -1,6 +1,6 @@
-from typing import Union, Literal, NewType
+import typing as t
 
-ExceptionType = NewType('ExceptionType', Union[Literal['Option'], Literal['Result']])
+ExceptionType = t.NewType('ExceptionType', t.Union[t.Literal['Option'], t.Literal['Result']])
 
 
 class UnwrapException(Exception):

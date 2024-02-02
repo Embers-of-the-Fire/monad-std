@@ -1,5 +1,5 @@
 import warnings
-from typing import Iterator, TypeVar, Generic, List, Iterable, Callable, Union
+import typing as t
 import collections.abc
 from abc import ABCMeta, abstractmethod
 import copy
@@ -8,14 +8,14 @@ from monad_std.option import Option
 from monad_std.result import Result, Err, Ok
 from monad_std.error import UnwrapException
 
-T = TypeVar("T")
-U = TypeVar("U")
-B = TypeVar("B")
+T = t.TypeVar("T")
+U = t.TypeVar("U")
+B = t.TypeVar("B")
 
 
-class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
+class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
     @staticmethod
-    def iter(v: "Union[Iterable[T@IterMeta], Iterator[T@IterMeta]]") -> "IterMeta[T]":
+    def iter(v: "t.Union[t.Iterable[T@IterMeta], t.Iterator[T@IterMeta]]") -> "IterMeta[T]":
         """Convert an iterator or iterable object into `IterMeta`.
 
         For implementations, see [`_IterIterable`][monad_std.iter.iter._IterIterable] and
@@ -46,7 +46,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         return _IterIterable([v])
 
     @staticmethod
-    def once_with(func: Callable[[], T]) -> "OnceWith[T]":
+    def once_with(func: t.Callable[[], T]) -> "OnceWith[T]":
         """Convert a closure which produces a value to a single-use iterator.
 
         Examples:
@@ -146,7 +146,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             lst = x
         return lst
 
-    def next_chunk(self, n: int = 2) -> Result[List[T], List[T]]:
+    def next_chunk(self, n: int = 2) -> Result[t.List[T], t.List[T]]:
         """Advances the iterator and returns an array containing the next `N` values.
 
         If there are not enough elements to fill the array then `Err` is returned containing a list of the remaining
@@ -326,7 +326,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Enumerate(self)
 
-    def filter(self, func: Callable[[T], bool] = lambda x: x) -> "Filter[T]":
+    def filter(self, func: t.Callable[[T], bool] = lambda x: x) -> "Filter[T]":
         """Creates an iterator which uses a closure to determine if an element should be yielded.
 
         Given an element the closure must return `True` or `False`.
@@ -351,7 +351,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Filter(self, func)
 
-    def filter_map(self, func: Callable[[T], Option[U]] = lambda x: Option.some(x)) -> "FilterMap[T, U]":
+    def filter_map(self, func: t.Callable[[T], Option[U]] = lambda x: Option.some(x)) -> "FilterMap[T, U]":
         """Creates an iterator that both [`filter`][monad_std.iter.iter.IterMeta.filter]s
         and [`map`][monad_std.iter.iter.IterMeta.map]s.
 
@@ -379,7 +379,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return FilterMap(self, func)
 
-    def flat_map(self, func: Callable[[T], Union[U, "IterMeta[U]", Iterable[U], Iterator[U]]]) -> "FlatMap":
+    def flat_map(self, func: t.Callable[[T], t.Union[U, "IterMeta[U]", t.Iterable[U], t.Iterator[U]]]) -> "FlatMap":
         """Creates an iterator that works like map, but [`flatten`][monad_std.iter.iter.IterMeta.flatten]s
         nested structure.
 
@@ -412,7 +412,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         This is useful when you have an iterator of iterators or an iterator of things that can be turned into
         iterators and you want to remove one level of indirection.
 
-        Flattening works on any `Iterable` or `Iterator` type, including `Option` and `Result`.
+        Flattening works on any `t.Iterable` or `t.Iterator` type, including `Option` and `Result`.
 
         `flatten()` does not perform a **deep** flatten. Instead, only one level of nesting is removed. That is,
         if you `flatten()` a three-dimensional array, the result will be two-dimensional and not one-dimensional. To
@@ -434,7 +434,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             ftd = IterMeta.iter(words).map(iter).flatten().collect_string()
             assert ftd == 'alphabetagamma'
             ```
-            Flattening works on any `Iterable` or `Iterator` type, including `Option` and `Result`:
+            Flattening works on any `t.Iterable` or `t.Iterator` type, including `Option` and `Result`:
             ```python
             a = [Option.some(123), Result.of_ok(321), Option.none(), Option.some(233), Result.of_err('err')]
             ftd = IterMeta.iter(a).flatten().collect_list()
@@ -487,7 +487,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Fuse(self)
 
-    def inspect(self, func: Callable[[T], None]) -> "Inspect[T]":
+    def inspect(self, func: t.Callable[[T], None]) -> "Inspect[T]":
         """Does something with each element of an iterator, passing the value on.
 
         When using iterators, you’ll often chain several of them together. While working on such code, you might want
@@ -557,7 +557,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Intersperse(self, sep)
 
-    def intersperse_with(self, sep: Callable[[], T]) -> "IntersperseWith[T]":
+    def intersperse_with(self, sep: t.Callable[[], T]) -> "IntersperseWith[T]":
         """Creates a new iterator which places an item generated by separator between adjacent items of the original
         iterator.
 
@@ -588,7 +588,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return IntersperseWith(self, sep)
 
-    def map(self, func: Callable[[T], U]) -> "Map[T, U]":
+    def map(self, func: t.Callable[[T], U]) -> "Map[T, U]":
         """Takes a closure and creates an iterator which calls that closure on each element.
 
         `map` transforms one iterator into another, by means of its argument.
@@ -666,7 +666,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Peekable(self)
 
-    def scan(self, init: U, func: Callable[[U, T], B]) -> "Scan[T, B, U]":
+    def scan(self, init: U, func: t.Callable[[U, T], B]) -> "Scan[T, B, U]":
         """An iterator adapter which, like fold, holds internal state, but unlike fold, produces a new iterator.
 
         `scan()` takes two arguments: an initial value which seeds the internal state, and a closure with two
@@ -773,7 +773,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Take(self, n)
 
-    def take_while(self, func: Callable[[T], bool]) -> "TakeWhile[T]":
+    def take_while(self, func: t.Callable[[T], bool]) -> "TakeWhile[T]":
         """Creates an iterator that yields elements based on a predicate.
 
         `take_while()` takes a closure as an argument. It will call this closure on each element of the iterator, and yield elements while it returns `True`.
@@ -849,7 +849,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Zip(self, other)
 
-    def to_iter(self) -> Iterator[T]:
+    def to_iter(self) -> t.Iterator[T]:
         return _Iter(self)
 
     def count(self) -> int:
@@ -862,7 +862,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             cnt += 1
         return cnt
 
-    def find(self, predicate: Callable[[T], bool]) -> Option[T]:
+    def find(self, predicate: t.Callable[[T], bool]) -> Option[T]:
         """Searches for an element of an iterator that satisfies a predicate.
 
         `find()` takes a closure that returns `True` or `False`. It applies this closure to each element of the iterator,
@@ -889,7 +889,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
                 return Option.some(uwp)
         return Option.none()
 
-    def find_map(self, func: Callable[[T], Option[U]]) -> Option[U]:
+    def find_map(self, func: t.Callable[[T], Option[U]]) -> Option[U]:
         """Applies function to the elements of iterator and returns the first non-none result.
 
         `iter.find_map(f)` is equivalent to `iter.filter_map(f).next()`.
@@ -907,7 +907,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
                 return v
         return Option.none()
 
-    def fold(self, init: U, func: Callable[[U, T], U]) -> U:
+    def fold(self, init: U, func: t.Callable[[U, T], U]) -> U:
         """Folds every element into an accumulator by applying an operation, returning the final result.
 
         fold() takes two arguments: an initial value, and a closure with two arguments: an accumulator,
@@ -968,7 +968,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             acc = func(acc, v)
         return acc
 
-    def for_each(self, func: Callable[[T], None]) -> None:
+    def for_each(self, func: t.Callable[[T], None]) -> None:
         """Calls a closure on each element of an iterator.
 
         This is equivalent to using a [`for`](https://docs.python.org/3/reference/compound_stmts.html#the-for
@@ -1004,7 +1004,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return self.position(lambda x: x == item)
 
-    def position(self, func: Callable[[T], bool]) -> Option[int]:
+    def position(self, func: t.Callable[[T], bool]) -> Option[int]:
         """Searches for an element in an iterator, returning its index.
 
         `position()` takes a closure that returns true or false. It applies this closure to each element of the
@@ -1047,7 +1047,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return self.reduce(lambda x, y: x * y)
 
-    def reduce(self, func: Callable[[T, T], T]) -> Option[T]:
+    def reduce(self, func: t.Callable[[T, T], T]) -> Option[T]:
         """Reduces the elements to a single one, by repeatedly applying a reducing operation.
 
         If the iterator is empty, returns `None`; otherwise, returns the result of the reduction.
@@ -1097,7 +1097,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return self.find(lambda x: x == item).is_some()
 
-    def all(self, func: Callable[[T], bool] = lambda x: x) -> bool:
+    def all(self, func: t.Callable[[T], bool] = lambda x: x) -> bool:
         """Tests if every element of the iterator matches a predicate.
 
         `all()` takes a closure that returns `True` or `False`. It applies this closure to each element of the
@@ -1133,7 +1133,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
                 return False
         return True
 
-    def any(self, func: Callable[[T], bool] = lambda x: x) -> bool:
+    def any(self, func: t.Callable[[T], bool] = lambda x: x) -> bool:
         """Tests if any element of the iterator matches a predicate.
 
         `any()` takes a closure that returns `True` or `False`. It applies this closure to each element of the
@@ -1169,7 +1169,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
                 return True
         return False
 
-    def collect_list(self) -> List[T]:
+    def collect_list(self) -> t.List[T]:
         """Collect the iterator into a list."""
         return list(self.to_iter())
 
@@ -1194,37 +1194,37 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             raise ImportError("You must install `funct` package to use this feature")
 
 
-class MIterable(IterMeta[T], Generic[T]):
-    __iter: Iterator[T]
+class MIterable(IterMeta[T], t.Generic[T]):
+    __iter: t.Iterator[T]
 
-    def __init__(self, v: Iterable[T]):
+    def __init__(self, v: t.Iterable[T]):
         self.__iter = iter(v)
 
     def next(self) -> Option[T]:
         return Result.catch(self.__iter.__next__).ok()
 
 
-class _IterIterable(IterMeta[T], Generic[T]):
-    __iter: Iterator[T]
+class _IterIterable(IterMeta[T], t.Generic[T]):
+    __iter: t.Iterator[T]
 
-    def __init__(self, v: Iterable[T]):
+    def __init__(self, v: t.Iterable[T]):
         self.__iter = iter(v)
 
     def next(self) -> Option[T]:
         return Result.catch(self.__iter.__next__).ok()
 
 
-class _IterIterator(IterMeta[T], Generic[T]):
-    __iter: Iterator[T]
+class _IterIterator(IterMeta[T], t.Generic[T]):
+    __iter: t.Iterator[T]
 
-    def __init__(self, v: Iterator[T]):
+    def __init__(self, v: t.Iterator[T]):
         self.__iter = v
 
     def next(self) -> Option[T]:
         return Result.catch(self.__iter.__next__).ok()
 
 
-class _Iter(Iterator[T], Generic[T]):
+class _Iter(t.Iterator[T], t.Generic[T]):
     __iter: IterMeta[T]
 
     def __init__(self, v: IterMeta[T]):
@@ -1238,10 +1238,10 @@ class _Iter(Iterator[T], Generic[T]):
             raise StopIteration
 
 
-class OnceWith(IterMeta[T], Generic[T]):
-    __func: Option[Callable[[], T]]
+class OnceWith(IterMeta[T], t.Generic[T]):
+    __func: Option[t.Callable[[], T]]
 
-    def __init__(self, func: Callable[[], T]):
+    def __init__(self, func: t.Callable[[], T]):
         self.__func = Option.some(func)
 
     def next(self) -> Option[T]:
@@ -1264,7 +1264,7 @@ class OnceWith(IterMeta[T], Generic[T]):
 
         return Option.none()
 
-    def next_chunk(self, n: int = 2) -> Result[List[T], List[T]]:
+    def next_chunk(self, n: int = 2) -> Result[t.List[T], t.List[T]]:
         assert n > 0, "Chunk size must be positive"
         if n > 1:
             val = Result.of_err(list(self.__func.map(lambda s: s()).to_iter()))
@@ -1287,7 +1287,7 @@ class OnceWith(IterMeta[T], Generic[T]):
             return Result.of_err(n - 1)
 
 
-class Repeat(IterMeta[T], Generic[T]):
+class Repeat(IterMeta[T], t.Generic[T]):
     __val: T
 
     def __init__(self, value: T):
@@ -1302,26 +1302,26 @@ class Repeat(IterMeta[T], Generic[T]):
     def advance_by(self, n: int = 0) -> Result[None, int]:
         return Ok(None)
 
-    def next_chunk(self, n: int = 2) -> Result[List[T], List[T]]:
+    def next_chunk(self, n: int = 2) -> Result[t.List[T], t.List[T]]:
         assert n > 0, "Chunk size must be positive"
         return Ok(copy.deepcopy(self.__val) for _ in range(n))
 
-    def any(self, func: Callable[[T], bool] = lambda x: x) -> bool:
+    def any(self, func: t.Callable[[T], bool] = lambda x: x) -> bool:
         return func(self.__val)
 
-    def all(self, func: Callable[[T], bool] = lambda x: x) -> bool:
+    def all(self, func: t.Callable[[T], bool] = lambda x: x) -> bool:
         return func(self.__val)
 
     def count(self) -> int:
         raise ValueError("Repeat iterator is infinitive and you cannot count it.")
 
-    def find(self, predicate: Callable[[T], bool]) -> Option[T]:
+    def find(self, predicate: t.Callable[[T], bool]) -> Option[T]:
         if predicate(self.__val):
             return Option.some(copy.deepcopy(self.__val))
         else:
             return Option.none()
 
-    def find_map(self, func: Callable[[T], Option[U]]) -> Option[U]:
+    def find_map(self, func: t.Callable[[T], Option[U]]) -> Option[U]:
         return func(self.__val)
 
     def fuse(self) -> "Repeat[T]":

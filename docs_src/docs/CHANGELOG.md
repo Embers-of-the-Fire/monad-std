@@ -1,5 +1,11 @@
 # Change Log
 
+## V0.9.0
+
+**Impl Change**
+
+- Use `import typing` instead of `from typing import ...` to make the scope and namespace cleaner.
+
 ## V0.8.0
 
 **ADD**:

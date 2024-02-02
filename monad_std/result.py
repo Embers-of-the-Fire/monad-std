@@ -1,24 +1,24 @@
-from typing import Generic, TypeVar, Callable, List, Any, Iterator, Union, Tuple, Literal
+import typing as t
 from abc import ABCMeta, abstractmethod
 
 from .error import UnwrapException
 
-KT = TypeVar('KT')
-KE = TypeVar('KE')
-T = TypeVar('T')
-E = TypeVar('E')
-U = TypeVar('U')
-F = TypeVar('F')
+KT = t.TypeVar('KT')
+KE = t.TypeVar('KE')
+T = t.TypeVar('T')
+E = t.TypeVar('E')
+U = t.TypeVar('U')
+F = t.TypeVar('F')
 
 
-class Result(Generic[KT, KE], metaclass=ABCMeta):
+class Result(t.Generic[KT, KE], metaclass=ABCMeta):
     """An ancestor class of any `Result` type, inherited by `Ok` and `Err` subclasses."""
 
-    ERR: Literal[False] = False
+    ERR: t.Literal[False] = False
     """The flag for error value.
     See [`Result.to_pattern`][monad_std.result.Result.to_pattern] for more information.
     """
-    OK: Literal[False] = True
+    OK: t.Literal[False] = True
     """The flag for ok value.
     See [`Result.to_pattern`][monad_std.result.Result.to_pattern] for more information.
     """
@@ -34,7 +34,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         return Err(value)
 
     @staticmethod
-    def catch(func: Callable[[], T]) -> "Result[T, Exception]":
+    def catch(func: t.Callable[[], T]) -> "Result[T, Exception]":
         """Catch a thrown exception from the function.
 
         Args:
@@ -61,7 +61,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
             return Result.of_err(e)
 
     @staticmethod
-    def catch_from(func: Callable, *args: Any, **kwargs: Any) -> "Result":
+    def catch_from(func: t.Callable, *args: t.Any, **kwargs: t.Any) -> "Result":
         """Catch a thrown exception from a function call.
 
         Args:
@@ -105,7 +105,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
     def __eq__(self, other):
         ...
 
-    def __add__(self, other) -> "Result[Any, Any]":
+    def __add__(self, other) -> "Result[t.Any, t.Any]":
         """Alias `self.__value.__add__`.
 
         Returns:
@@ -119,7 +119,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         else:
             raise TypeError("expect a Result type")
 
-    def __mul__(self, other) -> "Result[Any, Any]":
+    def __mul__(self, other) -> "Result[t.Any, t.Any]":
         """Alias `self.__value.__mul__`.
 
         Returns:
@@ -133,10 +133,10 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         else:
             raise TypeError("expect a Result type")
 
-    def __iter__(self) -> Iterator[KT]:
+    def __iter__(self) -> t.Iterator[KT]:
         return iter(self.to_array())
 
-    def to_iter(self) -> Iterator[KT]:
+    def to_iter(self) -> t.Iterator[KT]:
         """Alias `iter(self.to_array())`."""
         return iter(self.to_array())
 
@@ -168,7 +168,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def is_ok_and(self, func: Callable[[KT], bool]) -> bool:
+    def is_ok_and(self, func: t.Callable[[KT], bool]) -> bool:
         """Returns `True` if the result is `Ok` and the value inside it matches a predicate.
 
         Args:
@@ -196,7 +196,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def is_err_and(self, func: Callable[[KE], bool]) -> bool:
+    def is_err_and(self, func: t.Callable[[KE], bool]) -> bool:
         """Returns `True` if the result is `Err`.
 
         Args:
@@ -240,7 +240,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def map(self, func: Callable[[KT], U]) -> "Result[U, KE]":
+    def map(self, func: t.Callable[[KT], U]) -> "Result[U, KE]":
         """Maps a `Result<KT, KE>` to `Result<U, KE>` by applying a function to a contained `Ok` value,
         leaving an `Err` value untouched.
 
@@ -255,7 +255,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def map_mut(self, func: Callable[[KT], None]) -> "Result[KT, KE]":
+    def map_mut(self, func: t.Callable[[KT], None]) -> "Result[KT, KE]":
         """Maps a `Result<KT, KE>`'s ok value by changing it within the closure.
 
         This method require a function to return nothing, and passes a reference into it.
@@ -285,7 +285,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def map_err_mut(self, func: Callable[[KE], None]) -> "Result[KT, KE]":
+    def map_err_mut(self, func: t.Callable[[KE], None]) -> "Result[KT, KE]":
         """Maps a `Result<KT, KE>`'s err value by changing it within the closure.
 
         This method require a function to return nothing, and passes a reference into it.
@@ -315,7 +315,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def map_or(self, default: U, func: Callable[[KT], U]) -> U:
+    def map_or(self, default: U, func: t.Callable[[KT], U]) -> U:
         """Returns the provided `default` (if `Err`), or applies a function to the contained value (if `Ok`).
 
         Arguments passed to `map_or` are eagerly evaluated.<br />
@@ -335,7 +335,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def map_or_else(self, default: Callable[[KE], U], func: Callable[[KT], U]) -> U:
+    def map_or_else(self, default: t.Callable[[KE], U], func: t.Callable[[KT], U]) -> U:
         """Maps a `Result<KT, KE>` to `U` by applying fallback function `default` to a contained `Err` value,
         or function `func` to a contained `Ok` value.
 
@@ -354,7 +354,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def map_err(self, func: Callable[[KE], F]) -> "Result[KT, F]":
+    def map_err(self, func: t.Callable[[KE], F]) -> "Result[KT, F]":
         """Maps a `Result<KT, KE>` to `Result<KT, F>` by applying a function to a contained `Err` value,
         leaving the `Ok` value untouched.
 
@@ -370,7 +370,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def inspect(self, func: Callable[[KT], None]) -> "Result[KT, KE]":
+    def inspect(self, func: t.Callable[[KT], None]) -> "Result[KT, KE]":
         """Calls the provided closure with a reference to the contained value (if `Ok`).
 
         Args:
@@ -388,7 +388,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def inspect_err(self, func: Callable[[KE], None]) -> "Result[KT, KE]":
+    def inspect_err(self, func: t.Callable[[KE], None]) -> "Result[KT, KE]":
         """Calls the provided closure with a reference to the contained value (if `Err`).
 
         Args:
@@ -406,7 +406,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def to_array(self) -> List[KT]:
+    def to_array(self) -> t.List[KT]:
         """Returns an array containing the possibly contained value.
 
         Examples:
@@ -470,7 +470,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def to_pattern(self) -> Tuple[bool, Union[KT, KE]]:
+    def to_pattern(self) -> t.Tuple[bool, t.Union[KT, KE]]:
         """Returns a flag and the contained value for pattern-matching.
 
         For flags, see [`Result.OK`][monad_std.result.Result.OK] and [`Result.ERR`][monad_std.result.Result.ERR].
@@ -491,7 +491,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def unwrap_unchecked(self) -> Union[KT, KE]:
+    def unwrap_unchecked(self) -> t.Union[KT, KE]:
         """Returns the contained value, no matter what it is.
 
         Examples:
@@ -543,7 +543,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def unwrap_or_else(self, op: Callable[[KE], KT]) -> KT:
+    def unwrap_or_else(self, op: t.Callable[[KE], KT]) -> KT:
         """Returns the contained `Ok` value or computes it from a closure.
 
         Args:
@@ -599,7 +599,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def and_then(self, op: Callable[[KT], "Result[U, KE]"]) -> "Result[U, KE]":
+    def and_then(self, op: t.Callable[[KT], "Result[U, KE]"]) -> "Result[U, KE]":
         """Calls `op` if the result is `Ok`, otherwise returns the `Err` value of `self`.
 
         This function can be used for control flow based on `Result` values.
@@ -640,7 +640,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def or_else(self, op: Callable[[KE], "Result[KT, F]"]) -> "Result[KT, F]":
+    def or_else(self, op: t.Callable[[KE], "Result[KT, F]"]) -> "Result[KT, F]":
         """Calls `op` if the result is `Err`, otherwise returns the `Ok` value of self.
 
         This function can be used for control flow based on result values.
@@ -704,7 +704,7 @@ class Result(Generic[KT, KE], metaclass=ABCMeta):
             return self.unwrap()
 
 
-class Ok(Generic[KT, KE], Result[KT, KE]):
+class Ok(t.Generic[KT, KE], Result[KT, KE]):
     __value: KT
 
     def __init__(self, value: KT):
@@ -725,13 +725,13 @@ class Ok(Generic[KT, KE], Result[KT, KE]):
     def is_ok(self) -> bool:
         return True
 
-    def is_ok_and(self, func: Callable[[KT], bool]) -> bool:
+    def is_ok_and(self, func: t.Callable[[KT], bool]) -> bool:
         return func(self.__value)
 
     def is_err(self) -> bool:
         return False
 
-    def is_err_and(self, func: Callable[[KE], bool]) -> bool:
+    def is_err_and(self, func: t.Callable[[KE], bool]) -> bool:
         return False
 
     def ok(self) -> "Option[KT]":
@@ -740,33 +740,33 @@ class Ok(Generic[KT, KE], Result[KT, KE]):
     def err(self) -> "Option[KE]":
         return Option.none()
 
-    def map(self, func: Callable[[KT], U]) -> Result[U, KE]:
+    def map(self, func: t.Callable[[KT], U]) -> Result[U, KE]:
         return Result.of_ok(func(self.__value))
 
-    def map_mut(self, func: Callable[[KT], None]) -> Result[KT, KE]:
+    def map_mut(self, func: t.Callable[[KT], None]) -> Result[KT, KE]:
         func(self.__value)
         return self
 
-    def map_err_mut(self, func: Callable[[KE], None]) -> Result[KT, KE]:
+    def map_err_mut(self, func: t.Callable[[KE], None]) -> Result[KT, KE]:
         return self
 
-    def map_or(self, default: U, func: Callable[[KT], U]) -> U:
+    def map_or(self, default: U, func: t.Callable[[KT], U]) -> U:
         return func(self.__value)
 
-    def map_or_else(self, default: Callable[[KE], U], func: Callable[[KT], U]) -> U:
+    def map_or_else(self, default: t.Callable[[KE], U], func: t.Callable[[KT], U]) -> U:
         return func(self.__value)
 
-    def map_err(self, func: Callable[[KE], F]) -> Result[KT, F]:
+    def map_err(self, func: t.Callable[[KE], F]) -> Result[KT, F]:
         return Result.of_ok(self.__value)
 
-    def inspect(self, func: Callable[[KT], None]) -> Result[KT, KE]:
+    def inspect(self, func: t.Callable[[KT], None]) -> Result[KT, KE]:
         func(self.__value)
         return self
 
-    def inspect_err(self, func: Callable[[KE], None]) -> Result[KT, KE]:
+    def inspect_err(self, func: t.Callable[[KE], None]) -> Result[KT, KE]:
         return self
 
-    def to_array(self) -> List[KT]:
+    def to_array(self) -> t.List[KT]:
         return [self.__value]
 
     def expect(self, msg: str) -> KT:
@@ -775,10 +775,10 @@ class Ok(Generic[KT, KE], Result[KT, KE]):
     def expect_err(self, msg: str) -> KE:
         raise UnwrapException("Result", msg + f': {repr(self.__value)}')
 
-    def to_pattern(self) -> Tuple[bool, Union[KT, KE]]:
+    def to_pattern(self) -> t.Tuple[bool, t.Union[KT, KE]]:
         return True, self.__value
 
-    def unwrap_unchecked(self) -> Union[KT, KE]:
+    def unwrap_unchecked(self) -> t.Union[KT, KE]:
         return self.__value
 
     def unwrap(self) -> KT:
@@ -787,7 +787,7 @@ class Ok(Generic[KT, KE], Result[KT, KE]):
     def unwrap_or(self, default: KT) -> KT:
         return self.__value
 
-    def unwrap_or_else(self, op: Callable[[KE], KT]) -> KT:
+    def unwrap_or_else(self, op: t.Callable[[KE], KT]) -> KT:
         return self.__value
 
     def unwrap_err(self) -> KE:
@@ -799,17 +799,17 @@ class Ok(Generic[KT, KE], Result[KT, KE]):
         elif res.is_err():
             return Result.of_err(res.unwrap_err())
 
-    def and_then(self, op: Callable[[KT], Result[U, KE]]) -> Result[U, KE]:
+    def and_then(self, op: t.Callable[[KT], Result[U, KE]]) -> Result[U, KE]:
         return op(self.__value)
 
     def bool_or(self, res: Result[KT, F]) -> Result[KT, F]:
         return Result.of_ok(self.__value)
 
-    def or_else(self, op: Callable[[KE], Result[KT, F]]) -> Result[KT, F]:
+    def or_else(self, op: t.Callable[[KE], Result[KT, F]]) -> Result[KT, F]:
         return Result.of_ok(self.__value)
 
 
-class Err(Generic[KT, KE], Result[KT, KE]):
+class Err(t.Generic[KT, KE], Result[KT, KE]):
     __value: KE
 
     def __init__(self, value: KE):
@@ -830,13 +830,13 @@ class Err(Generic[KT, KE], Result[KT, KE]):
     def is_ok(self) -> bool:
         return False
 
-    def is_ok_and(self, func: Callable[[KT], bool]) -> bool:
+    def is_ok_and(self, func: t.Callable[[KT], bool]) -> bool:
         return False
 
     def is_err(self) -> bool:
         return True
 
-    def is_err_and(self, func: Callable[[KE], bool]) -> bool:
+    def is_err_and(self, func: t.Callable[[KE], bool]) -> bool:
         return func(self.__value)
 
     def ok(self) -> "Option[KT]":
@@ -845,33 +845,33 @@ class Err(Generic[KT, KE], Result[KT, KE]):
     def err(self) -> "Option[KE]":
         return Option.some(self.__value)
 
-    def map(self, func: Callable[[KT], U]) -> Result[U, KE]:
+    def map(self, func: t.Callable[[KT], U]) -> Result[U, KE]:
         return Result.of_err(self.__value)
 
-    def map_mut(self, func: Callable[[KT], None]) -> Result[KT, KE]:
+    def map_mut(self, func: t.Callable[[KT], None]) -> Result[KT, KE]:
         return self
 
-    def map_err_mut(self, func: Callable[[KE], None]) -> Result[KT, KE]:
+    def map_err_mut(self, func: t.Callable[[KE], None]) -> Result[KT, KE]:
         func(self.__value)
         return self
 
-    def map_or(self, default: U, func: Callable[[KT], U]) -> U:
+    def map_or(self, default: U, func: t.Callable[[KT], U]) -> U:
         return default
 
-    def map_or_else(self, default: Callable[[KE], U], func: Callable[[KT], U]) -> U:
+    def map_or_else(self, default: t.Callable[[KE], U], func: t.Callable[[KT], U]) -> U:
         return default(self.__value)
 
-    def map_err(self, func: Callable[[KE], F]) -> Result[KT, F]:
+    def map_err(self, func: t.Callable[[KE], F]) -> Result[KT, F]:
         return Result.of_err(func(self.__value))
 
-    def inspect(self, func: Callable[[KT], None]) -> Result[KT, KE]:
+    def inspect(self, func: t.Callable[[KT], None]) -> Result[KT, KE]:
         return self
 
-    def inspect_err(self, func: Callable[[KE], None]) -> Result[KT, KE]:
+    def inspect_err(self, func: t.Callable[[KE], None]) -> Result[KT, KE]:
         func(self.__value)
         return self
 
-    def to_array(self) -> List[KT]:
+    def to_array(self) -> t.List[KT]:
         return []
 
     def expect(self, msg: str) -> KT:
@@ -880,10 +880,10 @@ class Err(Generic[KT, KE], Result[KT, KE]):
     def expect_err(self, msg: str) -> KE:
         return self.__value
 
-    def to_pattern(self) -> Tuple[bool, Union[KT, KE]]:
+    def to_pattern(self) -> t.Tuple[bool, t.Union[KT, KE]]:
         return False, self.__value
 
-    def unwrap_unchecked(self) -> Union[KT, KE]:
+    def unwrap_unchecked(self) -> t.Union[KT, KE]:
         return self.__value
 
     def unwrap(self) -> KT:
@@ -892,7 +892,7 @@ class Err(Generic[KT, KE], Result[KT, KE]):
     def unwrap_or(self, default: KT) -> KT:
         return default
 
-    def unwrap_or_else(self, op: Callable[[KE], KT]) -> KT:
+    def unwrap_or_else(self, op: t.Callable[[KE], KT]) -> KT:
         return op(self.__value)
 
     def unwrap_err(self) -> KE:
@@ -901,7 +901,7 @@ class Err(Generic[KT, KE], Result[KT, KE]):
     def bool_and(self, res: Result[U, KE]) -> Result[U, KE]:
         return Result.of_err(self.__value)
 
-    def and_then(self, op: Callable[[KT], Result[U, KE]]) -> Result[U, KE]:
+    def and_then(self, op: t.Callable[[KT], Result[U, KE]]) -> Result[U, KE]:
         return Result.of_err(self.__value)
 
     def bool_or(self, res: Result[KT, F]) -> Result[KT, F]:
@@ -910,7 +910,7 @@ class Err(Generic[KT, KE], Result[KT, KE]):
         else:
             return Result.of_err(res.unwrap_err())
 
-    def or_else(self, op: Callable[[KE], Result[KT, F]]) -> Result[KT, F]:
+    def or_else(self, op: t.Callable[[KE], Result[KT, F]]) -> Result[KT, F]:
         return op(self.__value)
 
 
