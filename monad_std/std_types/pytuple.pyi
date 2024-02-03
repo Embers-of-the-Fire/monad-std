@@ -4,7 +4,12 @@ from ..option import Option
 
 
 class MTuple(Tuple):
-    def index(self, __value: Any, __start: SupportsIndex = ..., __stop: SupportsIndex = ...) -> int:
+    def index(
+            self,
+            __value: Any,
+            __start: SupportsIndex = ...,
+            __stop: SupportsIndex = ...
+        ) -> int: # type: ignore[override]
         """Return first index of value.
 
         **Actual Method Signature**
@@ -22,7 +27,8 @@ class MTuple(Tuple):
         Returns:
             First index of the value, or `Option::None` if there's no such item.
         """
-    def get(self, index: int) -> Option[Any]:
+
+    def get(self, index: int) -> Option[Any]: # type: ignore[override]
         """Get an item from the tuple.
 
         Returns:

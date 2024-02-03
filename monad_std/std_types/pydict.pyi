@@ -8,7 +8,7 @@ V = TypeVar('V')
 
 
 class MDict(Generic[K, V], Dict[K, V]):
-    def get(self, key: K) -> Option[V]:
+    def get(self, key: K) -> Option[V]: # type: ignore[override]
         """Get the value by the key.
 
         Args:
@@ -21,7 +21,9 @@ class MDict(Generic[K, V], Dict[K, V]):
             assert x.get('d') == Option.none()
             ```
         """
-    def popitem(self) -> Option[MTuple[K, V]]:
+    
+    # `MTuple` does not support multiple arguments as type-arg.
+    def popitem(self) -> "Option[MTuple[K, V]]": # type: ignore[override, type-arg]
         """Remove and return a (key, value) pair as a 2-tuple.
 
         Pairs are returned in LIFO (last-in, first-out) order.
@@ -36,7 +38,8 @@ class MDict(Generic[K, V], Dict[K, V]):
             assert x.popitem() == Option.none()
             ```
         """
-    def pop(self, key: K) -> Option[V]:
+    
+    def pop(self, key: K) -> Option[V]: # type: ignore[override]
         """Pop a value from the dict.
 
         Args:

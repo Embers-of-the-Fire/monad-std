@@ -1,5 +1,4 @@
 import typing as t
-import collections.abc
 
 from ..iter import IterMeta
 from monad_std import Option
@@ -18,11 +17,11 @@ class Peekable(IterMeta[T], t.Generic[T]):
     def next(self) -> Option[T]:
         pk = self.__peek
         self.__peek = Option.none()
-        return pk.or_else(lambda: self.__it.next())
+        return pk.unwrap_or_else(lambda: self.__it.next())
 
     def __peek_next(self) -> Option[T]:
         pk = self.__it.next()
-        self.__peek = pk
+        self.__peek = Option.some(pk)
         return pk
 
     def peek(self) -> Option[T]:
@@ -45,5 +44,5 @@ class Peekable(IterMeta[T], t.Generic[T]):
             assert it.next() == Option.none()
             ```
         """
-        return self.__peek.or_else(lambda: self.__peek_next())
+        return self.__peek.unwrap_or_else(lambda: self.__peek_next())
     

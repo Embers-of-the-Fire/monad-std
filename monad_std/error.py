@@ -1,6 +1,7 @@
 import typing as t
+import typing_extensions as te
 
-ExceptionType = t.NewType('ExceptionType', t.Union[t.Literal['Option'], t.Literal['Result']])
+ExceptionType: te.TypeAlias = t.Literal["Option", "Result"]
 
 
 class UnwrapException(Exception):

@@ -50,7 +50,7 @@ class Option(t.Generic[KT], metaclass=ABCMeta):
         """
         if isinstance(other, Option):
             if self.is_some() and other.is_some():
-                return Option.some(self.unwrap().__add__(other.unwrap()))
+                return Option.some(self.unwrap() + other.unwrap())
             else:
                 return Option.none()
         else:
@@ -254,10 +254,11 @@ class Option(t.Generic[KT], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def unwrap_unchecked(self) -> t.Optional[KT]:
+    def unwrap_unchecked(self) -> KT:
         """Returns the contained value. If `self` is an `Option::None`, this will return Python's `None` directly.
 
-        This is the same as [`Option.to_nullable()`][monad_std.option.Option.to_nullable]."""
+        This is the same as [`Option.to_nullable()`][monad_std.option.Option.to_nullable].
+        However, this function's signature is `-> KT` instead of `Optional[KT]`."""
         ...
 
     @abstractmethod
@@ -629,7 +630,7 @@ class Option(t.Generic[KT], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def zip_with(self, other: "Option[U]", func: t.Callable[["Option[KT]", "Option[U]"], "Option[R]"]) -> "Option[R]":
+    def zip_with(self, other: "Option[U]", func: t.Callable[[KT, U], "Option[R]"]) -> "Option[R]":
         """Zips `self` and another `Option` with a callable object.
 
         If self is `Some(s)` and other is `Some(o)`, this method returns `Some(f(s, o))`. Otherwise, `None` is returned.
@@ -650,7 +651,8 @@ class Option(t.Generic[KT], metaclass=ABCMeta):
         """Clone self."""
         if self.is_some():
             import copy
-            return Option.some(copy.deepcopy(self.unwrap_unchecked()))
+            value = self.unwrap_unchecked()
+            return Option.some(copy.deepcopy(value))
         else:
             return Option.none()
 
@@ -696,7 +698,7 @@ class Option(t.Generic[KT], metaclass=ABCMeta):
         else:
             return Result.of_err(self.unwrap().unwrap_err())
 
-    def flatten(self: "Option[Option[KT]]") -> "Option[KT]":
+    def flatten(self: "Option[Option[T]]") -> "Option[T]":
         """Converts from `Option<Option<KT>>` to `Option<KT>`.
 
         Examples:
@@ -770,7 +772,7 @@ class OpSome(t.Generic[KT], Option[KT]):
     def unwrap_or_else(self, func: t.Callable[[], KT]) -> KT:
         return self.__value
 
-    def unwrap_unchecked(self) -> t.Optional[KT]:
+    def unwrap_unchecked(self) -> KT:
         return self.__value
 
     def to_pattern(self) -> t.Optional[KT]:
@@ -835,9 +837,9 @@ class OpSome(t.Generic[KT], Option[KT]):
         else:
             return OpNone()
 
-    def zip_with(self, other: Option[U], func: t.Callable[[Option[KT], Option[U]], Option[R]]) -> Option[R]:
+    def zip_with(self, other: Option[U], func: t.Callable[[KT, U], Option[R]]) -> Option[R]:
         if other.is_some():
-            return func(self.__value, other.unwrap())
+            return func(self.__value, other.unwrap_unchecked())
         else:
             return OpNone()
 
@@ -885,8 +887,10 @@ class OpNone(t.Generic[KT], Option[KT]):
     def unwrap_or_else(self, func: t.Callable[[], KT]) -> KT:
         return func()
 
-    def unwrap_unchecked(self) -> t.Optional[KT]:
-        return None
+    def unwrap_unchecked(self) -> KT:
+        # This is safe because the api asks the caller
+        # to guarentee the call's safety.
+        return None # type: ignore[return-value]
 
     def to_pattern(self) -> t.Optional[KT]:
         return None
@@ -895,10 +899,10 @@ class OpNone(t.Generic[KT], Option[KT]):
         return self
 
     def map(self, func: t.Callable[[KT], U]) -> Option[U]:
-        return self
+        return Option.none()
 
     def map_mut(self, func: t.Callable[[KT], None]) -> Option[KT]:
-        return self
+        return Option.none()
 
     def map_or(self, default: U, func: t.Callable[[KT], U]) -> U:
         return default
@@ -916,13 +920,13 @@ class OpNone(t.Generic[KT], Option[KT]):
         return []
 
     def bool_and(self, optb: Option[U]) -> Option[U]:
-        return self
+        return Option.none()
 
     def and_then(self, func: t.Callable[[KT], Option[U]]) -> Option[U]:
-        return self
+        return Option.none()
 
     def flatmap(self, func: t.Callable[[KT], Option[U]]) -> Option[U]:
-        return self
+        return Option.none()
 
     def bool_or(self, optb: Option[KT]) -> Option[KT]:
         return optb.clone()
@@ -937,10 +941,10 @@ class OpNone(t.Generic[KT], Option[KT]):
         return self
 
     def zip(self, other: Option[U]) -> Option[t.Tuple[KT, U]]:
-        return self
+        return Option.none()
 
-    def zip_with(self, other: Option[U], func: t.Callable[[Option[KT], Option[U]], Option[R]]) -> Option[R]:
-        return self
+    def zip_with(self, other: Option[U], func: t.Callable[[KT, U], Option[R]]) -> Option[R]:
+        return Option.none()
 
 
 from .result import Result

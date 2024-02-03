@@ -18,15 +18,15 @@ class FlatMap(IterMeta[U], t.Generic[T, U]):
         self.__func = __func
         self.__current_it = Option.none()
 
-    def __it_next(self) -> Option[T]:
-        if (nxt := self.__it.next()).is_some():
-            nxtw = self.__func(nxt.unwrap())
+    def __it_next(self) -> Option[U]:
+        if (_nxt := self.__it.next()).is_some():
+            nxt = self.__func(_nxt.unwrap_unchecked())
             # noinspection DuplicatedCode
             if isinstance(nxt, IterMeta):
                 self.__current_it = Option.some(nxt)
                 return self.next()
             elif isinstance(nxt, (collections.abc.Iterator, collections.abc.Iterable)):
-                self.__current_it = Option.some(IterMeta.iter(nxtw))
+                self.__current_it = Option.some(IterMeta.iter(nxt))
                 return self.next()
             else:
                 self.__current_it = Option.none()
@@ -34,7 +34,7 @@ class FlatMap(IterMeta[U], t.Generic[T, U]):
         else:
             return Option.none()
 
-    def next(self) -> Option[T]:
+    def next(self) -> Option[U]:
         if self.__current_it.is_some():
             x = self.__current_it.and_then(lambda s: s.next())
             if x.is_some():

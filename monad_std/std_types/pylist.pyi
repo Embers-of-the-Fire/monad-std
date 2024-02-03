@@ -5,7 +5,12 @@ from ..option import Option
 KT = TypeVar('KT')
 
 class MList(Generic[KT], List[KT]):
-    def index(self, __value: KT, __start: SupportsIndex = ..., __stop: SupportsIndex = ...) -> Option[int]:
+    def index( # type: ignore[override]
+            self,
+            __value: KT,
+            __start: SupportsIndex = ...,
+            __stop: SupportsIndex = ...
+        ) -> Option[int]:
         """Return first index of value.
 
         **Actual Method Signature**
@@ -30,7 +35,8 @@ class MList(Generic[KT], List[KT]):
             assert x.index(0) == Option.none()
             ```
         """
-    def get(self, index: SupportsIndex) -> Option[KT]:
+
+    def get(self, index: SupportsIndex) -> Option[KT]: # type: ignore[override]
         """Get an item from the list.
 
         Returns:
@@ -43,7 +49,8 @@ class MList(Generic[KT], List[KT]):
             assert x.get(10) == Option.none()
             ```
         """
-    def pop(self, __index: SupportsIndex = ...) -> Option[KT]:
+
+    def pop(self, __index: SupportsIndex = ...) -> Option[KT]: # type: ignore[override]
         """Pop a value from the list.
 
         **Actual Method Signature**

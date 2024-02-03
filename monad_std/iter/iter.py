@@ -1,8 +1,11 @@
 import warnings
 import typing as t
+import typing_extensions as te
 import collections.abc
 from abc import ABCMeta, abstractmethod
 import copy
+
+from .. import typedef as td
 
 from monad_std.option import Option
 from monad_std.result import Result, Err, Ok
@@ -16,7 +19,7 @@ R = t.TypeVar("R")
 
 class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
     @staticmethod
-    def iter(v: "t.Union[t.Iterable[T@IterMeta], t.Iterator[T@IterMeta]]") -> "IterMeta[T]":
+    def iter(v: t.Union[t.Iterable[T], t.Iterator[T]]) -> "IterMeta[T]":
         """Convert an iterator or iterable object into `IterMeta`.
 
         For implementations, see [`_IterIterable`][monad_std.iter.iter._IterIterable] and
@@ -30,7 +33,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             raise TypeError("expect an iterator or iterable object")
 
     @staticmethod
-    def once(v: "T@IterMeta") -> "IterMeta[T]":
+    def once(v: T) -> "IterMeta[T]":
         """Convert a single element into `IterMeta`.
 
         This method actually constructs a list and turns it into an
@@ -327,7 +330,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         """
         return Enumerate(self)
 
-    def filter(self, func: t.Callable[[T], bool] = lambda x: x) -> "Filter[T]":
+    def filter(self, func: t.Callable[[T], bool] = lambda x: bool(x)) -> "Filter[T]":
         """Creates an iterator which uses a closure to determine if an element should be yielded.
 
         Given an element the closure must return `True` or `False`.
@@ -352,7 +355,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         """
         return Filter(self, func)
 
-    def filter_map(self, func: t.Callable[[T], Option[U]] = lambda x: Option.some(x)) -> "FilterMap[T, U]":
+    def filter_map(self, func: t.Callable[[T], Option[U]]) -> "FilterMap[T, U]":
         """Creates an iterator that both [`filter`][monad_std.iter.iter.IterMeta.filter]s
         and [`map`][monad_std.iter.iter.IterMeta.map]s.
 
@@ -407,7 +410,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         """
         return FlatMap(self, func)
 
-    def flatten(self) -> "Flatten[T]":
+    def flatten(self: "IterMeta[t.Union[T, IterMeta[T], t.Iterable[T], t.Iterator[T]]]") -> "Flatten[T]":
         """Creates an iterator that flattens nested structure.
 
         This is useful when you have an iterator of iterators or an iterator of things that can be turned into
@@ -444,7 +447,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         """
         return Flatten(self)
 
-    def fuse(self) -> "Fuse":
+    def fuse(self) -> "Fuse[T]":
         """Creates an iterator which ends after the first `None`.
 
         After an iterator returns `None`, future calls may or may not yield `Some(T)` again.
@@ -558,7 +561,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         """
         return Intersperse(self, sep)
     
-    def map_while(self, predicate: t.Callable[[T], Option[U]]) -> "MapWhile[U]":
+    def map_while(self, predicate: t.Callable[[T], Option[U]]) -> "MapWhile[T, U]":
         """Creates an iterator that both yields elements based on a predicate and maps.
 
         `map_while()` takes a closure as an argument.
@@ -639,7 +642,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             If you need fused iterator, use [`fuse`][monad_std.iter.iter.IterMeta.fuse]."""
         return MapWhile(self, predicate)
 
-    def map_windows(self, window_size: int, f: t.Callable[[t.Deque[T]], R]) -> "MapWindows[R]":
+    def map_windows(self, window_size: int, f: t.Callable[[t.Deque[T]], R]) -> "MapWindows[T, R]":
         """Calls the given function `f` for each contiguous window of size `window_size`
         over `self` and returns an iterator over the outputs of `f`. The windows during mapping overlap.
 
@@ -795,7 +798,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         """
         return Peekable(self)
 
-    def scan(self, init: U, func: t.Callable[[U, T], B]) -> "Scan[T, B, U]":
+    def scan(self, init: U, func: t.Callable[[U, T], t.Tuple[U, Option[B]]]) -> "Scan[T, B, U]":
         """An iterator adapter which, like fold, holds internal state, but unlike fold, produces a new iterator.
 
         `scan()` takes two arguments: an initial value which seeds the internal state, and a closure with two
@@ -1160,7 +1163,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
                 idx += 1
         return Option.none()
 
-    def product(self) -> Option[T]:
+    def product(self: "IterMeta[td.ops.SupportsMul[T]]") -> Option["td.ops.SupportsMul[T]"]:
         """Iterates over the entire iterator, multiplying all the elements
 
         An empty iterator returns `None`.
@@ -1197,7 +1200,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         """
         return self.next().map(lambda first: self.fold(first, func))
 
-    def sum(self) -> Option[T]:
+    def sum(self: "IterMeta[td.ops.SupportsAdd[T]]") -> Option["td.ops.SupportsAdd[T]"]:
         """Sums the elements of an iterator.
 
         Takes each element, adds them together, and returns the result. If there's no element in the iterator,
@@ -1226,7 +1229,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         """
         return self.find(lambda x: x == item).is_some()
 
-    def all(self, func: t.Callable[[T], bool] = lambda x: x) -> bool:
+    def all(self, func: t.Callable[[T], bool] = lambda x: bool(x)) -> bool:
         """Tests if every element of the iterator matches a predicate.
 
         `all()` takes a closure that returns `True` or `False`. It applies this closure to each element of the
@@ -1262,7 +1265,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
                 return False
         return True
 
-    def any(self, func: t.Callable[[T], bool] = lambda x: x) -> bool:
+    def any(self, func: t.Callable[[T], bool] = lambda x: bool(x)) -> bool:
         """Tests if any element of the iterator matches a predicate.
 
         `any()` takes a closure that returns `True` or `False`. It applies this closure to each element of the
@@ -1316,7 +1319,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         External Python library [funct](https://github.com/lauriat/funct) must be installed before using this feature.
         """
         try:
-            import funct
+            import funct # type: ignore[import-untyped]
 
             return funct.Array(self.to_iter())
         except ImportError:
@@ -1386,20 +1389,20 @@ class OnceWith(IterMeta[T], t.Generic[T]):
     def next_chunk(self, n: int = 2) -> Result[t.List[T], t.List[T]]:
         assert n > 0, "Chunk size must be positive"
         if n > 1:
-            val = Result.of_err(list(self.__func.map(lambda s: s()).to_iter()))
+            vale = list(self.__func.map(lambda s: s()).to_iter())
             self.__func = Option.none()
-            return val
+            return Result.of_err(vale)
         else:
-            val = self.__func.map(lambda s: [s()]).ok_or([])
+            valo: Result[t.List[T], t.List[T]] = self.__func.map(lambda s: [s()]).ok_or([])
             self.__func = Option.none()
-            return val
+            return valo
 
     def advance_by(self, n: int = 0) -> Result[None, int]:
         if n == 0:
             return Result.of_ok(None)
         elif self.__func.is_none() and n > 0:
             return Result.of_err(n)
-        elif self.__func.is_some():
+        else:
             self.__func = Option.none()
             if n == 1:
                 return Result.of_ok(None)
@@ -1423,12 +1426,12 @@ class Repeat(IterMeta[T], t.Generic[T]):
 
     def next_chunk(self, n: int = 2) -> Result[t.List[T], t.List[T]]:
         assert n > 0, "Chunk size must be positive"
-        return Ok(copy.deepcopy(self.__val) for _ in range(n))
+        return Ok([copy.deepcopy(self.__val) for _ in range(n)])
 
-    def any(self, func: t.Callable[[T], bool] = lambda x: x) -> bool:
+    def any(self, func: t.Callable[[T], bool] = lambda x: bool(x)) -> bool:
         return func(self.__val)
 
-    def all(self, func: t.Callable[[T], bool] = lambda x: x) -> bool:
+    def all(self, func: t.Callable[[T], bool] = lambda x: bool(x)) -> bool:
         return func(self.__val)
 
     def count(self) -> int:
@@ -1443,11 +1446,13 @@ class Repeat(IterMeta[T], t.Generic[T]):
     def find_map(self, func: t.Callable[[T], Option[U]]) -> Option[U]:
         return func(self.__val)
 
-    def fuse(self) -> "Repeat[T]":
+    @te.override
+    def fuse(self) -> "Repeat[T]": # type: ignore[override]
         warnings.warn("Fusing repeated iterator is meaningless.", Warning)
         return self
 
-    def skip(self, n: int) -> "Repeat[T]":
+    @te.override
+    def skip(self, n: int) -> "Repeat[T]": # type: ignore[override]
         warnings.warn("Skip repeated iterator is meaningless.", Warning)
         return self
 

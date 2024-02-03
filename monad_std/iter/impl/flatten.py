@@ -17,8 +17,8 @@ class Flatten(IterMeta[T], t.Generic[T]):
         self.__current_it = Option.none()
 
     def __it_next(self) -> Option[T]:
-        if (nxt := self.__it.next()).is_some():
-            nxt = nxt.unwrap()
+        if (_nxt := self.__it.next()).is_some():
+            nxt = _nxt.unwrap_unchecked()
             if isinstance(nxt, IterMeta):
                 self.__current_it = Option.some(nxt)
                 return self.next()

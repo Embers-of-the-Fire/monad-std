@@ -432,6 +432,31 @@ class ResultTest(unittest.TestCase):
         self.assertTrue(it.any(lambda x: x != 2))
         self.assertEqual(it.next(), Option.some(2))
 
+    def test_max_min(self):
+        a = [1, 3, 2]
+
+        m = siter(a).max()
+        self.assertEqual(m, Option.some(3))
+
+        class Element:
+            value: int
+            id: int
+
+            def __init__(self, value, id):
+                self.value = value
+                self.id = id
+
+            def __ge__(self, other: "Element") -> bool:
+                return self.value >= other.value
+
+            def same_as(self, other: "Element") -> bool:
+                return self.value == other.value and self.id == other.id
+
+        a = [Element(0, 0), Element(3, 1), Element(2, 2), Element(3, 3)]
+
+        m = siter(a).max()
+        self.assertTrue(m.unwrap().same_as(Element(3, 3)))
+
 
 if __name__ == "__main__":
     unittest.main()

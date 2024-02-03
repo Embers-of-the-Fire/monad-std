@@ -1,4 +1,5 @@
 import typing as t
+import typing_extensions as te
 import collections
 import warnings
 
@@ -70,6 +71,7 @@ class MapWindows(IterMeta[R], t.Generic[T, R]):
         self.__push_window()
         return self.__buffer.map(lambda buf: self.__func(buf))
 
-    def fuse(self) -> "MapWindows[R]":
+    @te.override
+    def fuse(self) -> "MapWindows[T, R]": # type: ignore[override]
         warnings.warn("MapWindows is already fused.", Warning)
         return self

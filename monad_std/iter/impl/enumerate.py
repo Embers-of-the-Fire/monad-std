@@ -17,6 +17,6 @@ class Enumerate(IterMeta[t.Tuple[int, T]], t.Generic[T]):
     def __self_add(self):
         self.__num += 1
 
-    def next(self) -> Option[T]:
+    def next(self) -> Option[t.Tuple[int, T]]:
         return self.__it.next().map(lambda x: (self.__num, x)).inspect(lambda _: self.__self_add())
 

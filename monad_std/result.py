@@ -18,7 +18,7 @@ class Result(t.Generic[KT, KE], metaclass=ABCMeta):
     """The flag for error value.
     See [`Result.to_pattern`][monad_std.result.Result.to_pattern] for more information.
     """
-    OK: t.Literal[False] = True
+    OK: t.Literal[True] = True
     """The flag for ok value.
     See [`Result.to_pattern`][monad_std.result.Result.to_pattern] for more information.
     """
@@ -796,7 +796,7 @@ class Ok(t.Generic[KT, KE], Result[KT, KE]):
     def bool_and(self, res: Result[U, KE]) -> Result[U, KE]:
         if res.is_ok():
             return Result.of_ok(res.unwrap())
-        elif res.is_err():
+        else:
             return Result.of_err(res.unwrap_err())
 
     def and_then(self, op: t.Callable[[KT], Result[U, KE]]) -> Result[U, KE]:
