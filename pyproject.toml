@@ -38,6 +38,7 @@ pytest-cov = "^4.1.0"
 devtools = "^0.12.2"
 # mkdocs-git-committers-plugin-2 = "^1.1.2"
 # mkdocs-git-authors-plugin = "^0.7.2"
+mypy = "^1.8.0"
 
 [build-system]
 requires = ["poetry-core"]
