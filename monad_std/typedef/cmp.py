@@ -5,13 +5,6 @@ if t.TYPE_CHECKING:
     _T_contra = t.TypeVar("_T_contra", contravariant=True)
 
 
-    class SupportsLessThan(t.Protocol):
-        def __lt__(self, __other: t.Any) -> bool: ...
-
-
-    SupportsLessThanT = t.TypeVar("SupportsLessThanT", bound=SupportsLessThan)
-
-
     class SupportsDunderLT(t.Protocol[_T_contra]):
         def __lt__(self, __other: _T_contra) -> bool: ...
 

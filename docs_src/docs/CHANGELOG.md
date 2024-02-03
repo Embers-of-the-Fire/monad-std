@@ -7,6 +7,8 @@
 - [`monad_std.iter.IterMeta`][monad_std.iter.iter.IterMeta]:
     - [`map_while`][monad_std.iter.iter.IterMeta.map_while]: Yields elements based on both a predicate and maps.
     - [`map_windows`][monad_std.iter.iter.IterMeta.map_windows]: A map but with fixed-sized windows.
+    - [`max`][monad_std.iter.iter.IterMeta.max], [`min`][monad_std.iter.iter.IterMeta.min]:
+      Get the maximum / minimum value.
 
 **Impl Change**
 

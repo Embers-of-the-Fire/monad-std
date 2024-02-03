@@ -560,7 +560,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             ```
         """
         return Intersperse(self, sep)
-    
+
     def map_while(self, predicate: t.Callable[[T], Option[U]]) -> "MapWhile[T, U]":
         """Creates an iterator that both yields elements based on a predicate and maps.
 
@@ -1301,6 +1301,106 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
                 return True
         return False
 
+    def max(self: "IterMeta[td.cmp.SupportsDunderGE[T]]") -> Option["td.cmp.SupportsDunderGE[T]"]:
+        """Returns the maximum element of an iterator.
+
+        If several elements are equally maximum, the last element is returned.
+        If the iterator is empty, `None` is returned.
+
+        Note that the elements inside should implement the `__ge__` or can be compared with `>=` operator.
+
+        Examples:
+            ```python
+            a = [1, 3, 2]
+
+            m = siter(a).max()
+            assert m == Option.some(3)
+            ```
+
+            If there are multiple equal maximums, the last one will be returned.
+            (And that's why `__ge__` is required instead of `__gt__`.)
+
+            ```python
+            class Element:
+                value: int
+                id: int
+
+                def __init__(self, value, id):
+                    self.value = value
+                    self.id = id
+
+                def __le__(self, other: "Element") -> bool:
+                    return self.value >= other.value
+
+                def same_as(self, other: "Element") -> bool:
+                    return self.value == other.value and self.id == other.id
+
+            a = [Element(0, 0), Element(3, 1), Element(2, 2), Element(3, 3)]
+
+            m = siter(a).max()
+            assert m.unwrap().same_as(Element(3, 3))
+            ```
+        """
+        if (x := self.next()).is_some():
+            m = x.unwrap_unchecked()
+            while (x := self.next()).is_some():
+                x = x.unwrap_unchecked()
+                if x >= m:
+                    m = x
+            return Option.some(m)
+        else:
+            return Option.none()
+
+    def min(self: "IterMeta[td.cmp.SupportsDunderLE[T]]") -> Option["td.cmp.SupportsDunderLE[T]"]:
+        """Returns the minimum element of an iterator.
+
+        If several elements are equally minimum, the last element is returned.
+        If the iterator is empty, `None` is returned.
+
+        Note that the elements inside should implement the `__le__` or can be compared with `<=` operator.
+
+        Examples:
+            ```python
+            a = [1, 3, 2]
+
+            m = siter(a).min()
+            assert m == Option.some(1)
+            ```
+
+            If there are multiple equal minimums, the last one will be returned.
+            (And that's why `__le__` is required instead of `__lt__`.)
+
+            ```python
+            class Element:
+                value: int
+                id: int
+
+                def __init__(self, value, id):
+                    self.value = value
+                    self.id = id
+
+                def __le__(self, other: "Element") -> bool:
+                    return self.value <= other.value
+
+                def same_as(self, other: "Element") -> bool:
+                    return self.value == other.value and self.id == other.id
+
+            a = [Element(0, 0), Element(3, 1), Element(2, 2), Element(0, 3)]
+
+            m = siter(a).min()
+            assert m.unwrap().same_as(Element(0, 3))
+            ```
+        """
+        if (x := self.next()).is_some():
+            m = x.unwrap_unchecked()
+            while (x := self.next()).is_some():
+                x = x.unwrap_unchecked()
+                if x <= m:
+                    m = x
+            return Option.some(m)
+        else:
+            return Option.none()
+
     def collect_list(self) -> t.List[T]:
         """Collect the iterator into a list."""
         return list(self.to_iter())
@@ -1319,7 +1419,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         External Python library [funct](https://github.com/lauriat/funct) must be installed before using this feature.
         """
         try:
-            import funct # type: ignore[import-untyped]
+            import funct  # type: ignore[import-untyped]
 
             return funct.Array(self.to_iter())
         except ImportError:
@@ -1447,12 +1547,12 @@ class Repeat(IterMeta[T], t.Generic[T]):
         return func(self.__val)
 
     @te.override
-    def fuse(self) -> "Repeat[T]": # type: ignore[override]
+    def fuse(self) -> "Repeat[T]":  # type: ignore[override]
         warnings.warn("Fusing repeated iterator is meaningless.", Warning)
         return self
 
     @te.override
-    def skip(self, n: int) -> "Repeat[T]": # type: ignore[override]
+    def skip(self, n: int) -> "Repeat[T]":  # type: ignore[override]
         warnings.warn("Skip repeated iterator is meaningless.", Warning)
         return self
 

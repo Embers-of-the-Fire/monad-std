@@ -457,6 +457,30 @@ class ResultTest(unittest.TestCase):
         m = siter(a).max()
         self.assertTrue(m.unwrap().same_as(Element(3, 3)))
 
+        a = [1, 3, 2]
+
+        m = siter(a).min()
+        self.assertEqual(m, Option.some(1))
+
+        class Element:
+            value: int
+            id: int
+
+            def __init__(self, value, id):
+                self.value = value
+                self.id = id
+
+            def __le__(self, other: "Element") -> bool:
+                return self.value <= other.value
+
+            def same_as(self, other: "Element") -> bool:
+                return self.value == other.value and self.id == other.id
+
+        a = [Element(0, 0), Element(3, 1), Element(2, 2), Element(0, 3)]
+
+        m = siter(a).min()
+        self.assertTrue(m.unwrap().same_as(Element(0, 3)))
+
 
 if __name__ == "__main__":
     unittest.main()
