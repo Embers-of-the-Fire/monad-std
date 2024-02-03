@@ -15,6 +15,22 @@ class ResultTest(unittest.TestCase):
         self.assertEqual(t.collect_string(), "".join(map(str, range(10))))
         t = siter(range(10))
         self.assertEqual(t.collect_array(), funct.Array(range(10)))
+        t = siter(range(10)).chain(siter(range(2, 12)))
+        self.assertSetEqual(t.collect_set(), set(range(12)))
+
+        t = siter(range(5))
+        lst = [1]
+        t.collect_to_seq(lst)
+        self.assertListEqual(lst, [1, 0, 1, 2, 3, 4])
+        t = siter(range(5))
+        uset = {0, 10}
+        t.collect_to_set(uset)
+        self.assertSetEqual(uset, {0, 1, 2, 3, 4, 10})
+        t = siter(range(2, 5)).map(lambda x: (x, str(x + 1)))
+        umap = {0: "1", 1: "2"}
+        t.collect_to_map(umap)
+        self.assertDictEqual(umap, {0: "1", 1: "2", 2: "3", 3: "4", 4: "5"})
+
         t = siter(range(10))
         self.assertEqual(t.count(), 10)
 

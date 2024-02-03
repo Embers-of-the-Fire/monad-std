@@ -16,6 +16,13 @@ U = t.TypeVar("U")
 B = t.TypeVar("B")
 R = t.TypeVar("R")
 
+if t.TYPE_CHECKING:
+    try:
+        from funct.Array import Array as FunctArray
+
+    except ImportError:
+        FunctArray = ...
+
 
 class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
     @staticmethod
@@ -1405,12 +1412,18 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         """Collect the iterator into a list."""
         return list(self.to_iter())
 
+    def collect_to_seq(self, lst: t.MutableSequence[T]):
+        """Collect the iterator into the specified mutable sequence.
+
+        This will return nothing and operates on the sequence."""
+        lst.extend(self.to_iter())
+
     def collect_tuple(self) -> tuple:
         """Collect the iterator into a tuple."""
         return tuple(self.to_iter())
 
     def collect_string(self) -> str:
-        """Collect the iterator into a string. Using `__str__` but not `__repr__` as default."""
+        """Collect the iterator into a string. Using `__str__` but not `__repr__` by default."""
         return "".join(str(x) for x in self.to_iter())
 
     def collect_array(self):
@@ -1424,6 +1437,23 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             return funct.Array(self.to_iter())
         except ImportError:
             raise ImportError("You must install `funct` package to use this feature")
+
+    def collect_set(self) -> t.Set[T]:
+        """Collect the iterator into a hashset."""
+        return set(self.to_iter())
+
+    def collect_to_set(self, s: t.MutableSet):
+        """Collect the iterator into a mutable set.
+
+        This will return noting and operates on the set."""
+        for item in self.to_iter():
+            s.add(item)
+
+    def collect_to_map(self: "IterMeta[t.Tuple[T, U]]", m: t.MutableMapping[T, U]):
+        """Collect the iterator into a mutable mapping.
+
+        This will return nothing and operates on the mapping."""
+        m.update(self.to_iter())
 
 
 class _IterIterable(IterMeta[T], t.Generic[T]):
