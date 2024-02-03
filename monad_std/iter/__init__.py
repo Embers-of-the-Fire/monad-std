@@ -3,7 +3,6 @@ import typing as t
 from .iter import IterMeta, OnceWith, Repeat
 from . import impl
 
-
 __all__ = [
     "IterMeta",
     "impl",
@@ -13,25 +12,24 @@ __all__ = [
     "repeat",
 ]
 
+T = t.TypeVar("T")
 
-V = t.TypeVar("V")
 
-
-def siter(it: t.Union[t.Iterable[V], t.Iterator[V]]) -> IterMeta[V]:
+def siter(it: t.Union[t.Iterable[T], t.Iterator[T]]) -> IterMeta[T]:
     """See [`IterMeta.iter`][monad_std.iter.iter.IterMeta.iter] for more information."""
     return IterMeta.iter(it)
 
 
-def once(value: V) -> IterMeta[V]:
+def once(value: T) -> IterMeta[T]:
     """See [`IterMeta.once`][monad_std.iter.iter.IterMeta.once] for more information."""
     return IterMeta.once(value)
 
-def once_with(value: t.Callable[[], V]) -> OnceWith[V]:
+
+def once_with(value: t.Callable[[], T]) -> OnceWith[T]:
     """See [`IterMeta.once_with`][monad_std.iter.iter.IterMeta.once_with] for more information."""
     return IterMeta.once_with(value)
 
 
-def repeat(value: V) -> Repeat[V]:
+def repeat(value: T) -> Repeat[T]:
     """See [`IterMeta.repeat`][monad_std.iter.iter.IterMeta.repeat] for more information."""
     return IterMeta.repeat(value)
-
