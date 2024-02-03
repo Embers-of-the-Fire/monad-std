@@ -1,6 +1,6 @@
 # About this module
 #
-# This file is part of the `typeshed` package included in the cpython standard library.
+# This module is part of the `typeshed` package included in the cpython standard library.
 #
 # Since std libraries are not implemented in python, only `pyi` files are provided to use.
 # However, this library is implemented with pure Python, and there's no need to write single
