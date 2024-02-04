@@ -79,6 +79,8 @@ plugins:
           options:
             show_root_heading: true
             show_source: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
             heading_level: 1
   # - git-committers:
   #     repository: Embers-of-the-Fire/monad_std
