@@ -7,10 +7,12 @@
 - `monad_std.iter.IterMeta`:
     - `map_while`: Yields elements based on both a predicate and maps.
     - `map_windows`: A map but with fixed-sized windows.
-    - `max`, `min`: Get the maximum / minimum value.
+    - `max`, `max_by`, `max_by_key`, `min`, `min_by`, `min_by_key`: Get the maximum / minimum value.
     - `collect_to_xxx`: Collect the iterator into a mutable and extendable item.<br />
       Note that in Python it's not possible to actually *change* a `str`, so `collect_to_string` is not provided.
     - `collect_set`: Collect the iterator into a hashset.
+- `monad_std.typedef`: Internal type definition.
+- `monad_std.utils`: Utility used inside and outside (recommend, but not forced) the library.
 
 **Impl Change**
 

@@ -34,6 +34,7 @@ nav:
       - "api_document/result_impl.md"
       - "api_document/typedef.md"
       - Utilities:
+          - "api_document/utils/index.md"
           - "api_document/utils/cmp.md"
   - Change Log: CHANGELOG.md
 theme:

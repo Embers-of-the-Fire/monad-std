@@ -3,6 +3,9 @@ import funct
 
 from monad_std.prelude import *
 from monad_std.iter import IterMeta
+from monad_std import utils as mutils
+
+from .testutil import *
 
 
 class ResultTest(unittest.TestCase):
@@ -454,48 +457,34 @@ class ResultTest(unittest.TestCase):
         m = siter(a).max()
         self.assertEqual(m, Option.some(3))
 
-        class Element:
-            value: int
-            id: int
-
-            def __init__(self, value, id):
-                self.value = value
-                self.id = id
-
-            def __ge__(self, other: "Element") -> bool:
-                return self.value >= other.value
-
-            def same_as(self, other: "Element") -> bool:
-                return self.value == other.value and self.id == other.id
-
-        a = [Element(0, 0), Element(3, 1), Element(2, 2), Element(3, 3)]
+        a = [element.Element(0, 0), element.Element(3, 1), element.Element(2, 2), element.Element(3, 3)]
 
         m = siter(a).max()
-        self.assertTrue(m.unwrap().same_as(Element(3, 3)))
+        self.assertTrue(m.unwrap().same_as(element.Element(3, 3)))
+
+        a = [-3, 0, 1, 5, -10]
+        self.assertEqual(siter(a).max_by(lambda x, y: mutils.cmp.compare(y, x)), Option.some(-10))
+
+        lst = [element.Element(0, 0), element.Element(5, 1), element.Element(2, 2)]
+        m = siter(lst).max_by_key(lambda el: el.value)
+        self.assertTrue(m.unwrap().same_as(element.Element(5, 1)))
 
         a = [1, 3, 2]
 
         m = siter(a).min()
         self.assertEqual(m, Option.some(1))
 
-        class Element:
-            value: int
-            id: int
-
-            def __init__(self, value, id):
-                self.value = value
-                self.id = id
-
-            def __le__(self, other: "Element") -> bool:
-                return self.value <= other.value
-
-            def same_as(self, other: "Element") -> bool:
-                return self.value == other.value and self.id == other.id
-
-        a = [Element(0, 0), Element(3, 1), Element(2, 2), Element(0, 3)]
+        a = [element.Element(0, 0), element.Element(3, 1), element.Element(2, 2), element.Element(0, 3)]
 
         m = siter(a).min()
-        self.assertTrue(m.unwrap().same_as(Element(0, 3)))
+        self.assertTrue(m.unwrap().same_as(element.Element(0, 3)))
+
+        a = [-3, 0, 1, 5, -10]
+        self.assertEqual(siter(a).min_by(lambda x, y: mutils.cmp.compare(y, x)), Option.some(5))
+
+        lst = [element.Element(0, 0), element.Element(5, 1), element.Element(2, 2)]
+        m = siter(lst).min_by_key(lambda el: el.value)
+        self.assertTrue(m.unwrap().same_as(element.Element(0, 0)))
 
 
 if __name__ == "__main__":

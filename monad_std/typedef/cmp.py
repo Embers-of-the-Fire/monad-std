@@ -16,12 +16,8 @@ if t.TYPE_CHECKING:
     class SupportsDunderLE(t.Protocol[_T_contra]):
         def __le__(self, __other: _T_contra) -> bool: ...
 
-    SupportsDunderLeSelf: te.TypeAlias = SupportsDunderLE["SupportsDunderLeSelf"]
-
     class SupportsDunderGE(t.Protocol[_T_contra]):
         def __ge__(self, __other: _T_contra) -> bool: ...
-
-    SupportsDunderGeSelf: te.TypeAlias = SupportsDunderGE["SupportsDunderGeSelf"]
 
 
     class SupportsAllComparisons(
@@ -33,6 +29,13 @@ if t.TYPE_CHECKING:
     ):
         ...
 
+    class SupportsRichComparison(
+        SupportsDunderLT[_T_contra],
+        SupportsDunderGT[_T_contra],
+        t.Protocol[_T_contra]
+    ):
+        ...
 
-    SupportsRichComparison: te.TypeAlias = t.Union[SupportsDunderLT[t.Any], SupportsDunderGT[t.Any]]
-    SupportsRichComparisonT = t.TypeVar("SupportsRichComparisonT", bound=SupportsRichComparison)
+
+    SupportsRichComparisonSelf: te.TypeAlias = SupportsRichComparison["SupportsRichComparisonSelf"]
+    SupportsRichComparisonSelfT = t.TypeVar("SupportsRichComparisonSelfT", bound=SupportsRichComparisonSelf)

@@ -3,6 +3,7 @@ import collections.abc
 from abc import ABCMeta, abstractmethod
 
 from .. import typedef as td
+from .. import utils as mutils
 
 from monad_std.option import Option
 from monad_std.result import Result, Err, Ok
@@ -1304,13 +1305,13 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
                 return True
         return False
 
-    def max(self: "IterMeta[td.cmp.SupportsDunderGeSelf]") -> Option["td.cmp.SupportsDunderGeSelf"]:
+    def max(self: "IterMeta[td.cmp.SupportsRichComparisonSelfT]") -> Option["td.cmp.SupportsRichComparisonSelfT"]:
         """Returns the maximum element of an iterator.
 
         If several elements are equally maximum, the last element is returned.
         If the iterator is empty, `None` is returned.
 
-        Note that the elements inside should implement the `__ge__` or can be compared with `>=` operator.
+        Note that the elements inside should implement at least `__gt__` and `__lt__`.
 
         Examples:
             ```python
@@ -1321,7 +1322,6 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             ```
 
             If there are multiple equal maximums, the last one will be returned.
-            (And that's why `__ge__` is required instead of `__gt__`.)
 
             ```python
             class Element:
@@ -1344,23 +1344,62 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             assert m.unwrap().same_as(Element(3, 3))
             ```
         """
-        if (_x := self.next()).is_some():
-            m = _x.unwrap_unchecked()
-            while (_x := self.next()).is_some():
-                x = _x.unwrap_unchecked()
-                if x >= m:
-                    m = x
-            return Option.some(m)
-        else:
-            return Option.none()
+        return self.reduce(lambda a, b: mutils.cmp.max_by(a, b, mutils.cmp.compare))
 
-    def min(self: "IterMeta[td.cmp.SupportsDunderLeSelf]") -> Option["td.cmp.SupportsDunderLeSelf"]:
+    def max_by(self, cmp: t.Callable[[T, T], mutils.cmp.SupportsIntoOrdering]) -> Option[T]:
+        """Returns the element that gives the maximum value from the specified function.
+
+        If several elements are equally maximum, the last element is returned.
+        If the iterator is empty, `None` is returned.
+
+        Examples:
+            ```python
+            a = [-3, 0, 1, 5, -10]
+            # By using `utils.cmp.compare(y, x)`, we change the ordering sequence of the two items.
+            # That means this part of code actually returns the minimum value in the list.
+            assert siter(a).max_by(lambda x, y: utils.cmp.compare(y, x)) == Option.some(-10)
+            ```
+        """
+        return self.reduce(lambda a, b: mutils.cmp.max_by(a, b, cmp))
+
+    def max_by_key(self, key: t.Callable[[T], "td.cmp.SupportsRichComparisonSelfT"]) -> Option[T]:
+        """Returns the element that gives the maximum value with respect to the specified comparison function.
+
+        If several elements are equally maximum, the last element is returned.
+        If the iterator is empty, `None` is returned.
+
+        Examples:
+            ```python
+            class Element:
+                value: int
+                id: int
+
+                def __init__(self, value, id):
+                    self.value = value
+                    self.id = id
+
+                def __le__(self, other: "Element") -> bool:
+                    return self.value >= other.value
+
+                def same_as(self, other: "Element") -> bool:
+                    return self.value == other.value and self.id == other.id
+
+            lst = [Element(0, 0), Element(5, 1), Element(2, 2)]
+            m = siter(lst).max_by_key(lambda el: el.value)
+            assert m.unwrap().same_as(Element(5, 1))
+            ```
+        """
+        return self.map(lambda item: (key(item), item))\
+            .max_by(lambda a, b: mutils.cmp.compare(a[0], b[0]))\
+            .map(lambda x: x[1])
+
+    def min(self: "IterMeta[td.cmp.SupportsRichComparisonSelfT]") -> Option["td.cmp.SupportsRichComparisonSelfT"]:
         """Returns the minimum element of an iterator.
 
         If several elements are equally minimum, the last element is returned.
         If the iterator is empty, `None` is returned.
 
-        Note that the elements inside should implement the `__le__` or can be compared with `<=` operator.
+        Note that the elements inside should implement at least `__gt__` and `__lt__`.
 
         Examples:
             ```python
@@ -1371,7 +1410,6 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             ```
 
             If there are multiple equal minimums, the last one will be returned.
-            (And that's why `__le__` is required instead of `__lt__`.)
 
             ```python
             class Element:
@@ -1394,15 +1432,54 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             assert m.unwrap().same_as(Element(0, 3))
             ```
         """
-        if (_x := self.next()).is_some():
-            m = _x.unwrap_unchecked()
-            while (_x := self.next()).is_some():
-                x = _x.unwrap_unchecked()
-                if x <= m:
-                    m = x
-            return Option.some(m)
-        else:
-            return Option.none()
+        return self.reduce(lambda a, b: mutils.cmp.min_by(a, b, mutils.cmp.compare))
+
+    def min_by(self, cmp: t.Callable[[T, T], mutils.cmp.SupportsIntoOrdering]) -> Option[T]:
+        """Returns the element that gives the minimum value from the specified function.
+
+        If several elements are equally minimum, the last element is returned.
+        If the iterator is empty, `None` is returned.
+
+        Examples:
+            ```python
+            a = [-3, 0, 1, 5, -10]
+            # By using `utils.cmp.compare(y, x)`, we change the ordering sequence of the two items.
+            # That means this part of code actually returns the maximum value in the list.
+            assert siter(a).min_by(lambda x, y: utils.cmp.compare(y, x)) == Option.some(5)
+            ```
+        """
+        return self.reduce(lambda a, b: mutils.cmp.min_by(a, b, cmp))
+
+    def min_by_key(self, key: t.Callable[[T], "td.cmp.SupportsRichComparisonSelfT"]) -> Option[T]:
+        """Returns the element that gives the minimum value with respect to the specified comparison function.
+
+        If several elements are equally minimum, the last element is returned.
+        If the iterator is empty, `None` is returned.
+
+        Examples:
+            ```python
+            class Element:
+                value: int
+                id: int
+
+                def __init__(self, value, id):
+                    self.value = value
+                    self.id = id
+
+                def __le__(self, other: "Element") -> bool:
+                    return self.value >= other.value
+
+                def same_as(self, other: "Element") -> bool:
+                    return self.value == other.value and self.id == other.id
+
+            lst = [Element(0, 0), Element(5, 1), Element(2, 2)]
+            m = siter(lst).min_by_key(lambda el: el.value)
+            assert m.unwrap().same_as(Element(0, 0))
+            ```
+        """
+        return self.map(lambda item: (key(item), item))\
+            .min_by(lambda a, b: mutils.cmp.compare(a[0], b[0]))\
+            .map(lambda x: x[1])
 
     def collect_list(self) -> t.List[T]:
         """Collect the iterator into a list."""
