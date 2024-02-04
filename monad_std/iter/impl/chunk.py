@@ -1,5 +1,4 @@
 import typing as t
-import collections.abc
 
 from ..iter import IterMeta
 from monad_std import Option
