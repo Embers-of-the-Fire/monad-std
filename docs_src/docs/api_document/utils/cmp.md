@@ -1,9 +1,7 @@
 # `utils.cmp` | Ordering and Comparison
 
-::: monad_std.utils.cmp.DeprecatedOrdering
+::: monad_std.utils.cmp
     options:
-        heading_level: 2
-
-::: monad_std.utils.cmp.Ordering
-    options:
+        show_root_heading: false
+        show_root_toc_entry: false
         heading_level: 2

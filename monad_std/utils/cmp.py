@@ -4,8 +4,17 @@ import typing_extensions as te
 
 from .. import typedef as td
 
+__all__ = [
+    "DeprecatedOrdering",
+    "SupportsIntoOrdering",
+    "Ordering",
+]
+
 DeprecatedOrdering: te.TypeAlias = t.Literal[0, -1, 1]
 """This type refers to that Python2 uses to represent ordering in, for example, the `sorted` function."""
+
+SupportsIntoOrdering: te.TypeAlias = t.Union["Ordering", int, float, DeprecatedOrdering]
+"""Type that can be turned into an [`Ordering`][monad_std.utils.cmp.Ordering]."""
 
 
 @unique
@@ -39,7 +48,7 @@ class Ordering(IntEnum):
             return 0
 
     @staticmethod
-    def parse(arg: t.Union[int, float, "Ordering"]) -> "Ordering":
+    def parse(arg: SupportsIntoOrdering) -> "Ordering":
         """Detect an ordering and returns an `Ordering`.
 
         Examples:
@@ -119,3 +128,55 @@ class Ordering(IntEnum):
     def is_ge(self) -> bool:
         """If the ordering represents **greater than or equal**."""
         return self != Ordering.Less
+
+
+T = t.TypeVar("T")
+
+if t.TYPE_CHECKING:
+    RichCmpA = td.cmp.SupportsRichComparison["RichCmpB"]
+    RichCmpB = td.cmp.SupportsRichComparison["RichCmpA"]
+
+
+def compare(a: "RichCmpA", b: "RichCmpB") -> Ordering:
+    """Compare two item and generate the ordering.
+
+    Examples:
+        ```python
+        assert compare(0, 1) == Ordering.Less
+        assert compare(5.0, -3) == Ordering.Greater
+        assert compare(5, 5.0) == Ordering.Equal
+        ```
+    """
+    if a > b:
+        return Ordering.Greater
+    elif a < b:
+        return Ordering.Less
+    else:
+        return Ordering.Equal
+
+
+def max_by(a: T, b: T, fn: t.Callable[[T, T], SupportsIntoOrdering]) -> T:
+    """Use the given function to calculate the maximum value in a and b.
+
+    The `fn` parameter should return [`SupportsIntoOrdering`][monad_std.utils.cmp.SupportsIntoOrdering].
+    See its documentation for more information.
+
+    Examples:
+        ```python
+        a = 0
+        b = 1
+        assert max_by(a, b, lambda x, y: x > y) == b
+        assert max_by(a, b, lambda x, y: x < y) == a    # reverse the comparison here.
+        ```
+
+        The latter case is same as the following:
+        ```python
+        assert -max(-a, -b) == a
+        ```
+    """
+    ores = fn(a, b)
+    ordering = Ordering.parse(ores)
+    if ordering.is_ge():
+        return a
+    else:
+        return b
