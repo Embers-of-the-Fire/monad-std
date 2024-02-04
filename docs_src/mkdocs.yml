@@ -33,6 +33,8 @@ nav:
       - "api_document/option_impl.md"
       - "api_document/result_impl.md"
       - "api_document/typedef.md"
+      - Utilities:
+          - "api_document/utils/cmp.md"
   - Change Log: CHANGELOG.md
 theme:
   name: material

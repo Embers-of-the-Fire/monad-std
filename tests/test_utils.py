@@ -1,0 +1,23 @@
+import unittest
+
+from monad_std.utils import *
+
+
+class TestUtils(unittest.TestCase):
+    def test_cmp(self):
+        o1 = cmp.Ordering.parse(cmp.Ordering.Less)
+        o2 = cmp.Ordering.parse(-1)
+        o3 = cmp.Ordering.parse(-4.2)
+        self.assertTrue(o1 == o2 == o3)
+
+        self.assertEqual(cmp.Ordering.from_cmp(0), cmp.Ordering.Equal)
+        self.assertEqual(cmp.Ordering.from_cmp(1), cmp.Ordering.Greater)
+        self.assertEqual(cmp.Ordering.from_cmp(-1), cmp.Ordering.Less)
+
+        self.assertEqual(cmp.Ordering.from_num(0.0), cmp.Ordering.Equal)
+        self.assertEqual(cmp.Ordering.from_num(1.5), cmp.Ordering.Greater)
+        self.assertEqual(cmp.Ordering.from_num(-3.2), cmp.Ordering.Less)
+
+
+if __name__ == '__main__':
+    unittest.main()

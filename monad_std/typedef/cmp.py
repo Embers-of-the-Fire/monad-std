@@ -16,9 +16,12 @@ if t.TYPE_CHECKING:
     class SupportsDunderLE(t.Protocol[_T_contra]):
         def __le__(self, __other: _T_contra) -> bool: ...
 
+    SupportsDunderLeSelf: te.TypeAlias = SupportsDunderLE["SupportsDunderLeSelf"]
 
     class SupportsDunderGE(t.Protocol[_T_contra]):
         def __ge__(self, __other: _T_contra) -> bool: ...
+
+    SupportsDunderGeSelf: te.TypeAlias = SupportsDunderGE["SupportsDunderGeSelf"]
 
 
     class SupportsAllComparisons(
