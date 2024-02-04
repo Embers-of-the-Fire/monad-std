@@ -16,6 +16,10 @@
     options:
         heading_level: 2
 
+::: monad_std.iter.impl.batch.Batching
+    options:
+        heading_level: 2
+
 ::: monad_std.iter.impl.chain.Chain
     options:
         heading_level: 2

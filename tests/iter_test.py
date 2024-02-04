@@ -1,4 +1,6 @@
 import unittest
+import typing as t
+
 import funct
 
 from monad_std.prelude import *
@@ -485,6 +487,34 @@ class ResultTest(unittest.TestCase):
         lst = [element.Element(0, 0), element.Element(5, 1), element.Element(2, 2)]
         m = siter(lst).min_by_key(lambda el: el.value)
         self.assertTrue(m.unwrap().same_as(element.Element(0, 0)))
+
+    def test_partition(self):
+        a = [0, 1, 2, 3, 4]
+        left = []
+        right = []
+        siter(a).partition(lambda item: item % 2 == 0, left, right)
+        self.assertListEqual(left, [0, 2, 4])
+        self.assertListEqual(right, [1, 3])
+
+        left, right = siter(a).partition_list(lambda item: item % 2 == 0)
+        self.assertListEqual(left, [0, 2, 4])
+        self.assertListEqual(right, [1, 3])
+
+    def test_batch(self):
+        def do_batch(it) -> Option[t.Tuple[int, int]]:
+            nxt = it.next()
+            if nxt.is_none():
+                return Option.none()
+            else:
+                nxt2 = it.next()
+                if nxt2.is_none():
+                    return Option.none()
+                else:
+                    return Option.some((nxt.unwrap_unchecked(), nxt2.unwrap_unchecked()))
+
+        pit = siter(range(0, 4)).batching(do_batch)
+
+        self.assertListEqual(pit.collect_list(), [(0, 1), (2, 3)])
 
 
 if __name__ == "__main__":

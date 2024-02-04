@@ -1,4 +1,5 @@
 import typing as t
+import typing_extensions as te
 import collections.abc
 from abc import ABCMeta, abstractmethod
 
@@ -767,6 +768,36 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         """
         return Map(self, func)
 
+    def batching(self, func: t.Callable[["IterMeta[T]"], Option[B]]) -> "Batching[T, B]":
+        """A “meta iterator adaptor”. Its closure receives a reference to the iterator
+        and may pick off as many elements as it likes, to produce the next iterator element.
+
+        Args:
+            func: The function to do the batching.
+
+        Returns:
+            See [`Batching`][monad_std.iter.impl.batch.Batching] for more information.
+
+        Examples:
+            ```python
+            def do_batch(it) -> Option[Tuple[int, int]]:
+                nxt = it.next()
+                if nxt.is_none():
+                    return Option.none()
+                else:
+                    nxt2 = it.next()
+                    if nxt2.is_none():
+                        return Option.none()
+                    else:
+                        return Option.some((nxt.unwrap_unchecked(), nxt2.unwrap_unchecked()))
+
+            pit = siter(range(0, 4)).batching(do_batch)
+
+            assert pit.collect_list() == [(0, 1), (2, 3)]
+            ```
+        """
+        return Batching(self, func)
+
     def peekable(self) -> "Peekable[T]":
         """Creates an iterator which can use the `peek` method to look at the next element of the iterator without
         consuming it.
@@ -1480,6 +1511,49 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         return self.map(lambda item: (key(item), item))\
             .min_by(lambda a, b: mutils.cmp.compare(a[0], b[0]))\
             .map(lambda x: x[1])
+
+    def partition(self, predicate: t.Callable[[T], bool], left: t.MutableSequence, right: t.MutableSequence):
+        """Consumes an iterator, filling two sequence from it.
+
+        The `predicate` passed to `partition()` can return `True`, or `False`.
+        All elements that the predicate would return true will be appended to the `left`,
+        and the rest will be appended to the `right`.
+
+        **Note:**
+        1. The two sequences do not necessarily need to be of the same type.
+        2. Caller must construct the sequence before calling,
+           since this will operate on the sequence in-place, and not returning anything.
+
+        Examples:
+            ```python
+            a = [0, 1, 2, 3, 4]
+            left = []
+            right = []
+            siter(a).partition(lambda item: item % 2 == 0, left, right)
+            assert left == [0, 2, 4]
+            assert right == [1, 3]
+            ```
+        """
+        for item in self.to_iter():
+            if predicate(item):
+                left.append(item)
+            else:
+                right.append(item)
+
+    def partition_list(self, predicate: t.Callable[[T], bool]) -> t.Tuple[t.List[T], t.List[T]]:
+        """Consumes an iterator, filling two list from it.
+
+        The `predicate` passed to `partition()` can return `True`, or `False`.
+        All elements that the predicate would return true will be appended to the `left`,
+        and the rest will be appended to the `right`.
+
+        This calls [`partition`][monad_std.iter.iter.IterMeta.partition] internally,
+        with two Python's standard lists.
+        """
+        left = []
+        right = []
+        self.partition(predicate, left, right)
+        return left, right
 
     def collect_list(self) -> t.List[T]:
         """Collect the iterator into a list."""

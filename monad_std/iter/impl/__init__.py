@@ -1,4 +1,5 @@
 from .array_chunk import ArrayChunk
+from .batch import Batching
 from .chain import Chain
 from .chunk import Chunk
 from .enumerate import Enumerate

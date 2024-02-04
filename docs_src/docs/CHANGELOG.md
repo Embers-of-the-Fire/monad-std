@@ -7,6 +7,8 @@
 - [`monad_std.iter.IterMeta`][monad_std.iter.iter.IterMeta]:
     - [`map_while`][monad_std.iter.iter.IterMeta.map_while]: Yields elements based on both a predicate and maps.
     - [`map_windows`][monad_std.iter.iter.IterMeta.map_windows]: A map but with fixed-sized windows.
+    - [`batching`][monad_std.iter.iter.IterMeta.batching]:
+      A meta-iterator over iterator and let you generate values manually.
     - [`max`][monad_std.iter.iter.IterMeta.max], [`max_by`][monad_std.iter.iter.IterMeta.max_by],
       [`max_by_key`][monad_std.iter.iter.IterMeta.max_by_key], [`min`][monad_std.iter.iter.IterMeta.min]
       [`min_by`][monad_std.iter.iter.IterMeta.min_by], [`min_by_key`][monad_std.iter.iter.IterMeta.min_by_key]:
