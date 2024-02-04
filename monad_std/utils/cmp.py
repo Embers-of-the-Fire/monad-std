@@ -161,6 +161,8 @@ def max_by(a: T, b: T, fn: t.Callable[[T, T], SupportsIntoOrdering]) -> T:
     The `fn` parameter should return [`SupportsIntoOrdering`][monad_std.utils.cmp.SupportsIntoOrdering].
     See its documentation for more information.
 
+    If the function returns `Ordering.Equal`, then `b` is returned.
+
     Examples:
         ```python
         a = 0
@@ -176,10 +178,10 @@ def max_by(a: T, b: T, fn: t.Callable[[T, T], SupportsIntoOrdering]) -> T:
     """
     ores = fn(a, b)
     ordering = Ordering.parse(ores)
-    if ordering.is_ge():
-        return a
-    else:
+    if ordering.is_le():
         return b
+    else:
+        return a
 
 
 def min_by(a: T, b: T, fn: t.Callable[[T, T], SupportsIntoOrdering]) -> T:
@@ -187,6 +189,8 @@ def min_by(a: T, b: T, fn: t.Callable[[T, T], SupportsIntoOrdering]) -> T:
 
     The `fn` parameter should return [`SupportsIntoOrdering`][monad_std.utils.cmp.SupportsIntoOrdering].
     See its documentation for more information.
+
+    If the function returns `Ordering.Equal`, then `b` is returned.
 
     Examples:
         ```python
@@ -203,7 +207,7 @@ def min_by(a: T, b: T, fn: t.Callable[[T, T], SupportsIntoOrdering]) -> T:
     """
     ores = fn(a, b)
     ordering = Ordering.parse(ores)
-    if ordering.is_le():
-        return a
-    else:
+    if ordering.is_ge():
         return b
+    else:
+        return a

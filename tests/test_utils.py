@@ -2,6 +2,8 @@ import unittest
 
 from monad_std.utils import *
 
+from .testutil import *
+
 
 class TestUtils(unittest.TestCase):
     def test_cmp(self):
@@ -33,6 +35,11 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(cmp.min_by(a, b, lambda x, y: cmp.compare(x, y)), a)
         self.assertEqual(cmp.min_by(a, b, lambda x, y: cmp.compare(y, x)), b)    # reverse the comparison here.
         self.assertEqual(-min(-a, -b), b)
+
+        a = element.Element(0, 1)
+        b = element.Element(0, 2)
+        self.assertTrue(cmp.max_by(a, b, cmp.compare).same_as(b))
+        self.assertTrue(cmp.min_by(a, b, cmp.compare).same_as(b))
 
 
 if __name__ == '__main__':
