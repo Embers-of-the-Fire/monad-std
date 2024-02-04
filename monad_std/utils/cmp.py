@@ -165,8 +165,8 @@ def max_by(a: T, b: T, fn: t.Callable[[T, T], SupportsIntoOrdering]) -> T:
         ```python
         a = 0
         b = 1
-        assert max_by(a, b, lambda x, y: x > y) == b
-        assert max_by(a, b, lambda x, y: x < y) == a    # reverse the comparison here.
+        assert max_by(a, b, lambda x, y: compare(x, y)) == b
+        assert max_by(a, b, lambda x, y: compare(y, x)) == a    # reverse the comparison here.
         ```
 
         The latter case is same as the following:
@@ -177,6 +177,33 @@ def max_by(a: T, b: T, fn: t.Callable[[T, T], SupportsIntoOrdering]) -> T:
     ores = fn(a, b)
     ordering = Ordering.parse(ores)
     if ordering.is_ge():
+        return a
+    else:
+        return b
+
+
+def min_by(a: T, b: T, fn: t.Callable[[T, T], SupportsIntoOrdering]) -> T:
+    """Use the given function to calculate the minimum value in a and b.
+
+    The `fn` parameter should return [`SupportsIntoOrdering`][monad_std.utils.cmp.SupportsIntoOrdering].
+    See its documentation for more information.
+
+    Examples:
+        ```python
+        a = 0
+        b = 1
+        assert min_by(a, b, lambda x, y: compare(x, y)) == a
+        assert min_by(a, b, lambda x, y: compare(y, x)) == b    # reverse the comparison here.
+        ```
+
+        The latter case is same as the following:
+        ```python
+        assert -min(-a, -b) == b
+        ```
+    """
+    ores = fn(a, b)
+    ordering = Ordering.parse(ores)
+    if ordering.is_le():
         return a
     else:
         return b

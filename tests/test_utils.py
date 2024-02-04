@@ -28,6 +28,12 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(cmp.max_by(a, b, lambda x, y: cmp.compare(y, x)), a)    # reverse the comparison here.
         self.assertEqual(-max(-a, -b), a)
 
+        a = 0
+        b = 1
+        self.assertEqual(cmp.min_by(a, b, lambda x, y: cmp.compare(x, y)), a)
+        self.assertEqual(cmp.min_by(a, b, lambda x, y: cmp.compare(y, x)), b)    # reverse the comparison here.
+        self.assertEqual(-min(-a, -b), b)
+
 
 if __name__ == '__main__':
     unittest.main()
