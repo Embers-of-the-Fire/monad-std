@@ -1,18 +1,14 @@
 # Iterator Tools Implementation
 
-::: monad_std.iter.iter._IterIterator
+::: monad_std.iter.impl.default_iter._IterIterator
     options:
         heading_level: 2
 
-::: monad_std.iter.iter._IterIterable
+::: monad_std.iter.impl.default_iter._IterIterable
     options:
         heading_level: 2
 
-::: monad_std.iter.iter.OnceWith
-    options:
-        heading_level: 2
-
-::: monad_std.iter.iter.Repeat
+::: monad_std.iter.impl.default_iter._Iter
     options:
         heading_level: 2
 
@@ -76,7 +72,15 @@
     options:
         heading_level: 2
 
+::: monad_std.iter.impl.once.OnceWith
+    options:
+        heading_level: 2
+
 ::: monad_std.iter.impl.peekable.Peekable
+    options:
+        heading_level: 2
+
+::: monad_std.iter.impl.repeat.Repeat
     options:
         heading_level: 2
 

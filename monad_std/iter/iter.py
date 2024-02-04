@@ -1,15 +1,11 @@
-import warnings
 import typing as t
-import typing_extensions as te
 import collections.abc
 from abc import ABCMeta, abstractmethod
-import copy
 
 from .. import typedef as td
 
 from monad_std.option import Option
 from monad_std.result import Result, Err, Ok
-from monad_std.error import UnwrapException
 
 T = t.TypeVar("T")
 U = t.TypeVar("U")
@@ -18,7 +14,7 @@ R = t.TypeVar("R")
 
 if t.TYPE_CHECKING:
     try:
-        from funct.Array import Array as FunctArray
+        from funct.Array import Array as FunctArray # type: ignore[import-untyped]
 
     except ImportError:
         FunctArray = ...
@@ -1308,7 +1304,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
                 return True
         return False
 
-    def max(self: "IterMeta[td.cmp.SupportsDunderGE[T]]") -> Option["td.cmp.SupportsDunderGE[T]"]:
+    def max(self: "IterMeta[td.cmp.SupportsDunderGeSelf]") -> Option["td.cmp.SupportsDunderGeSelf"]:
         """Returns the maximum element of an iterator.
 
         If several elements are equally maximum, the last element is returned.
@@ -1348,17 +1344,17 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             assert m.unwrap().same_as(Element(3, 3))
             ```
         """
-        if (x := self.next()).is_some():
-            m = x.unwrap_unchecked()
-            while (x := self.next()).is_some():
-                x = x.unwrap_unchecked()
+        if (_x := self.next()).is_some():
+            m = _x.unwrap_unchecked()
+            while (_x := self.next()).is_some():
+                x = _x.unwrap_unchecked()
                 if x >= m:
                     m = x
             return Option.some(m)
         else:
             return Option.none()
 
-    def min(self: "IterMeta[td.cmp.SupportsDunderLE[T]]") -> Option["td.cmp.SupportsDunderLE[T]"]:
+    def min(self: "IterMeta[td.cmp.SupportsDunderLeSelf]") -> Option["td.cmp.SupportsDunderLeSelf"]:
         """Returns the minimum element of an iterator.
 
         If several elements are equally minimum, the last element is returned.
@@ -1398,10 +1394,10 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             assert m.unwrap().same_as(Element(0, 3))
             ```
         """
-        if (x := self.next()).is_some():
-            m = x.unwrap_unchecked()
-            while (x := self.next()).is_some():
-                x = x.unwrap_unchecked()
+        if (_x := self.next()).is_some():
+            m = _x.unwrap_unchecked()
+            while (_x := self.next()).is_some():
+                x = _x.unwrap_unchecked()
                 if x <= m:
                     m = x
             return Option.some(m)
@@ -1456,138 +1452,9 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         m.update(self.to_iter())
 
 
-class _IterIterable(IterMeta[T], t.Generic[T]):
-    __iter: t.Iterator[T]
-
-    def __init__(self, v: t.Iterable[T]):
-        self.__iter = iter(v)
-
-    def next(self) -> Option[T]:
-        return Result.catch(self.__iter.__next__).ok()
-
-
-class _IterIterator(IterMeta[T], t.Generic[T]):
-    __iter: t.Iterator[T]
-
-    def __init__(self, v: t.Iterator[T]):
-        self.__iter = v
-
-    def next(self) -> Option[T]:
-        return Result.catch(self.__iter.__next__).ok()
-
-
-class _Iter(t.Iterator[T], t.Generic[T]):
-    __iter: IterMeta[T]
-
-    def __init__(self, v: IterMeta[T]):
-        self.__iter = v
-
-    def __next__(self):
-        n = self.__iter.next()
-        try:
-            return n.unwrap()
-        except UnwrapException:
-            raise StopIteration
-
-
-class OnceWith(IterMeta[T], t.Generic[T]):
-    __func: Option[t.Callable[[], T]]
-
-    def __init__(self, func: t.Callable[[], T]):
-        self.__func = Option.some(func)
-
-    def next(self) -> Option[T]:
-        if self.__func.is_some():
-            val = self.__func.map(lambda s: s())
-            self.__func = Option.none()
-            return val
-        else:
-            return Option.none()
-
-    def nth(self, n: int = 1) -> Option[T]:
-        if self.__func.is_none():
-            pass
-        elif n > 0:
-            self.__func = Option.none()
-        else:
-            val = self.__func.map(lambda s: s())
-            self.__func = Option.none()
-            return val
-
-        return Option.none()
-
-    def next_chunk(self, n: int = 2) -> Result[t.List[T], t.List[T]]:
-        assert n > 0, "Chunk size must be positive"
-        if n > 1:
-            vale = list(self.__func.map(lambda s: s()).to_iter())
-            self.__func = Option.none()
-            return Result.of_err(vale)
-        else:
-            valo: Result[t.List[T], t.List[T]] = self.__func.map(lambda s: [s()]).ok_or([])
-            self.__func = Option.none()
-            return valo
-
-    def advance_by(self, n: int = 0) -> Result[None, int]:
-        if n == 0:
-            return Result.of_ok(None)
-        elif self.__func.is_none() and n > 0:
-            return Result.of_err(n)
-        else:
-            self.__func = Option.none()
-            if n == 1:
-                return Result.of_ok(None)
-            return Result.of_err(n - 1)
-
-
-class Repeat(IterMeta[T], t.Generic[T]):
-    __val: T
-
-    def __init__(self, value: T):
-        self.__val = value
-
-    def next(self) -> Option[T]:
-        return Option.some(copy.deepcopy(self.__val))
-
-    def nth(self, n: int = 1) -> Option[T]:
-        return Option.some(copy.deepcopy(self.__val))
-
-    def advance_by(self, n: int = 0) -> Result[None, int]:
-        return Ok(None)
-
-    def next_chunk(self, n: int = 2) -> Result[t.List[T], t.List[T]]:
-        assert n > 0, "Chunk size must be positive"
-        return Ok([copy.deepcopy(self.__val) for _ in range(n)])
-
-    def any(self, func: t.Callable[[T], bool] = lambda x: bool(x)) -> bool:
-        return func(self.__val)
-
-    def all(self, func: t.Callable[[T], bool] = lambda x: bool(x)) -> bool:
-        return func(self.__val)
-
-    def count(self) -> int:
-        raise ValueError("Repeat iterator is infinitive and you cannot count it.")
-
-    def find(self, predicate: t.Callable[[T], bool]) -> Option[T]:
-        if predicate(self.__val):
-            return Option.some(copy.deepcopy(self.__val))
-        else:
-            return Option.none()
-
-    def find_map(self, func: t.Callable[[T], Option[U]]) -> Option[U]:
-        return func(self.__val)
-
-    @te.override
-    def fuse(self) -> "Repeat[T]":  # type: ignore[override]
-        warnings.warn("Fusing repeated iterator is meaningless.", Warning)
-        return self
-
-    @te.override
-    def skip(self, n: int) -> "Repeat[T]":  # type: ignore[override]
-        warnings.warn("Skip repeated iterator is meaningless.", Warning)
-        return self
-
-
 # Import types at the bottom of the file to avoid circular imports.
 # Here we can import everything because the `impl` package only
 # export iterator implementions.
 from .impl import *
+# noinspection PyProtectedMember
+from .impl.default_iter import _Iter, _IterIterable, _IterIterator
