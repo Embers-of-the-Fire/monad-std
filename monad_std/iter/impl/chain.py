@@ -3,16 +3,18 @@ import typing as t
 from ..iter import IterMeta
 from monad_std import Option
 
+It1 = t.TypeVar("It1", bound=IterMeta)
+It2 = t.TypeVar("It2", bound=IterMeta)
 T = t.TypeVar('T')
 U = t.TypeVar('U')
 B = t.TypeVar('B')
 
 
-class Chain(IterMeta[T], t.Generic[T]):
-    __it1: Option[IterMeta[T]]
-    __it2: Option[IterMeta[T]]
+class Chain(IterMeta[T], t.Generic[T, It1, It2]):
+    __it1: Option[It1]
+    __it2: Option[It2]
 
-    def __init__(self, one: Option[IterMeta[T]], another: Option[IterMeta[T]]):
+    def __init__(self, one: Option[It1], another: Option[It2]):
         self.__it1 = one
         self.__it2 = another
 

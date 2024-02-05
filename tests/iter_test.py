@@ -12,32 +12,32 @@ from .testutil import *
 
 class ResultTest(unittest.TestCase):
     def test_iter(self):
-        t = siter(range(10))
-        self.assertListEqual(t.collect_list(), list(range(10)))
-        t = siter(range(10))
-        self.assertTupleEqual(t.collect_tuple(), tuple(range(10)))
-        t = siter(range(10))
-        self.assertEqual(t.collect_string(), "".join(map(str, range(10))))
-        t = siter(range(10))
-        self.assertEqual(t.collect_array(), funct.Array(range(10)))
-        t = siter(range(10)).chain(siter(range(2, 12)))
-        self.assertSetEqual(t.collect_set(), set(range(12)))
+        it = siter(range(10))
+        self.assertListEqual(it.collect_list(), list(range(10)))
+        it = siter(range(10))
+        self.assertTupleEqual(it.collect_tuple(), tuple(range(10)))
+        it = siter(range(10))
+        self.assertEqual(it.collect_string(), "".join(map(str, range(10))))
+        it = siter(range(10))
+        self.assertEqual(it.collect_array(), funct.Array(range(10)))
+        it = siter(range(10)).chain(siter(range(2, 12)))
+        self.assertSetEqual(it.collect_set(), set(range(12)))
 
-        t = siter(range(5))
+        it = siter(range(5))
         lst = [1]
-        t.collect_to_seq(lst)
+        it.collect_to_seq(lst)
         self.assertListEqual(lst, [1, 0, 1, 2, 3, 4])
-        t = siter(range(5))
+        it = siter(range(5))
         uset = {0, 10}
-        t.collect_to_set(uset)
+        it.collect_to_set(uset)
         self.assertSetEqual(uset, {0, 1, 2, 3, 4, 10})
-        t = siter(range(2, 5)).map(lambda x: (x, str(x + 1)))
+        it = siter(range(2, 5)).map(lambda x: (x, str(x + 1)))
         umap = {0: "1", 1: "2"}
-        t.collect_to_map(umap)
+        it.collect_to_map(umap)
         self.assertDictEqual(umap, {0: "1", 1: "2", 2: "3", 3: "4", 4: "5"})
 
-        t = siter(range(10))
-        self.assertEqual(t.count(), 10)
+        it = siter(range(10))
+        self.assertEqual(it.count(), 10)
 
         a = [1, 2, 3, 4]
         it = siter(a)
@@ -157,7 +157,8 @@ class ResultTest(unittest.TestCase):
         src = siter(["Hello", "to", "all", "people", "!!"])
         happy_emojis = siter([" ❤️ ", " 😀 "])
         separator = lambda: happy_emojis.next().unwrap_or(" 🦀 ")
-        result = src.intersperse_with(separator).collect_string()
+        it = src.intersperse_with(separator)
+        result = it.collect_string()
         self.assertEqual(result, "Hello ❤️ to 😀 all 🦀 people 🦀 !!")
 
     # noinspection PyMethodMayBeStatic
@@ -168,9 +169,9 @@ class ResultTest(unittest.TestCase):
          .for_each(lambda d: None))
 
     def test_iter_map(self):
-        t = siter(range(10))
+        it = siter(range(10))
         self.assertListEqual(
-            t.map(lambda x: x * 2).filter(lambda x: x % 3 == 1).enumerate().collect_list(),
+            it.map(lambda x: x * 2).filter(lambda x: x % 3 == 1).enumerate().collect_list(),
             list(enumerate(filter(lambda x: x % 3 == 1, map(lambda x: x * 2, range(10))))),
         )
         a = [1, 2, 3]
@@ -203,7 +204,7 @@ class ResultTest(unittest.TestCase):
         self.assertEqual(it.next(), Option.some(4))
         self.assertEqual(it.next(), Option.none())
 
-        a = [0, 1, 2, -3, 4, 5, -6];
+        a = [0, 1, 2, -3, 4, 5, -6]
 
         it = siter(a).map_while(lambda x: Option.none() if x < 0 else Option.some(x))
         lst = it.collect_list()
@@ -364,8 +365,8 @@ class ResultTest(unittest.TestCase):
         self.assertEqual(it.next(), Option.none())
 
     def test_iter_chain(self):
-        element = 1
-        it = once(element)
+        el = 1
+        it = once(el)
         self.assertEqual(it.next(), Option.some(1))
         self.assertEqual(it.next(), Option.none())
 
@@ -501,7 +502,7 @@ class ResultTest(unittest.TestCase):
         self.assertListEqual(right, [1, 3])
 
     def test_batch(self):
-        def do_batch(it) -> Option[t.Tuple[int, int]]:
+        def do_batch(it: IterMeta[int]) -> Option[t.Tuple[int, int]]:
             nxt = it.next()
             if nxt.is_none():
                 return Option.none()

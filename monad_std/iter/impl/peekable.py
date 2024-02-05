@@ -3,14 +3,15 @@ import typing as t
 from ..iter import IterMeta
 from monad_std import Option
 
+It = t.TypeVar("It", covariant=True, bound=IterMeta)
 T = t.TypeVar('T')
 
 
-class Peekable(IterMeta[T], t.Generic[T]):
-    __it: IterMeta[T]
+class Peekable(IterMeta[T], t.Generic[T, It]):
+    __it: It
     __peek: Option[Option[T]]
 
-    def __init__(self, it: IterMeta[T]):
+    def __init__(self, it: It):
         self.__it = it
         self.__peek = Option.none()
 

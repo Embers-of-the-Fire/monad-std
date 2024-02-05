@@ -3,15 +3,15 @@ import typing as t
 from ..iter import IterMeta
 from monad_std import Option
 
-T = t.TypeVar("T", covariant=True)
+It = t.TypeVar("It", covariant=True, bound=IterMeta)
 B = t.TypeVar("B")
 
 
-class Batching(IterMeta[B], t.Generic[T, B]):
-    __it: IterMeta[T]
-    __func: t.Callable[[IterMeta[T]], Option[B]]
+class Batching(IterMeta[B], t.Generic[It, B]):
+    __it: It
+    __func: t.Callable[[It], Option[B]]
 
-    def __init__(self, __it: IterMeta[T], __func: t.Callable[[IterMeta[T]], Option[B]]):
+    def __init__(self, __it: It, __func: t.Callable[[It], Option[B]]):
         self.__it = __it
         self.__func = __func
 
