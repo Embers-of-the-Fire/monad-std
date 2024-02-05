@@ -52,6 +52,14 @@
     options:
         heading_level: 2
 
+::: monad_std.iter.impl.group.GroupBy
+    options:
+        heading_level: 2
+
+::: monad_std.iter.impl.group.Group
+    options:
+        heading_level: 2
+
 ::: monad_std.iter.impl.inspect.Inspect
     options:
         heading_level: 2

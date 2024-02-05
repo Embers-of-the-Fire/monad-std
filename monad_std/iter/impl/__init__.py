@@ -8,6 +8,7 @@ from .filter_map import FilterMap
 from .flat_map import FlatMap
 from .flatten import Flatten
 from .fuse import Fuse
+from .group import Group, GroupBy
 from .inspect import Inspect
 from .intersperse import Intersperse, IntersperseWith
 from .map import Map, MapWhile, MapWindows

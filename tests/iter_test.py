@@ -517,6 +517,45 @@ class ResultTest(unittest.TestCase):
 
         self.assertListEqual(pit.collect_list(), [(0, 1), (2, 3)])
 
+    def test_group_by(self):
+        iit = siter([1, 3, -2, -2, 1, 0, 1, 2]).group_by(lambda el: el >= 0)
+        ivec = []
+        for key, i in iit.to_iter():
+            ivec.append((key, i.collect_list()))
+
+        self.assertListEqual(
+            ivec,
+            [(True, [1, 3]), (False, [-2, -2]), (True, [1, 0, 1, 2])]
+        )
+
+        sit = siter("abAcbACddA").group_by(lambda el: el.isupper())
+        svec = []
+        for key, i in sit.to_iter():
+            svec.append((key, i.collect_string()))
+
+        self.assertListEqual(
+            svec,
+            [(False, "ab"), (True, "A"), (False, "cb"), (True, "AC"), (False, "dd"), (True, "A")]
+        )
+
+        zit = siter([1, 3, -2, -2, 1, 0, -6, -3]).group_by(lambda el: el >= 0).collect_list()
+        zvec = []
+        for j in range(4):
+            zvec.append(zit[j][0])
+        for _ in range(2):
+            for j in range(4):
+                zvec.append(zit[j][1].next().unwrap())
+        self.assertListEqual(
+            zvec,
+            [
+                True, False, True, False,
+                1, -2, 1, -6,
+                3, -2, 0, -3
+            ]
+        )
+
+        siter([1, 3, -2, -2, 1, 0, -6, -3]).group_by(lambda el: el >= 0).filter(lambda tp: tp[0]).collect_list()
+
 
 if __name__ == "__main__":
     unittest.main()

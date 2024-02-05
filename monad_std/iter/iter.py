@@ -14,10 +14,12 @@ T = t.TypeVar("T")
 U = t.TypeVar("U")
 B = t.TypeVar("B")
 R = t.TypeVar("R")
+Eq_self = t.TypeVar("Eq_self", bound=td.cmp.SupportsDunderEqSelf)
 
 if t.TYPE_CHECKING:
+
     try:
-        from funct.Array import Array as FunctArray # type: ignore[import-untyped]
+        from funct.Array import Array as FunctArray  # type: ignore[import-untyped]
 
     except ImportError:
         FunctArray = ...
@@ -986,6 +988,64 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         """
         return TakeWhile(self, func)
 
+    def group_by(self, predicate: t.Callable[[T], Eq_self]) -> "GroupBy[T, Eq_self]":
+        """Return an iterator that can group iterator elements.
+        Consecutive elements that map to the same key (“runs”),
+        are assigned to the same group.
+
+        If the groups are consumed in order or the groups is not being referred,
+        then `GroupBy` doesn't save elements.
+        It needs allocations only if several group iterators are alive and used at the same time.
+
+        The `GroupBy` iterator will yield a key and a [`Group`][monad_std.iter.impl.group.Group] instance
+        in a tuple, and `Group` is also an iterator. The `Eq_self` is your key that spliting the
+        group, and the `Group` instance will yield out your elements.
+
+        Note that the key must implement `__eq__(self, other: Self)`.
+
+        Args:
+            predicate: A predicate that accepts an element and returns a key, and the key will be used
+                to split the group.
+
+        Returns:
+            See [`GroupBy`][monad_std.iter.impl.group.GroupBy] and [`Group`][monad_std.iter.impl.group.Group]
+                for more information.
+
+        Examples:
+            ```python
+            it = siter([1, 3, -2, -2, 1, 0, 1, 2]).group_by(lambda el: el >= 0)
+            vec = []
+            for key, i in iit.to_iter():
+                vec.append((key, i.collect_list()))
+
+            assert vec == [(True, [1, 3]), (False, [-2, -2]), (True, [1, 0, 1, 2])]
+            ```
+
+            "Vertical" iteration:
+
+            ```python
+            it = siter([1, 3, -2, -2, 1, 0, -6, -3])\\
+                .group_by(lambda el: el >= 0)\\
+                .collect_list()
+            vec = []
+
+            for j in range(4):
+                vec.append(it[j][0])
+            for _ in range(2):
+                for j in range(4):
+                    vec.append(it[j][1].next().unwrap())
+
+            expected = [
+                True, False, True, False,
+                1, -2, 1, -6,
+                3, -2, 0, -3
+            ]
+
+            assert vec == expected
+            ```
+        """
+        return GroupBy(self, predicate)
+
     def zip(self, other: It) -> "Zip[T, U, te.Self, It]":
         """‘Zips up’ two iterators into a single iterator of pairs.
 
@@ -1421,8 +1481,8 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             assert m.unwrap().same_as(Element(5, 1))
             ```
         """
-        return self.map(lambda item: (key(item), item))\
-            .max_by(lambda a, b: mutils.cmp.compare(a[0], b[0]))\
+        return self.map(lambda item: (key(item), item)) \
+            .max_by(lambda a, b: mutils.cmp.compare(a[0], b[0])) \
             .map(lambda x: x[1])
 
     def min(self: "IterMeta[td.cmp.SupportsRichComparisonSelfT]") -> Option["td.cmp.SupportsRichComparisonSelfT"]:
@@ -1509,8 +1569,8 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             assert m.unwrap().same_as(Element(0, 0))
             ```
         """
-        return self.map(lambda item: (key(item), item))\
-            .min_by(lambda a, b: mutils.cmp.compare(a[0], b[0]))\
+        return self.map(lambda item: (key(item), item)) \
+            .min_by(lambda a, b: mutils.cmp.compare(a[0], b[0])) \
             .map(lambda x: x[1])
 
     def partition(self, predicate: t.Callable[[T], bool], left: t.MutableSequence, right: t.MutableSequence):

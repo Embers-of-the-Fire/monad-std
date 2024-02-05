@@ -29,6 +29,10 @@ Comparation-related types and protocols.
     options:
         heading_level: 3
 
+::: monad_std.typedef.cmp.SupportsDunderEq
+    options:
+        heading_level: 3
+
 ::: monad_std.typedef.cmp.SupportsAllComparisons
     options:
         heading_level: 3
