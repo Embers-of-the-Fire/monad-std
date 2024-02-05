@@ -35,7 +35,7 @@ class _Iter(t.Iterator[T], t.Generic[T]):
 
     def __next__(self):
         n = self.__iter.next()
-        try:
-            return n.unwrap()
-        except UnwrapException:
+        if n.is_none():
             raise StopIteration
+        else:
+            return n.unwrap_unchecked()
