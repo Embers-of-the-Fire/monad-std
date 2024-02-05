@@ -673,7 +673,7 @@ class Option(t.Generic[KT], metaclass=ABCMeta):
             ```
         """
         if self.is_some():
-            uwp = self.unwrap()
+            uwp = self.unwrap_unchecked()
             return Option.some(uwp[0]), Option.some(uwp[1])
         else:
             return OpNone(), OpNone()
@@ -693,10 +693,10 @@ class Option(t.Generic[KT], metaclass=ABCMeta):
         """
         if self.is_none():
             return Result.of_ok(OpNone())
-        elif self.unwrap().is_ok():
-            return Result.of_ok(Option.some(self.unwrap().unwrap()))
+        elif self.unwrap_unchecked().is_ok():
+            return Result.of_ok(Option.some(self.unwrap_unchecked().unwrap()))
         else:
-            return Result.of_err(self.unwrap().unwrap_err())
+            return Result.of_err(self.unwrap_unchecked().unwrap_err())
 
     def flatten(self: "Option[Option[T]]") -> "Option[T]":
         """Converts from `Option<Option<KT>>` to `Option<KT>`.
@@ -715,8 +715,8 @@ class Option(t.Generic[KT], metaclass=ABCMeta):
                 == Option.some(6))
             ```
         """
-        if self.is_some() and self.unwrap().is_some():
-            return Option.some(self.unwrap().unwrap())
+        if self.is_some() and self.unwrap_unchecked().is_some():
+            return Option.some(self.unwrap_unchecked().unwrap())
         else:
             return OpNone()
 
