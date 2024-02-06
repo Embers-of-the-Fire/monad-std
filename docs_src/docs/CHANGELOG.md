@@ -17,9 +17,22 @@
       Collect the iterator into a mutable and extendable item.<br />
       Note that in Python it's not possible to actually *change* a `str`, so `collect_to_string` is not provided.
     - [`collect_set`][monad_std.iter.iter.IterMeta.collect_set]: Collect the iterator into a hashset.
+    - [`partition`][monad_std.iter.iter.IterMeta.partition],
+      [`partition_map`][monad_std.iter.iter.IterMeta.partition_map],
+      [`partition_list`][monad_std.iter.iter.IterMeta.partition_list],
+      [`partition_map_list`][monad_std.iter.iter.IterMeta.partition_map_list]:
+      Split the iterator with a predicate.
+    - Aliases: Simplified alias for common methods.
+        - [`filter_ok`][monad_std.iter.iter.IterMeta.filter_ok],
+          [`filter_err`][monad_std.iter.iter.IterMeta.filter_err],
+          [`filter_map_ok`][monad_std.iter.iter.IterMeta.filter_map_ok],
+          [`filter_map_err`][monad_std.iter.iter.IterMeta.filter_map_err]
+        - [`map_ok`][monad_std.iter.iter.IterMeta.map_ok], [`map_err`][monad_std.iter.iter.IterMeta.map_err]
+        - [`partition_result`][monad_std.iter.iter.IterMeta.partition_result]
 - [`monad_std.typedef`](./api_document/typedef.md): Internal type definition.
 - [`monad_std.utils`](./api_document/utils/index.md):
   Utility used inside and outside (recommend, but not forced) the library.
+- `monad_std.either.Either`: A structure containing two type of values, but not that specific like `monad_std.Result`.
 
 **Impl Change**
 

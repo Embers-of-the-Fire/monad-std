@@ -501,6 +501,12 @@ class ResultTest(unittest.TestCase):
         self.assertListEqual(left, [0, 2, 4])
         self.assertListEqual(right, [1, 3])
 
+        left = []
+        right = []
+        siter(a).partition_map(lambda item: Left(item / 2) if item % 2 == 0 else Right(item - 1), left, right)
+        self.assertListEqual(left, [0, 1, 2])
+        self.assertListEqual(right, [0, 2])
+
     def test_batch(self):
         def do_batch(it: IterMeta[int]) -> Option[t.Tuple[int, int]]:
             nxt = it.next()
@@ -555,6 +561,20 @@ class ResultTest(unittest.TestCase):
         )
 
         siter([1, 3, -2, -2, 1, 0, -6, -3]).group_by(lambda el: el >= 0).filter(lambda tp: tp[0]).collect_list()
+
+    def test_iter_aliases(self):
+        # filter #
+        a = [Ok(1), Err(2), Ok(3)]
+        self.assertListEqual([1, 3], siter(a).filter_ok().collect_list())
+        self.assertListEqual([2], siter(a).filter_err().collect_list())
+        self.assertListEqual([2, 4], siter(a).filter_map_ok(lambda x: x + 1).collect_list())
+        self.assertListEqual([3], siter(a).filter_map_err(lambda x: x + 1).collect_list())
+        self.assertListEqual([Ok(-1), Err(2), Ok(-3)], siter(a).map_ok(lambda x: -x).collect_list())
+        self.assertListEqual([Ok(1), Err(-2), Ok(3)], siter(a).map_err(lambda x: -x).collect_list())
+        
+        res1, res2 = siter(a).partition_result()
+        self.assertListEqual(res1, [1, 3])
+        self.assertListEqual(res2, [2])
 
 
 if __name__ == "__main__":

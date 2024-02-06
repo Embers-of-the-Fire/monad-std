@@ -12,8 +12,15 @@
     - `collect_to_xxx`: Collect the iterator into a mutable and extendable item.<br />
       Note that in Python it's not possible to actually *change* a `str`, so `collect_to_string` is not provided.
     - `collect_set`: Collect the iterator into a hashset.
+    - `partition`, `partition_map`, `partition_list`, `partition_map_list`:
+      Split the iterator with a predicate.
+    - Aliases:
+        - `filter_ok`, `filter_err`, `filter_map_ok`, `filter_map_err`
+        - `map_ok`, `map_err`
+        - `partition_result`
 - `monad_std.typedef`: Internal type definition.
 - `monad_std.utils`: Utility used inside and outside (recommend, but not forced) the library.
+- `monad_std.either.Either`: A structure containing two type of values, but not that specific like `monad_std.Result`.
 
 **Impl Change**
 

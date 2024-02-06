@@ -17,7 +17,7 @@ class FilterMap(IterMeta[U], t.Generic[T, U]):
 
     def next(self) -> Option[U]:
         while (x := self.__it.next()).is_some():
-            if (z := self.__func(x.unwrap())).is_some():
+            if (z := self.__func(x.unwrap_unchecked())).is_some():
                 return z
         else:
             return Option.none()

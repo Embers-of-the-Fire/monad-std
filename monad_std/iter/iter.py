@@ -8,11 +8,16 @@ from .. import utils as mutils
 
 from monad_std.option import Option
 from monad_std.result import Result, Err, Ok
+from monad_std.either import Either, Left, Right
 
 It = t.TypeVar("It", contravariant=True, bound="IterMeta")
 T = t.TypeVar("T")
 U = t.TypeVar("U")
 B = t.TypeVar("B")
+R = t.TypeVar("R")
+KT = t.TypeVar("KT")
+KE = t.TypeVar("KE")
+L = t.TypeVar("L")
 R = t.TypeVar("R")
 Eq_self = t.TypeVar("Eq_self", bound=td.cmp.SupportsDunderEqSelf)
 
@@ -1573,7 +1578,7 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
             .min_by(lambda a, b: mutils.cmp.compare(a[0], b[0])) \
             .map(lambda x: x[1])
 
-    def partition(self, predicate: t.Callable[[T], bool], left: t.MutableSequence, right: t.MutableSequence):
+    def partition(self, predicate: t.Callable[[T], bool], left: t.MutableSequence[T], right: t.MutableSequence[T]):
         """Consumes an iterator, filling two sequence from it.
 
         The `predicate` passed to `partition()` can return `True`, or `False`.
@@ -1581,9 +1586,11 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         and the rest will be appended to the `right`.
 
         **Note:**
-        1. The two sequences do not necessarily need to be of the same type.
-        2. Caller must construct the sequence before calling,
-           since this will operate on the sequence in-place, and not returning anything.
+        1.  The two sequences do not necessarily need to be of the same type.
+        2.  Caller must construct the sequence before calling,
+            since this will operate on the sequence in-place, and not returning anything.
+            
+            If you just want to get two plain list, see [`partition_list`][monad_std.iter.iter.IterMeta.partition_list].
 
         Examples:
             ```python
@@ -1600,11 +1607,41 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
                 left.append(item)
             else:
                 right.append(item)
+    
+    def partition_map(self, predicate: t.Callable[[T], Either[L, R]], left: t.MutableSequence[L], right: t.MutableSequence[R]):
+        """Consumes an iterator, filling two sequence from it.
+
+        The `predicate` passed to `partition_map()` can return a `Either`.
+        All `Either::Left` will be appended to the `left`, and `Either::Right` will be appended to the `right`.
+
+        **Note:**
+        1.  The two sequences do not necessarily need to be of the same type.
+        2.  Caller must construct the sequence before calling,
+            since this will operate on the sequence in-place, and not returning anything.
+            
+            If you just want to get two plain list, see [`partition_list`][monad_std.iter.iter.IterMeta.partition_map_list].
+
+        Examples:
+            ```python
+            a = [0, 1, 2, 3, 4]
+            left = []
+            right = []
+            siter(a).partition_map(lambda item: Left(item / 2) if item % 2 == 0 else Right(item - 1), left, right)
+            assert left == [0, 1, 2]
+            assert right == [0, 2]
+            ```
+        """
+        for item in self.to_iter():
+            p = predicate(item)
+            if p.is_left():
+                left.append(p.unwrap_left_unchecked())
+            else:
+                right.append(p.unwrap_right_unchecked())
 
     def partition_list(self, predicate: t.Callable[[T], bool]) -> t.Tuple[t.List[T], t.List[T]]:
         """Consumes an iterator, filling two list from it.
 
-        The `predicate` passed to `partition()` can return `True`, or `False`.
+        The `predicate` passed to `partition_list()` can return `True`, or `False`.
         All elements that the predicate would return true will be appended to the `left`,
         and the rest will be appended to the `right`.
 
@@ -1614,6 +1651,20 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         left: t.List[T] = []
         right: t.List[T] = []
         self.partition(predicate, left, right)
+        return left, right
+
+    def partition_map_list(self, predicate: t.Callable[[T], Either[L, R]]) -> t.Tuple[t.List[L], t.List[R]]:
+        """Consumes an iterator, filling two list from it.
+
+        The `predicate` passed to `partition_map_list()` can return a `Either`.
+        All `Either::Left` will be appended to the `left`, and `Either::Right` will be appended to the `right`.
+
+        This calls [`partition_map`][monad_std.iter.iter.IterMeta.partition_map] internally,
+        with two Python's standard lists.
+        """
+        left: t.List[L] = []
+        right: t.List[R] = []
+        self.partition_map(predicate, left, right)
         return left, right
 
     def collect_list(self) -> t.List[T]:
@@ -1662,6 +1713,89 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
 
         This will return nothing and operates on the mapping."""
         m.update(self.to_iter())
+
+    ##################################
+    # Aliases
+    ##################################
+
+    def filter_ok(self: "IterMeta[Result[KT, KE]]") -> "FilterMap[Result[KT, KE], KT]":
+        """Filter out all `Err` values and unwrap the `Ok` values.
+        
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            assert [1, 3] == siter(a).filter_ok().collect_list()
+            ```
+        """
+        return self.filter_map(lambda x: x.ok())
+
+    def filter_err(self: "IterMeta[Result[KT, KE]]") -> "FilterMap[Result[KT, KE], KE]":
+        """Filter out all `Ok` values and unwrap the `Err` values.
+        
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            assert [2] == siter(a).filter_err().collect_list()
+            ```
+        """
+        return self.filter_map(lambda x: x.err())
+
+    def filter_map_ok(self: "IterMeta[Result[KT, KE]]", op: t.Callable[[KT], U]) -> "FilterMap[Result[KT, KE], U]":
+        """Filter out all `Err` values and map the `Ok` values.
+
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            assert [2, 4] == siter(a).filter_map_ok(lambda x: x + 1).collect_list()
+            ```
+        """
+        return self.filter_map(lambda item: item.ok().map(op))
+
+    def filter_map_err(self: "IterMeta[Result[KT, KE]]", op: t.Callable[[KE], B]) -> "FilterMap[Result[KT, KE], B]":
+        """Filter out all `Ok` values and map the `Err` values.
+
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            assert [3] == siter(a).filter_map_err(lambda x: x + 1).collect_list()
+            ```
+        """
+        return self.filter_map(lambda item: item.err().map(op))
+
+    def map_ok(self: "IterMeta[Result[KT, KE]]", op: t.Callable[[KT], U]) -> "Map[Result[KT, KE], Result[U, KE]]":
+        """Map the `Ok` value and left the `Err` value unchanged.
+        
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            assert [Ok(-1), Err(2), Ok(-3)] == siter(a).map_ok(lambda x: -x).collect_list()
+            ```
+        """
+        return self.map(lambda item: item.map(op))
+
+    def map_err(self: "IterMeta[Result[KT, KE]]", op: t.Callable[[KE], B]) -> "Map[Result[KT, KE], Result[KT, B]]":
+        """Map the `Err` value and left the `Ok` value unchanged.
+        
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            assert [Ok(1), Err(-2), Ok(3)] == siter(a).map_err(lambda x: -x).collect_list()
+            ```
+        """
+        return self.map(lambda item: item.map_err(op))
+    
+    def partition_result(self: "IterMeta[Result[KT, KE]]") -> t.Tuple[t.List[KT], t.List[KE]]:
+        """Split the result into two lists, one for `Ok` values and one for `Err` values.
+        
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            res1, res2 = siter(a).partition_result()
+            assert res1 == [1, 3]
+            assert res2 == [2]
+            ```
+        """
+        return self.partition_map_list(lambda item: item.to_either())
 
 
 # Import types at the bottom of the file to avoid circular imports.
