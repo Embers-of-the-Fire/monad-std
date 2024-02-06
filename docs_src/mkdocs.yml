@@ -27,11 +27,13 @@ nav:
       - "api_document/option.md"
       - "api_document/result.md"
       - "api_document/error.md"
+      - "api_document/either.md"
       - "api_document/iterator_tools.md"
       - "api_document/std_types.md"
       - "api_document/iterator_tools_impl.md"
       - "api_document/option_impl.md"
       - "api_document/result_impl.md"
+      - "api_document/either_impl.md"
       - "api_document/typedef.md"
       - Utilities:
           - "api_document/utils/index.md"

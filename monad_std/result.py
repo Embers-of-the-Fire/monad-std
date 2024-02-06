@@ -491,6 +491,20 @@ class Result(t.Generic[KT, KE], metaclass=ABCMeta):
         ...
 
     @abstractmethod
+    def to_either(self) -> "Either[KT, KE]":
+        """Converts the `Result` to an `Either`.
+        
+        The `Ok` value will be mapped to `Either::Left`, and the `Err` value will be mapped to `Either::Right`.
+        
+        Examples:
+            ```python
+            assert Ok(1).to_either() == Left(1)
+            assert Err(2).to_either() == Right(2)
+            ```
+        """
+        ...
+
+    @abstractmethod
     def unwrap_unchecked(self) -> t.Union[KT, KE]:
         """Returns the contained value, no matter what it is.
 
@@ -777,6 +791,9 @@ class Ok(t.Generic[KT, KE], Result[KT, KE]):
 
     def to_pattern(self) -> t.Tuple[bool, t.Union[KT, KE]]:
         return True, self.__value
+    
+    def to_either(self) -> "Left[KT]":
+        return Left(self.__value)
 
     def unwrap_unchecked(self) -> t.Union[KT, KE]:
         return self.__value
@@ -882,6 +899,9 @@ class Err(t.Generic[KT, KE], Result[KT, KE]):
 
     def to_pattern(self) -> t.Tuple[bool, t.Union[KT, KE]]:
         return False, self.__value
+    
+    def to_either(self) -> "Right[KT]":
+        return Right(self.__value)
 
     def unwrap_unchecked(self) -> t.Union[KT, KE]:
         return self.__value
@@ -915,3 +935,4 @@ class Err(t.Generic[KT, KE], Result[KT, KE]):
 
 
 from .option import Option
+from .either import Either, Left, Right
