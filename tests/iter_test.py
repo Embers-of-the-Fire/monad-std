@@ -507,6 +507,25 @@ class ResultTest(unittest.TestCase):
         self.assertListEqual(left, [0, 1, 2])
         self.assertListEqual(right, [0, 2])
 
+    def test_it_partition(self):
+        a = [0, 1, 2, 3, 4]
+        _, l, r = siter(a).partition_by(lambda item: Left(item / 2) if item % 2 == 0 else Right(item - 1))
+        left = l.collect_list()
+        right = r.collect_list()
+        self.assertListEqual(left, [0, 1, 2])
+        self.assertListEqual(right, [0, 2])
+
+        a = [1, 2, 3, 4, 5, 6]
+        _, left, right = siter(a).partition_by(Either.convert_either_by(lambda x: x % 2 == 0))
+        assert left.next() == Option.some(2)
+        assert left.next() == Option.some(4)
+        assert right.next() == Option.some(1)
+        assert right.next() == Option.some(3)
+        assert left.next() == Option.some(6)
+        assert right.next() == Option.some(5)
+        assert left.next() == Option.none()
+        assert right.next() == Option.none()
+
     def test_batch(self):
         def do_batch(it: IterMeta[int]) -> Option[t.Tuple[int, int]]:
             nxt = it.next()

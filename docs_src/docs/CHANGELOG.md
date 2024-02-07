@@ -20,7 +20,8 @@
     - [`partition`][monad_std.iter.iter.IterMeta.partition],
       [`partition_map`][monad_std.iter.iter.IterMeta.partition_map],
       [`partition_list`][monad_std.iter.iter.IterMeta.partition_list],
-      [`partition_map_list`][monad_std.iter.iter.IterMeta.partition_map_list]:
+      [`partition_map_list`][monad_std.iter.iter.IterMeta.partition_map_list],
+      [`partition_by`][monad_std.iter.iter.IterMeta.partition_by]:
       Split the iterator with a predicate.
     - Aliases: Simplified alias for common methods.
         - [`filter_ok`][monad_std.iter.iter.IterMeta.filter_ok],

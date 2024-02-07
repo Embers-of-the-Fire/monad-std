@@ -13,6 +13,7 @@ from .inspect import Inspect
 from .intersperse import Intersperse, IntersperseWith
 from .map import Map, MapWhile, MapWindows
 from .once import OnceWith
+from .partition import PartitionBy, PartitionGroup
 from .peekable import Peekable
 from .repeat import Repeat
 from .scan import Scan

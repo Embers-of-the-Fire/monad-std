@@ -3,10 +3,12 @@ from abc import ABCMeta, abstractmethod
 
 from .error import UnwrapException
 
+T = t.TypeVar("T")
 L = t.TypeVar("L")
 R = t.TypeVar("R")
 HL = t.TypeVar("HL", bound=t.Hashable)
 HR = t.TypeVar("HR", bound=t.Hashable)
+
 
 class Either(t.Generic[L, R], metaclass=ABCMeta):
     """An ancestor class of any `Either` type, inherited by `Left` and `Right`."""
@@ -47,6 +49,44 @@ class Either(t.Generic[L, R], metaclass=ABCMeta):
     def of_right(value: R) -> "Right[L, R]":
         """Create a `Right` value."""
         return Right(value)
+
+    @staticmethod
+    def convert_either(value: T, flag: bool) -> "Either[T, T]":
+        """Convert a value to an `Either` value.
+
+        If the flag is `True`, then the value will be `Left`. Otherwise, `Right`.
+
+        Examples:
+            ```python
+            assert Left(5) == Either.convert_either(5, True)
+            assert Right(5) == Either.convert_either(5, False)
+            ```
+        """
+        if flag:
+            return Left(value)
+        else:
+            return Right(value)
+
+    @staticmethod
+    def convert_either_by(op: t.Callable[[T], bool]) -> t.Callable[[T], "Either[T, T]"]:
+        """Use a function to create a predicate that can convert value to `Either`.
+
+        If the `op` returns `True`, then the value will be converted to `Left`. Otherwise, `Right`.
+
+        Examples:
+            ```python
+            cvt = Either.convert_either_by(lambda x: x % 2 == 0)
+            assert Left(4) == cvt(4)
+            assert Right(5) == cvt(5)
+            ```
+        """
+        def inner(value: T) -> "Either[T, T]":
+            if op(value):
+                return Left(value)
+            else:
+                return Right(value)
+
+        return inner
     
     #################
     # Object method #

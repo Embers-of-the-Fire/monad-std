@@ -792,7 +792,7 @@ class Ok(t.Generic[KT, KE], Result[KT, KE]):
     def to_pattern(self) -> t.Tuple[bool, t.Union[KT, KE]]:
         return True, self.__value
     
-    def to_either(self) -> "Left[KT]":
+    def to_either(self) -> "Left[KT, KE]":
         return Left(self.__value)
 
     def unwrap_unchecked(self) -> t.Union[KT, KE]:
@@ -900,7 +900,7 @@ class Err(t.Generic[KT, KE], Result[KT, KE]):
     def to_pattern(self) -> t.Tuple[bool, t.Union[KT, KE]]:
         return False, self.__value
     
-    def to_either(self) -> "Right[KT]":
+    def to_either(self) -> "Right[KT, KE]":
         return Right(self.__value)
 
     def unwrap_unchecked(self) -> t.Union[KT, KE]:

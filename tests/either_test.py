@@ -5,6 +5,13 @@ from monad_std import UnwrapException
 
 
 class EitherTest(unittest.TestCase):
+    def test_constructer(self):
+        self.assertEqual(Left(5), Either.convert_either(5, True))
+        self.assertEqual(Right(5), Either.convert_either(5, False))
+        cvt = Either.convert_either_by(lambda x: x % 2 == 0)
+        self.assertEqual(Left(4), cvt(4))
+        self.assertEqual(Right(5), cvt(5))
+
     def test_type_checker(self):
         self.assertTrue(Left(5).is_left())
         self.assertFalse(Right(5).is_left())

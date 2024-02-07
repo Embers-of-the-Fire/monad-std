@@ -88,6 +88,14 @@
     options:
         heading_level: 2
 
+::: monad_std.iter.impl.partition.PartitionBy
+    options:
+        heading_level: 2
+
+::: monad_std.iter.impl.partition.PartitionGroup
+    options:
+        heading_level: 2
+
 ::: monad_std.iter.impl.peekable.Peekable
     options:
         heading_level: 2
