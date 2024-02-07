@@ -1,3 +1,3 @@
-::: monad_std.either.either
+::: monad_std.either.Either
     options:
         show_source: false
