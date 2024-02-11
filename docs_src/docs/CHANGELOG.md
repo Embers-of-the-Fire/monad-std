@@ -1,5 +1,46 @@
 # Change Log
 
+## V0.9.0
+
+**ADD**:
+
+- [`monad_std.iter.IterMeta`][monad_std.iter.iter.IterMeta]:
+    - [`map_while`][monad_std.iter.iter.IterMeta.map_while]: Yields elements based on both a predicate and maps.
+    - [`map_windows`][monad_std.iter.iter.IterMeta.map_windows]: A map but with fixed-sized windows.
+    - [`batching`][monad_std.iter.iter.IterMeta.batching]:
+      A meta-iterator over iterator and let you generate values manually.
+    - [`max`][monad_std.iter.iter.IterMeta.max], [`max_by`][monad_std.iter.iter.IterMeta.max_by],
+      [`max_by_key`][monad_std.iter.iter.IterMeta.max_by_key], [`min`][monad_std.iter.iter.IterMeta.min]
+      [`min_by`][monad_std.iter.iter.IterMeta.min_by], [`min_by_key`][monad_std.iter.iter.IterMeta.min_by_key]:
+      Get the maximum / minimum value.
+    - [`collect_to_xxx`][monad_std.iter.iter.IterMeta.collect_to_seq]:
+      Collect the iterator into a mutable and extendable item.<br />
+      Note that in Python it's not possible to actually *change* a `str`, so `collect_to_string` is not provided.
+    - [`collect_set`][monad_std.iter.iter.IterMeta.collect_set]: Collect the iterator into a hashset.
+    - [`partition`][monad_std.iter.iter.IterMeta.partition],
+      [`partition_map`][monad_std.iter.iter.IterMeta.partition_map],
+      [`partition_list`][monad_std.iter.iter.IterMeta.partition_list],
+      [`partition_map_list`][monad_std.iter.iter.IterMeta.partition_map_list],
+      [`partition_by`][monad_std.iter.iter.IterMeta.partition_by]:
+      Split the iterator with a predicate.
+    - Aliases: Simplified alias for common methods.
+        - [`filter_ok`][monad_std.iter.iter.IterMeta.filter_ok],
+          [`filter_err`][monad_std.iter.iter.IterMeta.filter_err],
+          [`filter_map_ok`][monad_std.iter.iter.IterMeta.filter_map_ok],
+          [`filter_map_err`][monad_std.iter.iter.IterMeta.filter_map_err]
+        - [`map_ok`][monad_std.iter.iter.IterMeta.map_ok], [`map_err`][monad_std.iter.iter.IterMeta.map_err]
+        - [`partition_result`][monad_std.iter.iter.IterMeta.partition_result]
+- [`monad_std.typedef`](./api_document/typedef.md): Internal type definition.
+- [`monad_std.utils`](./api_document/utils/index.md):
+  Utility used inside and outside (recommend, but not forced) the library.
+- `monad_std.either.Either`: A structure containing two type of values, but not that specific like `monad_std.Result`.
+
+**Impl Change**
+
+- Use `import typing` instead of `from typing import ...` to make the scope and namespace cleaner.
+- All iterator implementation will be moved to their single files,
+  and can stil be imported from `monad_std.iter.impl`.
+
 ## V0.8.0
 
 **ADD**:
@@ -115,12 +156,12 @@
               [`position`][monad_std.iter.iter.IterMeta.position]
             - [`product`][monad_std.iter.iter.IterMeta.product], [`sum`][monad_std.iter.iter.IterMeta.sum]
             - [`reduce`][monad_std.iter.iter.IterMeta.reduce]
-- [`monad_std.Result`](Api Document/result.md):
+- [`monad_std.Result`](api_document/result.md):
     - Exposed [`Ok`][monad_std.result.Ok] and [`Err`][monad_std.result.Err] constructor.
 
 **Breaking Change**
 
-- [`monad_std.Option`](Api Document/option.md):
+- [`monad_std.Option`](api_document/option.md):
     - `of_some` -> [`some`][monad_std.result.Option.some]
     - `of_none` -> [`none`][monad_std.result.Option.none]
 
@@ -128,18 +169,18 @@
 
 **ADD**
 
-- [`monad_std.Option`](Api Document/option.md):
+- [`monad_std.Option`](api_document/option.md):
     - `__add__/+ __mul__/*`: Call on the contained value.
     - `__iter__/to_iter`: Adapt from `to_array` method.
-- [`monad_std.Result`](Api Document/result.md):
+- [`monad_std.Result`](api_document/result.md):
     - `__add__/+ __mul__/*`: Call on the contained value.
     - `__iter__/to_iter`: Adapt from `to_array` method.
 
 **FIX**
 
-- [`monad_std.Option`](Api Document/option.md):
-  Split into [`OpSome`](Api Document/Option-Impl.md#monad_std.option.OpSome)
-  and [`OpNone`](Api Document/Option-Impl.md#monad_std.option.OpNone).
+- [`monad_std.Option`](api_document/option.md):
+  Split into [`OpSome`](api_document/option_impl.md#monad_std.option.OpSome)
+  and [`OpNone`](api_document/option_impl.md#monad_std.option.OpNone).
 
 ## V0.1.0
 
@@ -157,22 +198,22 @@
     - [`MDict`][monad_std.std_types.MDict]:
         - Rewrite `dict.popitem`, `dict.pop`: Now they'll return an `Option`.
         - Add `MDict.get`: Get an `Option` of the keyed value.
-- [`monad_std.Option`](Api Document/option.md):
-    - Add [`from_nullable`](Api Document/option.md#monad_std.option.Option.from_nullable) as constructor.
+- [`monad_std.Option`](api_document/option.md):
+    - Add [`from_nullable`](api_document/option.md#monad_std.option.Option.from_nullable) as constructor.
     - Add `__bool__` magic method.
-- [`monad_std.Result`](Api Document/result.md):
-    - Add [`catch`](Api Document/result.md#monad_std.result.Result.catch)
-      and [`catch_from`](Api Document/result.md#monad_std.result.Result.catch_from) as constructor.
+- [`monad_std.Result`](api_document/result.md):
+    - Add [`catch`](api_document/result.md#monad_std.result.Result.catch)
+      and [`catch_from`](api_document/result.md#monad_std.result.Result.catch_from) as constructor.
     - Add `__bool__` magic method.
 
 **FIX**
 
-- [`monad_std.Option`](Api Document/option.md): Fix `Option.__repr__`'s behavior.
+- [`monad_std.Option`](api_document/option.md): Fix `Option.__repr__`'s behavior.
 
 ## V0.0.0(Initial Release)
 
 **ADD**
 
-- [`monad_std.Option`](Api Document/option.md): An optional value.
-- [`monad_std.Result`](Api Document/result.md): A structure containing a success value or an error.
-- [`monad_std.UnwrapException`](Api Document/error.md): Generic exception for unwrapping a monad.
+- [`monad_std.Option`](api_document/option.md): An optional value.
+- [`monad_std.Result`](api_document/result.md): A structure containing a success value or an error.
+- [`monad_std.UnwrapException`](api_document/error.md): Generic exception for unwrapping a monad.

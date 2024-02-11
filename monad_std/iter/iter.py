@@ -1,21 +1,37 @@
-import warnings
-from typing import Iterator, TypeVar, Generic, List, Iterable, Callable, Union
+import typing as t
+import typing_extensions as te
 import collections.abc
 from abc import ABCMeta, abstractmethod
-import copy
+
+from .. import typedef as td
+from .. import utils as mutils
 
 from monad_std.option import Option
 from monad_std.result import Result, Err, Ok
-from monad_std.error import UnwrapException
+from monad_std.either import Either, Left, Right
 
-T = TypeVar("T")
-U = TypeVar("U")
-B = TypeVar("B")
+It = t.TypeVar("It", contravariant=True, bound="IterMeta")
+T = t.TypeVar("T")
+U = t.TypeVar("U")
+B = t.TypeVar("B")
+R = t.TypeVar("R")
+KT = t.TypeVar("KT")
+KE = t.TypeVar("KE")
+L = t.TypeVar("L")
+Eq_self = t.TypeVar("Eq_self", bound=td.cmp.SupportsDunderEqSelf)
+
+if t.TYPE_CHECKING:
+
+    try:
+        from funct.Array import Array as FunctArray  # type: ignore[import-untyped]
+
+    except ImportError:
+        FunctArray = ...
 
 
-class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
+class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
     @staticmethod
-    def iter(v: "Union[Iterable[T@IterMeta], Iterator[T@IterMeta]]") -> "IterMeta[T]":
+    def iter(v: t.Union[t.Iterable[T], t.Iterator[T]]) -> "IterMeta[T]":
         """Convert an iterator or iterable object into `IterMeta`.
 
         For implementations, see [`_IterIterable`][monad_std.iter.iter._IterIterable] and
@@ -29,7 +45,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             raise TypeError("expect an iterator or iterable object")
 
     @staticmethod
-    def once(v: "T@IterMeta") -> "IterMeta[T]":
+    def once(v: T) -> "IterMeta[T]":
         """Convert a single element into `IterMeta`.
 
         This method actually constructs a list and turns it into an
@@ -46,7 +62,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         return _IterIterable([v])
 
     @staticmethod
-    def once_with(func: Callable[[], T]) -> "OnceWith[T]":
+    def once_with(func: t.Callable[[], T]) -> "OnceWith[T]":
         """Convert a closure which produces a value to a single-use iterator.
 
         Examples:
@@ -146,7 +162,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             lst = x
         return lst
 
-    def next_chunk(self, n: int = 2) -> Result[List[T], List[T]]:
+    def next_chunk(self, n: int = 2) -> Result[t.List[T], t.List[T]]:
         """Advances the iterator and returns an array containing the next `N` values.
 
         If there are not enough elements to fill the array then `Err` is returned containing a list of the remaining
@@ -221,7 +237,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
     def __iter__(self):
         return self.to_iter()
 
-    def array_chunk(self, chunk_size: int = 2) -> "ArrayChunk":
+    def array_chunk(self, chunk_size: int = 2) -> "ArrayChunk[T]":
         """Returns an iterator over `N` elements of the iterator at a time.
 
         The chunks do not overlap. If `N` does not divide the length of the iterator, then the last up to `N-1`
@@ -229,14 +245,14 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
 
         **Note:**
         The `ArrayChunk` does not yield the last several elements, and you should call
-        [`ArrayChunk.get_unused`][monad_std.iter.rust_like.ArrayChunk.get_unused]
+        [`ArrayChunk.get_unused`][monad_std.iter.impl.array_chunk.ArrayChunk.get_unused]
         method to get the last one(s).
 
         Args:
             chunk_size: The number of elements to yield at a time, default 2. **Must be greater than zero!**
 
         Returns:
-            See [`ArrayChunk`][monad_std.iter.rust_like.ArrayChunk].
+            See [`ArrayChunk`][monad_std.iter.impl.array_chunk.ArrayChunk].
 
         Examples:
             ```python
@@ -263,7 +279,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             chunk_size: The number of elements to yield at a time, default 2. **Must be greater than zero!**
 
         Returns:
-            See [`Chunk`][monad_std.iter.rust_like.Chunk].
+            See [`Chunk`][monad_std.iter.impl.chunk.Chunk].
 
         Examples:
             ```python
@@ -276,7 +292,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Chunk(self, chunk_size)
 
-    def chain(self, other: "IterMeta[T]") -> "Chain[T]":
+    def chain(self, other: It) -> "Chain[T, te.Self, It]":
         """Takes two iterators and creates a new iterator over both in sequence.
 
         `chain()` will return a new iterator which will first iterate over values from the first iterator and then
@@ -289,7 +305,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             other: Another iterator to chain with.
 
         Returns:
-            See [`Chain`][monad_std.iter.rust_like.Chain].
+            See [`Chain`][monad_std.iter.impl.chain.Chain].
 
         Examples:
             ```python
@@ -312,7 +328,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         the [`zip`][monad_std.iter.iter.IterMeta.zip] function provides similar functionality.
 
         Returns:
-            See [`Enumerate`][monad_std.iter.builtin_like.Enumerate].
+            See [`Enumerate`][monad_std.iter.impl.enumerate.Enumerate].
 
         Examples:
             ```python
@@ -326,7 +342,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Enumerate(self)
 
-    def filter(self, func: Callable[[T], bool] = lambda x: x) -> "Filter[T]":
+    def filter(self, func: t.Callable[[T], bool] = lambda x: bool(x)) -> "Filter[T]":
         """Creates an iterator which uses a closure to determine if an element should be yielded.
 
         Given an element the closure must return `True` or `False`.
@@ -340,7 +356,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             func: The closure to be used to determine if an element should be yielded.
 
         Returns:
-            See [`Filter`][monad_std.iter.builtin_like.Filter].
+            See [`Filter`][monad_std.iter.impl.filter.Filter].
 
         Examples:
             ```python
@@ -351,7 +367,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Filter(self, func)
 
-    def filter_map(self, func: Callable[[T], Option[U]] = lambda x: Option.some(x)) -> "FilterMap[T, U]":
+    def filter_map(self, func: t.Callable[[T], Option[U]]) -> "FilterMap[T, U]":
         """Creates an iterator that both [`filter`][monad_std.iter.iter.IterMeta.filter]s
         and [`map`][monad_std.iter.iter.IterMeta.map]s.
 
@@ -363,7 +379,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             func:
 
         Returns:
-            See [`FilterMap`][monad_std.iter.rust_like.FilterMap].
+            See [`FilterMap`][monad_std.iter.impl.filter_map.FilterMap].
 
         Examples:
             The example below shows how a `map().filter().map()` can be shortened to a single call to `filter_map`.
@@ -379,7 +395,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return FilterMap(self, func)
 
-    def flat_map(self, func: Callable[[T], Union[U, "IterMeta[U]", Iterable[U], Iterator[U]]]) -> "FlatMap":
+    def flat_map(self, func: t.Callable[[T], t.Union[U, "IterMeta[U]", t.Iterable[U], t.Iterator[U]]]) -> "FlatMap":
         """Creates an iterator that works like map, but [`flatten`][monad_std.iter.iter.IterMeta.flatten]s
         nested structure.
 
@@ -396,7 +412,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             func: The function to apply to each element which produces an item or an iterator.
 
         Returns:
-            See [`FlatMap`][monad_std.iter.rust_like.FlatMap].
+            See [`FlatMap`][monad_std.iter.impl.flat_map.FlatMap].
 
         Examples:
             ```python
@@ -406,20 +422,20 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return FlatMap(self, func)
 
-    def flatten(self) -> "Flatten[T]":
+    def flatten(self: "IterMeta[t.Union[T, IterMeta[T], t.Iterable[T], t.Iterator[T]]]") -> "Flatten[T]":
         """Creates an iterator that flattens nested structure.
 
         This is useful when you have an iterator of iterators or an iterator of things that can be turned into
         iterators and you want to remove one level of indirection.
 
-        Flattening works on any `Iterable` or `Iterator` type, including `Option` and `Result`.
+        Flattening works on any `t.Iterable` or `t.Iterator` type, including `Option` and `Result`.
 
         `flatten()` does not perform a **deep** flatten. Instead, only one level of nesting is removed. That is,
         if you `flatten()` a three-dimensional array, the result will be two-dimensional and not one-dimensional. To
         get a one-dimensional structure, you have to `flatten()` again.
 
         Returns:
-            See [`Flatten`][monad_std.iter.rust_like.Flatten].
+            See [`Flatten`][monad_std.iter.impl.flatten.Flatten].
 
         Examples:
             Basic usage:
@@ -434,7 +450,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             ftd = IterMeta.iter(words).map(iter).flatten().collect_string()
             assert ftd == 'alphabetagamma'
             ```
-            Flattening works on any `Iterable` or `Iterator` type, including `Option` and `Result`:
+            Flattening works on any `t.Iterable` or `t.Iterator` type, including `Option` and `Result`:
             ```python
             a = [Option.some(123), Result.of_ok(321), Option.none(), Option.some(233), Result.of_err('err')]
             ftd = IterMeta.iter(a).flatten().collect_list()
@@ -443,14 +459,14 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Flatten(self)
 
-    def fuse(self) -> "Fuse":
+    def fuse(self) -> "Fuse[T]":
         """Creates an iterator which ends after the first `None`.
 
         After an iterator returns `None`, future calls may or may not yield `Some(T)` again.
         `fuse()` adapts an iterator, ensuring that after a `None` is given, it will always return `None` forever.
 
         Returns:
-            See [`Fuse`][monad_std.iter.rust_like.Fuse].
+            See [`Fuse`][monad_std.iter.impl.fuse.Fuse].
 
         Examples:
             ```python
@@ -487,7 +503,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Fuse(self)
 
-    def inspect(self, func: Callable[[T], None]) -> "Inspect[T]":
+    def inspect(self, func: t.Callable[[T], None]) -> "Inspect[T]":
         """Does something with each element of an iterator, passing the value on.
 
         When using iterators, you’ll often chain several of them together. While working on such code, you might want
@@ -497,7 +513,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         but applications may find it useful in certain situations when errors need to be logged before being discarded.
 
         Returns:
-            See [`Inspect`][monad_std.iter.rust_like.Inspect].
+            See [`Inspect`][monad_std.iter.impl.inspect.Inspect].
 
         Examples:
             ```python
@@ -527,7 +543,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Inspect(self, func)
 
-    def intersperse(self, sep: T) -> "Intersperse[T]":
+    def intersperse(self, sep: T) -> "Intersperse[T, te.Self]":
         """Creates a new iterator which places a copy of separator between adjacent items of the original iterator.
 
         In case separator does not deepclonable or needs to be computed every time,
@@ -537,7 +553,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             sep: The separator to insert between each element.
 
         Returns:
-            See [`Intersperse`][monad_std.iter.rust_like.Intersperse].
+            See [`Intersperse`][monad_std.iter.impl.intersperse.Intersperse].
 
         Examples:
             ```python
@@ -557,7 +573,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Intersperse(self, sep)
 
-    def intersperse_with(self, sep: Callable[[], T]) -> "IntersperseWith[T]":
+    def intersperse_with(self, sep: t.Callable[[], T]) -> "IntersperseWith[T, te.Self]":
         """Creates a new iterator which places an item generated by separator between adjacent items of the original
         iterator.
 
@@ -572,7 +588,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             sep: The function to produce the separator.
 
         Returns:
-            See [`IntersperseWith`][monad_std.iter.rust_like.IntersperseWith].
+            See [`IntersperseWith`][monad_std.iter.impl.intersperse.IntersperseWith].
 
         Examples:
             For ordinary usage it's recommended to use [`intersperse`][monad_std.iter.iter.IterMeta.intersperse],
@@ -588,7 +604,135 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return IntersperseWith(self, sep)
 
-    def map(self, func: Callable[[T], U]) -> "Map[T, U]":
+    def map_while(self, predicate: t.Callable[[T], Option[U]]) -> "MapWhile[T, U]":
+        """Creates an iterator that both yields elements based on a predicate and maps.
+
+        `map_while()` takes a closure as an argument.
+        It will call this closure on each element of the iterator,
+        and yield elements while it returns `Some(_)`.
+        
+        Creates an iterator that both yields elements based on a predicate and maps.
+
+        Args:
+            predicate: The predicate to determine if the map will produce something.
+
+        Returns:
+            See [`MapWhile`][monad_std.iter.impl.map.MapWhile].
+
+        Examples:
+            Basic usage:
+
+            ```python
+            a = [-1, 4, 0, 1]
+
+            it = siter(a).map_while(lambda x: Option.none() if x == 0 else Option.some(16 / x))
+
+            assert it.next() == Option.some(-16)
+            assert it.next() == Option.some(4)
+            assert it.next() == Option.none()
+            ```
+            
+            Here’s the same example, but with take_while and map:
+
+            ```python
+            a = [-1, 4, 0, 1]
+
+            it = siter(a)\\
+                .map(lambda x: Option.none() if x == 0 else Option.some(16 / x))\\
+                .take_while(Option.is_some)\\
+                .map(Option.unwrap)
+
+            assert it.next() == Option.some(-16)
+            assert it.next() == Option.some(4)
+            assert it.next() == Option.none()
+            ```
+
+            Stopping after an initial None:
+
+            ```python
+            a = [0, 1, 2, -3, 4, 5, -6]
+
+            it = siter(a).map_while(lambda x: Option.none() if x < 0 else Option.some(x))
+            lst = it.collect_list()
+
+            # We have more elements which could fit in positive-int (4, 5), but `map_while` returned `None` for `-3`
+            # (as the `predicate` returned `None`) and `collect` stops at the first `None` encountered.
+            assert lst == [0, 1, 2]
+            ```
+
+            Because `map_while()` needs to look at the value in order
+            to see if it should be included or not,
+            consuming iterators will see that it is removed:
+
+            ```python
+            a = [1, 2, -3, 4]
+            it = siter(a)
+
+            res = it.map_while(lambda x: Option.none() if x < 0 else Option.some(x)).collect_list()
+
+            assert res == [1, 2]
+
+            res2 = it.collect_list()
+
+            assert res2 == [4]
+            ```
+
+            The `-3` is no longer there, because it was consumed in order
+            to see if the iteration should stop, but wasn’t placed back into the iterator.
+
+            Note that unlike `take_while` this iterator is not fused.
+            It is also not specified what this iterator returns after the first None is returned.
+            If you need fused iterator, use [`fuse`][monad_std.iter.iter.IterMeta.fuse]."""
+        return MapWhile(self, predicate)
+
+    def map_windows(self, window_size: int, f: t.Callable[[t.Deque[T]], R]) -> "MapWindows[T, R]":
+        """Calls the given function `f` for each contiguous window of size `window_size`
+        over `self` and returns an iterator over the outputs of `f`. The windows during mapping overlap.
+
+        The returned iterator yields `𝑘 − N + 1` items
+        (where `𝑘` is the number of items yielded by `self` and `N` is `window_size`).
+        If `𝑘` is less than `N`, this method yields an empty iterator.
+
+        For non-fused iterators, they are fused after map_windows.
+
+        **Note**:
+
+        Typically this should return a list or an array in other languages,
+        but since Python do not offer length-strict array support,
+        the internal implementation uses the `collections.deque` to create the windows.
+        Therefore, the list provided to the function `f` is `deque[T]`
+        instead of something like `List[T]`, `T[]`(C-like) or `[T; N]`(Rust).
+
+        Args:
+            window_size: The size of each window.
+            f: A function to operate on each window.
+        
+        Returns:
+            See [`MapWindows`][monad_std.iter.impl.map.MapWindows].
+        
+        Examples:
+            In the following example, the closure is called three times
+            with the arguments `['a', 'b']`, `['b', 'c']` and `['c', 'd']` respectively.
+            
+            ```python
+            strings = siter('abcd')\\
+                .map_windows(2, lambda dq: f'{dq[0]}+{dq[1]}')\\
+                .collect_list()
+
+            assert strings == ["a+b", "b+c", "c+d"]
+            ```
+            
+            If the window size is too large, then nothing will be yielded.
+            
+            ```python
+            limited = siter('abc').map_windows(4, lambda dq: dq)
+            
+            assert limited.next() == Option.none()
+            assert limited.next() == Option.none()
+            ```"""
+        return MapWindows(window_size, self, f)
+
+    def map(self, func: t.Callable[[T], U]) -> "Map[T, U]":
         """Takes a closure and creates an iterator which calls that closure on each element.
 
         `map` transforms one iterator into another, by means of its argument.
@@ -606,7 +750,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             func: A closure to be called on each element.
 
         Returns:
-            See [`Map`][monad_std.iter.builtin_like.Map].
+            See [`Map`][monad_std.iter.impl.map.Map].
 
         Examples:
             ```python
@@ -631,17 +775,47 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Map(self, func)
 
-    def peekable(self) -> "Peekable[T]":
+    def batching(self, func: t.Callable[[te.Self], Option[B]]) -> "Batching[te.Self, B]":
+        """A “meta iterator adaptor”. Its closure receives a reference to the iterator
+        and may pick off as many elements as it likes, to produce the next iterator element.
+
+        Args:
+            func: The function to do the batching.
+
+        Returns:
+            See [`Batching`][monad_std.iter.impl.batch.Batching] for more information.
+
+        Examples:
+            ```python
+            def do_batch(it) -> Option[Tuple[int, int]]:
+                nxt = it.next()
+                if nxt.is_none():
+                    return Option.none()
+                else:
+                    nxt2 = it.next()
+                    if nxt2.is_none():
+                        return Option.none()
+                    else:
+                        return Option.some((nxt.unwrap_unchecked(), nxt2.unwrap_unchecked()))
+
+            pit = siter(range(0, 4)).batching(do_batch)
+
+            assert pit.collect_list() == [(0, 1), (2, 3)]
+            ```
+        """
+        return Batching(self, func)
+
+    def peekable(self) -> "Peekable[T, te.Self]":
         """Creates an iterator which can use the `peek` method to look at the next element of the iterator without
         consuming it.
 
-        Note that the underlying iterator is **still advanced** when [`peek`][monad_std.iter.rust_like.Peekable.peek]
+        Note that the underlying iterator is **still advanced** when [`peek`][monad_std.iter.impl.peekable.Peekable.peek]
         is called for the first time: In order to retrieve the next element,
         [`next`][monad_std.iter.iter.IterMeta.next] is called on the underlying iterator,
         hence any side effects (i.e. anything other than fetching the next value) of the `next` method will occur.
 
         Returns:
-            See [`Peekable`][monad_std.iter.rust_like.Peekable].
+            See [`Peekable`][monad_std.iter.impl.peekable.Peekable].
 
         Examples:
             ```python
@@ -666,7 +840,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Peekable(self)
 
-    def scan(self, init: U, func: Callable[[U, T], B]) -> "Scan[T, B, U]":
+    def scan(self, init: U, func: t.Callable[[U, T], t.Tuple[U, Option[B]]]) -> "Scan[T, B, U]":
         """An iterator adapter which, like fold, holds internal state, but unlike fold, produces a new iterator.
 
         `scan()` takes two arguments: an initial value which seeds the internal state, and a closure with two
@@ -682,7 +856,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             func: The function to scan the iterator.
 
         Returns:
-            See [`Scan`][monad_std.iter.rust_like.Scan].
+            See [`Scan`][monad_std.iter.impl.scan.Scan].
 
         Examples:
             ```python
@@ -717,7 +891,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             n: The number of elements to skip.
 
         Returns:
-            See [`Skip`][monad_std.iter.rust_like.Skip].
+            See [`Skip`][monad_std.iter.impl.skip.Skip].
 
         Examples:
             ```python
@@ -741,7 +915,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             n: The number of elements to take.
 
         Returns:
-            See [`Take`][monad_std.iter.rust_like.Take].
+            See [`Take`][monad_std.iter.impl.take.Take].
 
         Examples:
             Basic usage:
@@ -773,7 +947,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Take(self, n)
 
-    def take_while(self, func: Callable[[T], bool]) -> "TakeWhile[T]":
+    def take_while(self, func: t.Callable[[T], bool]) -> "TakeWhile[T]":
         """Creates an iterator that yields elements based on a predicate.
 
         `take_while()` takes a closure as an argument. It will call this closure on each element of the iterator, and yield elements while it returns `True`.
@@ -784,7 +958,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             func: The predicate function.
 
         Returns:
-            See [`TakeWhile`][monad_std.iter.rust_like.TakeWhile].
+            See [`TakeWhile`][monad_std.iter.impl.take.TakeWhile].
 
         Examples:
             Basic usage:
@@ -818,7 +992,65 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return TakeWhile(self, func)
 
-    def zip(self, other: "IterMeta[U]") -> "Zip[T, U]":
+    def group_by(self, predicate: t.Callable[[T], Eq_self]) -> "GroupBy[T, Eq_self]":
+        """Return an iterator that can group iterator elements.
+        Consecutive elements that map to the same key (“runs”),
+        are assigned to the same group.
+
+        If the groups are consumed in order or the groups is not being referred,
+        then `GroupBy` doesn't save elements.
+        It needs allocations only if several group iterators are alive and used at the same time.
+
+        The `GroupBy` iterator will yield a key and a [`Group`][monad_std.iter.impl.group.Group] instance
+        in a tuple, and `Group` is also an iterator. The `Eq_self` is your key that spliting the
+        group, and the `Group` instance will yield out your elements.
+
+        Note that the key must implement `__eq__(self, other: Self)`.
+
+        Args:
+            predicate: A predicate that accepts an element and returns a key, and the key will be used
+                to split the group.
+
+        Returns:
+            See [`GroupBy`][monad_std.iter.impl.group.GroupBy] and [`Group`][monad_std.iter.impl.group.Group]
+                for more information.
+
+        Examples:
+            ```python
+            it = siter([1, 3, -2, -2, 1, 0, 1, 2]).group_by(lambda el: el >= 0)
+            vec = []
+            for key, i in iit.to_iter():
+                vec.append((key, i.collect_list()))
+
+            assert vec == [(True, [1, 3]), (False, [-2, -2]), (True, [1, 0, 1, 2])]
+            ```
+
+            "Vertical" iteration:
+
+            ```python
+            it = siter([1, 3, -2, -2, 1, 0, -6, -3])\\
+                .group_by(lambda el: el >= 0)\\
+                .collect_list()
+            vec = []
+
+            for j in range(4):
+                vec.append(it[j][0])
+            for _ in range(2):
+                for j in range(4):
+                    vec.append(it[j][1].next().unwrap())
+
+            expected = [
+                True, False, True, False,
+                1, -2, 1, -6,
+                3, -2, 0, -3
+            ]
+
+            assert vec == expected
+            ```
+        """
+        return GroupBy(self, predicate)
+
+    def zip(self, other: It) -> "Zip[T, U, te.Self, It]":
         """‘Zips up’ two iterators into a single iterator of pairs.
 
         `zip()` returns a new iterator that will iterate over two other iterators, returning a tuple where the first
@@ -834,7 +1066,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             other: Another iterator to zip with.
 
         Returns:
-            See [`Zip`][monad_std.iter.rust_like.Zip].
+            See [`Zip`][monad_std.iter.impl.zip.Zip].
 
         Examples:
             ```python
@@ -849,7 +1081,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return Zip(self, other)
 
-    def to_iter(self) -> Iterator[T]:
+    def to_iter(self) -> t.Iterator[T]:
         return _Iter(self)
 
     def count(self) -> int:
@@ -862,7 +1094,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             cnt += 1
         return cnt
 
-    def find(self, predicate: Callable[[T], bool]) -> Option[T]:
+    def find(self, predicate: t.Callable[[T], bool]) -> Option[T]:
         """Searches for an element of an iterator that satisfies a predicate.
 
         `find()` takes a closure that returns `True` or `False`. It applies this closure to each element of the iterator,
@@ -889,7 +1121,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
                 return Option.some(uwp)
         return Option.none()
 
-    def find_map(self, func: Callable[[T], Option[U]]) -> Option[U]:
+    def find_map(self, func: t.Callable[[T], Option[U]]) -> Option[U]:
         """Applies function to the elements of iterator and returns the first non-none result.
 
         `iter.find_map(f)` is equivalent to `iter.filter_map(f).next()`.
@@ -907,7 +1139,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
                 return v
         return Option.none()
 
-    def fold(self, init: U, func: Callable[[U, T], U]) -> U:
+    def fold(self, init: U, func: t.Callable[[U, T], U]) -> U:
         """Folds every element into an accumulator by applying an operation, returning the final result.
 
         fold() takes two arguments: an initial value, and a closure with two arguments: an accumulator,
@@ -968,7 +1200,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
             acc = func(acc, v)
         return acc
 
-    def for_each(self, func: Callable[[T], None]) -> None:
+    def for_each(self, func: t.Callable[[T], None]) -> None:
         """Calls a closure on each element of an iterator.
 
         This is equivalent to using a [`for`](https://docs.python.org/3/reference/compound_stmts.html#the-for
@@ -1004,7 +1236,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return self.position(lambda x: x == item)
 
-    def position(self, func: Callable[[T], bool]) -> Option[int]:
+    def position(self, func: t.Callable[[T], bool]) -> Option[int]:
         """Searches for an element in an iterator, returning its index.
 
         `position()` takes a closure that returns true or false. It applies this closure to each element of the
@@ -1031,7 +1263,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
                 idx += 1
         return Option.none()
 
-    def product(self) -> Option[T]:
+    def product(self: "IterMeta[td.ops.SupportsMul[T]]") -> Option["td.ops.SupportsMul[T]"]:
         """Iterates over the entire iterator, multiplying all the elements
 
         An empty iterator returns `None`.
@@ -1047,7 +1279,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return self.reduce(lambda x, y: x * y)
 
-    def reduce(self, func: Callable[[T, T], T]) -> Option[T]:
+    def reduce(self, func: t.Callable[[T, T], T]) -> Option[T]:
         """Reduces the elements to a single one, by repeatedly applying a reducing operation.
 
         If the iterator is empty, returns `None`; otherwise, returns the result of the reduction.
@@ -1068,7 +1300,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return self.next().map(lambda first: self.fold(first, func))
 
-    def sum(self) -> Option[T]:
+    def sum(self: "IterMeta[td.ops.SupportsAdd[T]]") -> Option["td.ops.SupportsAdd[T]"]:
         """Sums the elements of an iterator.
 
         Takes each element, adds them together, and returns the result. If there's no element in the iterator,
@@ -1097,7 +1329,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         """
         return self.find(lambda x: x == item).is_some()
 
-    def all(self, func: Callable[[T], bool] = lambda x: x) -> bool:
+    def all(self, func: t.Callable[[T], bool] = lambda x: bool(x)) -> bool:
         """Tests if every element of the iterator matches a predicate.
 
         `all()` takes a closure that returns `True` or `False`. It applies this closure to each element of the
@@ -1133,7 +1365,7 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
                 return False
         return True
 
-    def any(self, func: Callable[[T], bool] = lambda x: x) -> bool:
+    def any(self, func: t.Callable[[T], bool] = lambda x: bool(x)) -> bool:
         """Tests if any element of the iterator matches a predicate.
 
         `any()` takes a closure that returns `True` or `False`. It applies this closure to each element of the
@@ -1169,17 +1401,330 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
                 return True
         return False
 
-    def collect_list(self) -> List[T]:
+    def max(self: "IterMeta[td.cmp.SupportsRichComparisonSelfT]") -> Option["td.cmp.SupportsRichComparisonSelfT"]:
+        """Returns the maximum element of an iterator.
+
+        If several elements are equally maximum, the last element is returned.
+        If the iterator is empty, `None` is returned.
+
+        Note that the elements inside should implement at least `__gt__` and `__lt__`.
+
+        Examples:
+            ```python
+            a = [1, 3, 2]
+
+            m = siter(a).max()
+            assert m == Option.some(3)
+            ```
+
+            If there are multiple equal maximums, the last one will be returned.
+
+            ```python
+            class Element:
+                value: int
+                id: int
+
+                def __init__(self, value, id):
+                    self.value = value
+                    self.id = id
+
+                def __le__(self, other: "Element") -> bool:
+                    return self.value >= other.value
+
+                def same_as(self, other: "Element") -> bool:
+                    return self.value == other.value and self.id == other.id
+
+            a = [Element(0, 0), Element(3, 1), Element(2, 2), Element(3, 3)]
+
+            m = siter(a).max()
+            assert m.unwrap().same_as(Element(3, 3))
+            ```
+        """
+        return self.reduce(lambda a, b: mutils.cmp.max_by(a, b, mutils.cmp.compare))
+
+    def max_by(self, cmp: t.Callable[[T, T], mutils.cmp.SupportsIntoOrdering]) -> Option[T]:
+        """Returns the element that gives the maximum value from the specified function.
+
+        If several elements are equally maximum, the last element is returned.
+        If the iterator is empty, `None` is returned.
+
+        Examples:
+            ```python
+            a = [-3, 0, 1, 5, -10]
+            # By using `utils.cmp.compare(y, x)`, we change the ordering sequence of the two items.
+            # That means this part of code actually returns the minimum value in the list.
+            assert siter(a).max_by(lambda x, y: utils.cmp.compare(y, x)) == Option.some(-10)
+            ```
+        """
+        return self.reduce(lambda a, b: mutils.cmp.max_by(a, b, cmp))
+
+    def max_by_key(self, key: t.Callable[[T], "td.cmp.SupportsRichComparisonSelfT"]) -> Option[T]:
+        """Returns the element that gives the maximum value with respect to the specified comparison function.
+
+        If several elements are equally maximum, the last element is returned.
+        If the iterator is empty, `None` is returned.
+
+        Examples:
+            ```python
+            class Element:
+                value: int
+                id: int
+
+                def __init__(self, value, id):
+                    self.value = value
+                    self.id = id
+
+                def __le__(self, other: "Element") -> bool:
+                    return self.value >= other.value
+
+                def same_as(self, other: "Element") -> bool:
+                    return self.value == other.value and self.id == other.id
+
+            lst = [Element(0, 0), Element(5, 1), Element(2, 2)]
+            m = siter(lst).max_by_key(lambda el: el.value)
+            assert m.unwrap().same_as(Element(5, 1))
+            ```
+        """
+        return self.map(lambda item: (key(item), item)) \
+            .max_by(lambda a, b: mutils.cmp.compare(a[0], b[0])) \
+            .map(lambda x: x[1])
+
+    def min(self: "IterMeta[td.cmp.SupportsRichComparisonSelfT]") -> Option["td.cmp.SupportsRichComparisonSelfT"]:
+        """Returns the minimum element of an iterator.
+
+        If several elements are equally minimum, the last element is returned.
+        If the iterator is empty, `None` is returned.
+
+        Note that the elements inside should implement at least `__gt__` and `__lt__`.
+
+        Examples:
+            ```python
+            a = [1, 3, 2]
+
+            m = siter(a).min()
+            assert m == Option.some(1)
+            ```
+
+            If there are multiple equal minimums, the last one will be returned.
+
+            ```python
+            class Element:
+                value: int
+                id: int
+
+                def __init__(self, value, id):
+                    self.value = value
+                    self.id = id
+
+                def __le__(self, other: "Element") -> bool:
+                    return self.value <= other.value
+
+                def same_as(self, other: "Element") -> bool:
+                    return self.value == other.value and self.id == other.id
+
+            a = [Element(0, 0), Element(3, 1), Element(2, 2), Element(0, 3)]
+
+            m = siter(a).min()
+            assert m.unwrap().same_as(Element(0, 3))
+            ```
+        """
+        return self.reduce(lambda a, b: mutils.cmp.min_by(a, b, mutils.cmp.compare))
+
+    def min_by(self, cmp: t.Callable[[T, T], mutils.cmp.SupportsIntoOrdering]) -> Option[T]:
+        """Returns the element that gives the minimum value from the specified function.
+
+        If several elements are equally minimum, the last element is returned.
+        If the iterator is empty, `None` is returned.
+
+        Examples:
+            ```python
+            a = [-3, 0, 1, 5, -10]
+            # By using `utils.cmp.compare(y, x)`, we change the ordering sequence of the two items.
+            # That means this part of code actually returns the maximum value in the list.
+            assert siter(a).min_by(lambda x, y: utils.cmp.compare(y, x)) == Option.some(5)
+            ```
+        """
+        return self.reduce(lambda a, b: mutils.cmp.min_by(a, b, cmp))
+
+    def min_by_key(self, key: t.Callable[[T], "td.cmp.SupportsRichComparisonSelfT"]) -> Option[T]:
+        """Returns the element that gives the minimum value with respect to the specified comparison function.
+
+        If several elements are equally minimum, the last element is returned.
+        If the iterator is empty, `None` is returned.
+
+        Examples:
+            ```python
+            class Element:
+                value: int
+                id: int
+
+                def __init__(self, value, id):
+                    self.value = value
+                    self.id = id
+
+                def __le__(self, other: "Element") -> bool:
+                    return self.value >= other.value
+
+                def same_as(self, other: "Element") -> bool:
+                    return self.value == other.value and self.id == other.id
+
+            lst = [Element(0, 0), Element(5, 1), Element(2, 2)]
+            m = siter(lst).min_by_key(lambda el: el.value)
+            assert m.unwrap().same_as(Element(0, 0))
+            ```
+        """
+        return self.map(lambda item: (key(item), item)) \
+            .min_by(lambda a, b: mutils.cmp.compare(a[0], b[0])) \
+            .map(lambda x: x[1])
+
+    def partition_by(
+            self,
+            predicate: t.Callable[[T], Either[L, R]]
+    ) -> "t.Tuple[PartitionBy[T, L, R], PartitionGroup[T, L, R, L], PartitionGroup[T, L, R, R]]":
+        """Split the iterator and create two sub-iterator from the iterator.
+
+        The `predicate` passed to `partition_by` should return `Either` instances.
+        The three values returned are: the parent iterator, which is used to save the data,
+        is generally not concerned and can be ignored with '_';
+        the left iterator, which will produce all the `Left` values generated by 'predicate';
+        the right iterator will produce all the `Right` values generated by 'predicate'.
+
+        If you just want to split the values, see
+        [`Either.convert_either_by`][monad_std.either.Either.convert_either_by] for more information.
+
+        If you don't need to process values as iterator or don't care about the iteration performace,
+        you can use [`partition`][monad_std.iter.iter.IterMeta.partition] or
+        [`partition_map`][monad_std.iter.iter.IterMeta.partition_map], which is much simpler and
+        more efficient.
+
+        Args:
+            predicate: The predicate to generate the `Either` values.
+
+        Returns:
+            See [`PartitionGroup`][monad_std.iter.impl.partition.PartitionGroup] for more information.
+
+        Examples:
+            ```python
+            a = [1, 2, 3, 4, 5, 6]
+            _, left, right = siter(a).partition_by(Either.convert_either_by(lambda x: x % 2 == 0))
+            assert left.next() == Option.some(2)
+            assert left.next() == Option.some(4)
+            assert right.next() == Option.some(1)
+            assert right.next() == Option.some(3)
+            assert left.next() == Option.some(6)
+            assert right.next() == Option.some(5)
+            assert left.next() == Option.none()
+            assert right.next() == Option.none()
+            ```
+        """
+        return PartitionBy.init(self, predicate)
+
+    def partition(self, predicate: t.Callable[[T], bool], left: t.MutableSequence[T], right: t.MutableSequence[T]):
+        """Consumes an iterator, filling two sequence from it.
+
+        The `predicate` passed to `partition()` can return `True`, or `False`.
+        All elements that the predicate would return true will be appended to the `left`,
+        and the rest will be appended to the `right`.
+
+        **Note:**
+        1.  The two sequences do not necessarily need to be of the same type.
+        2.  Caller must construct the sequence before calling,
+            since this will operate on the sequence in-place, and not returning anything.
+            
+            If you just want to get two plain list, see [`partition_list`][monad_std.iter.iter.IterMeta.partition_list].
+
+        Examples:
+            ```python
+            a = [0, 1, 2, 3, 4]
+            left = []
+            right = []
+            siter(a).partition(lambda item: item % 2 == 0, left, right)
+            assert left == [0, 2, 4]
+            assert right == [1, 3]
+            ```
+        """
+        for item in self.to_iter():
+            if predicate(item):
+                left.append(item)
+            else:
+                right.append(item)
+    
+    def partition_map(self, predicate: t.Callable[[T], Either[L, R]], left: t.MutableSequence[L], right: t.MutableSequence[R]):
+        """Consumes an iterator, filling two sequence from it.
+
+        The `predicate` passed to `partition_map()` can return a `Either`.
+        All `Either::Left` will be appended to the `left`, and `Either::Right` will be appended to the `right`.
+
+        **Note:**
+        1.  The two sequences do not necessarily need to be of the same type.
+        2.  Caller must construct the sequence before calling,
+            since this will operate on the sequence in-place, and not returning anything.
+            
+            If you just want to get two plain list, see [`partition_list`][monad_std.iter.iter.IterMeta.partition_map_list].
+
+        Examples:
+            ```python
+            a = [0, 1, 2, 3, 4]
+            left = []
+            right = []
+            siter(a).partition_map(lambda item: Left(item / 2) if item % 2 == 0 else Right(item - 1), left, right)
+            assert left == [0, 1, 2]
+            assert right == [0, 2]
+            ```
+        """
+        for item in self.to_iter():
+            p = predicate(item)
+            if p.is_left():
+                left.append(p.unwrap_left_unchecked())
+            else:
+                right.append(p.unwrap_right_unchecked())
+
+    def partition_list(self, predicate: t.Callable[[T], bool]) -> t.Tuple[t.List[T], t.List[T]]:
+        """Consumes an iterator, filling two list from it.
+
+        The `predicate` passed to `partition_list()` can return `True`, or `False`.
+        All elements that the predicate would return true will be appended to the `left`,
+        and the rest will be appended to the `right`.
+
+        This calls [`partition`][monad_std.iter.iter.IterMeta.partition] internally,
+        with two Python's standard lists.
+        """
+        left: t.List[T] = []
+        right: t.List[T] = []
+        self.partition(predicate, left, right)
+        return left, right
+
+    def partition_map_list(self, predicate: t.Callable[[T], Either[L, R]]) -> t.Tuple[t.List[L], t.List[R]]:
+        """Consumes an iterator, filling two list from it.
+
+        The `predicate` passed to `partition_map_list()` can return a `Either`.
+        All `Either::Left` will be appended to the `left`, and `Either::Right` will be appended to the `right`.
+
+        This calls [`partition_map`][monad_std.iter.iter.IterMeta.partition_map] internally,
+        with two Python's standard lists.
+        """
+        left: t.List[L] = []
+        right: t.List[R] = []
+        self.partition_map(predicate, left, right)
+        return left, right
+
+    def collect_list(self) -> t.List[T]:
         """Collect the iterator into a list."""
         return list(self.to_iter())
+
+    def collect_to_seq(self, lst: t.MutableSequence[T]):
+        """Collect the iterator into the specified mutable sequence.
+
+        This will return nothing and operates on the sequence."""
+        lst.extend(self.to_iter())
 
     def collect_tuple(self) -> tuple:
         """Collect the iterator into a tuple."""
         return tuple(self.to_iter())
 
     def collect_string(self) -> str:
-        """Collect the iterator into a string. Using `__str__` but not `__repr__` as default."""
-        return "".join(map(str, self.to_iter()))
+        """Collect the iterator into a string. Using `__str__` but not `__repr__` by default."""
+        return "".join(str(x) for x in self.to_iter())
 
     def collect_array(self):
         """Collect the iterator into a `funct.Array`.
@@ -1187,168 +1732,116 @@ class IterMeta(Generic[T], Iterable[T], metaclass=ABCMeta):
         External Python library [funct](https://github.com/lauriat/funct) must be installed before using this feature.
         """
         try:
-            import funct
+            import funct  # type: ignore[import-untyped]
 
             return funct.Array(self.to_iter())
         except ImportError:
             raise ImportError("You must install `funct` package to use this feature")
 
+    def collect_set(self) -> t.Set[T]:
+        """Collect the iterator into a hashset."""
+        return set(self.to_iter())
 
-class MIterable(IterMeta[T], Generic[T]):
-    __iter: Iterator[T]
+    def collect_to_set(self, s: t.MutableSet):
+        """Collect the iterator into a mutable set.
 
-    def __init__(self, v: Iterable[T]):
-        self.__iter = iter(v)
+        This will return noting and operates on the set."""
+        for item in self.to_iter():
+            s.add(item)
 
-    def next(self) -> Option[T]:
-        return Result.catch(self.__iter.__next__).ok()
+    def collect_to_map(self: "IterMeta[t.Tuple[T, U]]", m: t.MutableMapping[T, U]):
+        """Collect the iterator into a mutable mapping.
 
-class _IterIterable(IterMeta[T], Generic[T]):
-    __iter: Iterator[T]
+        This will return nothing and operates on the mapping."""
+        m.update(self.to_iter())
 
-    def __init__(self, v: Iterable[T]):
-        self.__iter = iter(v)
+    ##################################
+    # Aliases
+    ##################################
 
-    def next(self) -> Option[T]:
-        return Result.catch(self.__iter.__next__).ok()
+    def filter_ok(self: "IterMeta[Result[KT, KE]]") -> "FilterMap[Result[KT, KE], KT]":
+        """Filter out all `Err` values and unwrap the `Ok` values.
+        
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            assert [1, 3] == siter(a).filter_ok().collect_list()
+            ```
+        """
+        return self.filter_map(lambda x: x.ok())
 
+    def filter_err(self: "IterMeta[Result[KT, KE]]") -> "FilterMap[Result[KT, KE], KE]":
+        """Filter out all `Ok` values and unwrap the `Err` values.
+        
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            assert [2] == siter(a).filter_err().collect_list()
+            ```
+        """
+        return self.filter_map(lambda x: x.err())
 
-class _IterIterator(IterMeta[T], Generic[T]):
-    __iter: Iterator[T]
+    def filter_map_ok(self: "IterMeta[Result[KT, KE]]", op: t.Callable[[KT], U]) -> "FilterMap[Result[KT, KE], U]":
+        """Filter out all `Err` values and map the `Ok` values.
 
-    def __init__(self, v: Iterator[T]):
-        self.__iter = v
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            assert [2, 4] == siter(a).filter_map_ok(lambda x: x + 1).collect_list()
+            ```
+        """
+        return self.filter_map(lambda item: item.ok().map(op))
 
-    def next(self) -> Option[T]:
-        return Result.catch(self.__iter.__next__).ok()
+    def filter_map_err(self: "IterMeta[Result[KT, KE]]", op: t.Callable[[KE], B]) -> "FilterMap[Result[KT, KE], B]":
+        """Filter out all `Ok` values and map the `Err` values.
 
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            assert [3] == siter(a).filter_map_err(lambda x: x + 1).collect_list()
+            ```
+        """
+        return self.filter_map(lambda item: item.err().map(op))
 
-class _Iter(Iterator[T], Generic[T]):
-    __iter: IterMeta[T]
+    def map_ok(self: "IterMeta[Result[KT, KE]]", op: t.Callable[[KT], U]) -> "Map[Result[KT, KE], Result[U, KE]]":
+        """Map the `Ok` value and left the `Err` value unchanged.
+        
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            assert [Ok(-1), Err(2), Ok(-3)] == siter(a).map_ok(lambda x: -x).collect_list()
+            ```
+        """
+        return self.map(lambda item: item.map(op))
 
-    def __init__(self, v: IterMeta[T]):
-        self.__iter = v
-
-    def __next__(self):
-        n = self.__iter.next()
-        try:
-            return n.unwrap()
-        except UnwrapException:
-            raise StopIteration
-
-
-class OnceWith(IterMeta[T], Generic[T]):
-    __func: Option[Callable[[], T]]
-
-    def __init__(self, func: Callable[[], T]):
-        self.__func = Option.some(func)
-
-    def next(self) -> Option[T]:
-        if self.__func.is_some():
-            val = self.__func.map(lambda s: s())
-            self.__func = Option.none()
-            return val
-        else:
-            return Option.none()
-
-    def nth(self, n: int = 1) -> Option[T]:
-        if self.__func.is_none():
-            pass
-        elif n > 0:
-            self.__func = Option.none()
-        else:
-            val = self.__func.map(lambda s: s())
-            self.__func = Option.none()
-            return val
-
-        return Option.none()
-
-    def next_chunk(self, n: int = 2) -> Result[List[T], List[T]]:
-        assert n > 0, "Chunk size must be positive"
-        if n > 1:
-            val = Result.of_err(list(self.__func.map(lambda s: s()).to_iter()))
-            self.__func = Option.none()
-            return val
-        else:
-            val = self.__func.map(lambda s: [s()]).ok_or([])
-            self.__func = Option.none()
-            return val
-
-    def advance_by(self, n: int = 0) -> Result[None, int]:
-        if n == 0:
-            return Result.of_ok(None)
-        elif self.__func.is_none() and n > 0:
-            return Result.of_err(n)
-        elif self.__func.is_some():
-            self.__func = Option.none()
-            if n == 1:
-                return Result.of_ok(None)
-            return Result.of_err(n - 1)
-
-
-class Repeat(IterMeta[T], Generic[T]):
-    __val: T
-
-    def __init__(self, value: T):
-        self.__val = value
-
-    def next(self) -> Option[T]:
-        return Option.some(copy.deepcopy(self.__val))
-
-    def nth(self, n: int = 1) -> Option[T]:
-        return Option.some(copy.deepcopy(self.__val))
-
-    def advance_by(self, n: int = 0) -> Result[None, int]:
-        return Ok(None)
-
-    def next_chunk(self, n: int = 2) -> Result[List[T], List[T]]:
-        assert n > 0, "Chunk size must be positive"
-        return Ok(copy.deepcopy(self.__val) for _ in range(n))
-
-    def any(self, func: Callable[[T], bool] = lambda x: x) -> bool:
-        return func(self.__val)
-
-    def all(self, func: Callable[[T], bool] = lambda x: x) -> bool:
-        return func(self.__val)
-
-    def count(self) -> int:
-        raise ValueError("Repeat iterator is infinitive and you cannot count it.")
-
-    def find(self, predicate: Callable[[T], bool]) -> Option[T]:
-        if predicate(self.__val):
-            return Option.some(copy.deepcopy(self.__val))
-        else:
-            return Option.none()
-
-    def find_map(self, func: Callable[[T], Option[U]]) -> Option[U]:
-        return func(self.__val)
-
-    def fuse(self) -> "Fuse":
-        warnings.warn("Fusing repeated iterator is meaningless.", Warning)
-        return self
-
-    def skip(self, n: int) -> "Skip[T]":
-        warnings.warn("Skip repeated iterator is meaningless.", Warning)
-        return self
+    def map_err(self: "IterMeta[Result[KT, KE]]", op: t.Callable[[KE], B]) -> "Map[Result[KT, KE], Result[KT, B]]":
+        """Map the `Err` value and left the `Ok` value unchanged.
+        
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            assert [Ok(1), Err(-2), Ok(3)] == siter(a).map_err(lambda x: -x).collect_list()
+            ```
+        """
+        return self.map(lambda item: item.map_err(op))
+    
+    def partition_result(self: "IterMeta[Result[KT, KE]]") -> t.Tuple[t.List[KT], t.List[KE]]:
+        """Split the result into two lists, one for `Ok` values and one for `Err` values.
+        
+        Examples:
+            ```python
+            a = [Ok(1), Err(2), Ok(3)]
+            res1, res2 = siter(a).partition_result()
+            assert res1 == [1, 3]
+            assert res2 == [2]
+            ```
+        """
+        return self.partition_map_list(lambda item: item.to_either())
 
 
 # Import types at the bottom of the file to avoid circular imports.
-from .rust_like import (
-    Zip,
-    Chain,
-    ArrayChunk,
-    FilterMap,
-    Flatten,
-    FlatMap,
-    Fuse,
-    Inspect,
-    Peekable,
-    Intersperse,
-    IntersperseWith,
-    Scan,
-    Skip,
-    Take,
-    TakeWhile,
-    Chunk
-)
-from .builtin_like import Map, Filter, Enumerate
+# Here we can import everything because the `impl` package only
+# export iterator implementions.
+from .impl import *
+# noinspection PyProtectedMember
+from .impl.default_iter import _Iter, _IterIterable, _IterIterator

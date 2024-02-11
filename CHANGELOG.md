@@ -1,5 +1,33 @@
 # Change Log
 
+## V0.9.0
+
+**ADD**:
+
+- `monad_std.iter.IterMeta`:
+    - `map_while`: Yields elements based on both a predicate and maps.
+    - `map_windows`: A map but with fixed-sized windows.
+    - `batching`: A meta-iterator over iterator and let you generate values manually.
+    - `max`, `max_by`, `max_by_key`, `min`, `min_by`, `min_by_key`: Get the maximum / minimum value.
+    - `collect_to_xxx`: Collect the iterator into a mutable and extendable item.<br />
+      Note that in Python it's not possible to actually *change* a `str`, so `collect_to_string` is not provided.
+    - `collect_set`: Collect the iterator into a hashset.
+    - `partition`, `partition_map`, `partition_list`, `partition_map_list`, `partition_by`:
+      Split the iterator with a predicate.
+    - Aliases:
+        - `filter_ok`, `filter_err`, `filter_map_ok`, `filter_map_err`
+        - `map_ok`, `map_err`
+        - `partition_result`
+- `monad_std.typedef`: Internal type definition.
+- `monad_std.utils`: Utility used inside and outside (recommend, but not forced) the library.
+- `monad_std.either.Either`: A structure containing two type of values, but not that specific like `monad_std.Result`.
+
+**Impl Change**
+
+- Use `import typing` instead of `from typing import ...` to make the scope and namespace cleaner.
+- All iterator implementation will be moved to their single files,
+  and can stil be imported from `monad_std.iter.impl`.
+
 ## V0.8.0
 
 **ADD**:

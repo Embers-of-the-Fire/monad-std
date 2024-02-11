@@ -1,3 +1,5 @@
+# Iterator Tools
+
 ::: monad_std.iter.siter
     options:
         heading_level: 2

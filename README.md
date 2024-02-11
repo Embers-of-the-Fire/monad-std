@@ -55,8 +55,6 @@ Until now, this library provides the following features:
     - `monad_std.Err`: An error value.
 - `monad_std.std_types`: Wrapped api around std types.
 - `monad_std.iter`: Iterator interface with functors and monads support.
-
-And the following are being developed:
-
-- `monad_std.Either`: A structure containing two type of values, but not that specific like `monad_std.Result`
-- A better entry point for those utilities.
+- `monad_std.Either`:
+  A structure containing two type of values, but not that specific like `monad_std.Result`.
+  (Currently under development.)

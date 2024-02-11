@@ -8,6 +8,6 @@ The documentation for the api of the library contains mainly three part:
 
 [`Option`](./option.md) and [`Result`](./result.md) are the basic tool for using monads in Python.
 
-[STD Types](./std%20types.md) are wrappers around basic Python collections.
+[STD Types](./std_types.md) are wrappers around basic Python collections.
 
-[Advanced iterator](./Iterator%20Tools.md) contains an advanced iterator, offering chained expressions and results.
+[Advanced iterator](./iterator_tools.md) contains an advanced iterator, offering chained expressions and results.

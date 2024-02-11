@@ -18,6 +18,10 @@ class ResultTest(unittest.TestCase):
         self.assertFalse(Result.of_ok(2).is_err_and(lambda x: len(x) == 3))
         self.assertTrue(Result.of_err("err").is_err_and(lambda x: len(x) == 3))
         self.assertFalse(Result.of_err("error").is_err_and(lambda x: len(x) == 3))
+    
+    def test_to_either(self):
+        self.assertEqual(Ok(1).to_either(), Left(1))
+        self.assertEqual(Err(1).to_either(), Right(1))
 
     def test_magic_method(self):
         self.assertTrue(Ok(2))

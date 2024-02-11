@@ -21,17 +21,23 @@ extra_javascript:
   - init.js
 nav:
   - Introduction: index.md
-  - Quick Start: "quick start.md"
+  - Quick Start: "quick_start.md"
   - Api:
-      - "Api Document/api overview.md"
-      - "Api Document/option.md"
-      - "Api Document/result.md"
-      - "Api Document/Iterator Tools.md"
-      - "Api Document/std types.md"
-      - "Api Document/Option-Impl.md"
-      - "Api Document/Result-Impl.md"
-      - "Api Document/Iterator Tools Impl.md"
-      - "Api Document/error.md"
+      - "api_document/api_overview.md"
+      - "api_document/option.md"
+      - "api_document/result.md"
+      - "api_document/either.md"
+      - "api_document/error.md"
+      - "api_document/iterator_tools.md"
+      - "api_document/std_types.md"
+      - "api_document/iterator_tools_impl.md"
+      - "api_document/option_impl.md"
+      - "api_document/result_impl.md"
+      - "api_document/either_impl.md"
+      - "api_document/typedef.md"
+      - Utilities:
+          - "api_document/utils/index.md"
+          - "api_document/utils/cmp.md"
   - Change Log: CHANGELOG.md
 theme:
   name: material
@@ -76,6 +82,8 @@ plugins:
           options:
             show_root_heading: true
             show_source: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
             heading_level: 1
   # - git-committers:
   #     repository: Embers-of-the-Fire/monad_std

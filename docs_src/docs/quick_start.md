@@ -38,7 +38,7 @@ Option.some(3) # This will create a box containing a `3`
 Option.none()  # This will produce a ZST value, representing the `None` in `monad_std`
 ```
 
-For more information, see the documentation: [monad-std: Option](./Api%20Document/option.md).
+For more information, see the documentation: [monad-std: Option](./api_document/option.md).
 
 #### Homework
 
@@ -98,7 +98,7 @@ Result.of_err('error')
 Err('error')
 ```
 
-For more information, see the documentation: [monad-std: Result](./Api%20Document/result.md).
+For more information, see the documentation: [monad-std: Result](./api_document/result.md).
 
 **Note:** `Result`s can be transformed into `Option`s via the `Result.ok` and `Result.err` method.
 
@@ -156,7 +156,7 @@ The iterator is lazily calculated, so call `collect` if you want to get the resu
 - `IterMeta.collect_array`: collect the iterator into `funct.Array`. `funct` is another library which enhanced the
   Python's builtin list. If you need to use this functionality, you should first install that lib.
 
-For more information, see the documentation: [monad-std: Iterator](./Api%20Document/Iterator%20Tools.md).
+For more information, see the documentation: [monad-std: Iterator](./api_document/iterator_tools.md).
 
 #### Homework
 

@@ -6,7 +6,7 @@ K = TypeVar('K')
 
 
 class MSet(Generic[K], Set[K]):
-    def pop(self) -> Option[K]:
+    def pop(self) -> Option[K]: # type: ignore[override]
         """Remove and return an arbitrary set element.
 
         Returns:

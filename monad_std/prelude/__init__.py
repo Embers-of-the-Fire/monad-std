@@ -1,4 +1,4 @@
-from monad_std import Option, Ok, Err, Result
+from monad_std import Option, Ok, Err, Result, Either, Left, Right
 from monad_std.iter import siter, once, once_with, repeat
 
 
@@ -7,6 +7,9 @@ __all__ = [
     "Err",
     "Result",
     "Option",
+    "Left",
+    "Right",
+    "Either",
     "siter",
     "once",
     "once_with",
