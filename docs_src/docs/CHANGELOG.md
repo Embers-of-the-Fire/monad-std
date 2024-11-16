@@ -1,5 +1,12 @@
 # Change Log
 
+## V0.10.0
+
+**ADD**:
+
+- [`monad_std.iter.IterMeta`][monad_std.iter.iter.IterMeta]:
+    - [`unique`][monad_std.iter.iter.IterMeta.unique]: Yield unique elements.
+
 ## V0.9.0
 
 **ADD**:

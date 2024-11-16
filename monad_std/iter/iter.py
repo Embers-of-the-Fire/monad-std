@@ -904,6 +904,25 @@ class IterMeta(t.Generic[T], t.Iterable[T], metaclass=ABCMeta):
         """
         return Skip(self, n)
 
+    def unique(self) -> "Unique[T]":
+        """Creates an iterator that will only yield unique elements.
+
+        Returns:
+            See [`Unique`][monad_std.iter.impl.unique.Unique].
+
+        Examples:
+            ```python
+            a = [1, 2, 3, 3, 5, 1]
+            it = IterMeta.iter(a).unique()
+            assert it.next() == Option.some(1)
+            assert it.next() == Option.some(2)
+            assert it.next() == Option.some(3)
+            assert it.next() == Option.some(5)
+            assert it.next() == Option.none()
+            ```
+        """
+        return Unique(self)
+
     def take(self, n: int) -> "Take[T]":
         """Creates an iterator that yields the first `n` elements, or fewer if the underlying iterator ends sooner.
 

@@ -48,3 +48,7 @@ class SupportsDunderEq(t.Protocol[_T_contra]):
 
 
 SupportsDunderEqSelf: te.TypeAlias = SupportsDunderEq["SupportsDunderEqSelf"]
+
+
+class SupportsDunderHash(t.Protocol[_T_contra]):
+    def __hash__(self) -> int: ...
