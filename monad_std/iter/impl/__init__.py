@@ -19,4 +19,5 @@ from .repeat import Repeat
 from .scan import Scan
 from .skip import Skip
 from .take import Take, TakeWhile
+from .unique import Unique
 from .zip import Zip

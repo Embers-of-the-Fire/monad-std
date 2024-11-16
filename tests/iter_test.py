@@ -313,6 +313,15 @@ class ResultTest(unittest.TestCase):
         self.assertEqual(it.next(), Option.none())
         self.assertEqual(it.next(), Option.none())
 
+    def test_iter_unique(self):
+        a = [1, 2, 3, 3, 5, 1]
+        it = siter(a).unique()
+        self.assertEqual(it.next(), Option.some(1))
+        self.assertEqual(it.next(), Option.some(2))
+        self.assertEqual(it.next(), Option.some(3))
+        self.assertEqual(it.next(), Option.some(5))
+        self.assertEqual(it.next(), Option.none())
+
     def test_iter_take(self):
         a = [1, 2, 3]
         it = siter(a).take(2)
